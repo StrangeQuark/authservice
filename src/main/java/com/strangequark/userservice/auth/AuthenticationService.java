@@ -1,15 +1,20 @@
 package com.strangequark.userservice.auth;
 
 import com.strangequark.userservice.config.JwtService;
+import com.strangequark.userservice.error.ErrorResponse;
 import com.strangequark.userservice.user.Role;
 import com.strangequark.userservice.user.User;
 import com.strangequark.userservice.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * {@link Service} for registering and authenticating user requests
@@ -41,9 +46,23 @@ public class AuthenticationService {
     /**
      * Business logic for registering a new user
      * @param registrationRequest
-     * @return {@link AuthenticationResponse} with a generated JWT token
+     * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with {@link ErrorResponse}
      */
-    public AuthenticationResponse register(RegistrationRequest registrationRequest) {
+    public ResponseEntity<?> register(RegistrationRequest registrationRequest) {
+
+        //Check if the username has already been registered
+        if(userRepository.findByUsername(registrationRequest.getUsername()).isPresent()) {
+            return ResponseEntity.status(409).body(
+                    ErrorResponse.builder().errorMessage("Username already registered").build()
+            );
+        }
+
+        //Check if the email has already been registered
+        if(!userRepository.findByEmail(registrationRequest.getEmail()).equals(Optional.empty())) {
+            return ResponseEntity.status(409).body(
+                    ErrorResponse.builder().errorMessage("Email already registered").build()
+            );
+        }
 
         //Build the user object to be saved to the database
         User user = User.builder()
@@ -59,9 +78,9 @@ public class AuthenticationService {
         //Create a JWT token to return with the response
         String jwtToken = jwtService.generateToken(user);
 
-        return AuthenticationResponse.builder()
+        return ResponseEntity.ok(AuthenticationResponse.builder()
                 .jwtToken(jwtToken)
-                .build();
+                .build());
     }
 
     /**
@@ -69,24 +88,30 @@ public class AuthenticationService {
      * @param authenticationRequest
      * @return {@link AuthenticationResponse}
      */
-    public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
+    public ResponseEntity<?> authenticate(AuthenticationRequest authenticationRequest) {
+        try {
+            //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                            authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()
+                    )
+            );
 
-        //Authenticate the user, throw an exception if the username and password combination are incorrect
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                authenticationRequest.getUsername(),
-                authenticationRequest.getPassword()
-            )
-        );
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(authenticationRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        //Get the user, throw an exception if the username is not found
-        User user = userRepository.findByUsername(authenticationRequest.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            //Create a JWT token to authenticate the user
+            String jwtToken = jwtService.generateToken(user);
 
-        //Create a JWT token to authenticate the user
-        String jwtToken = jwtService.generateToken(user);
+            return ResponseEntity.ok(AuthenticationResponse.builder()
+                    .jwtToken(jwtToken)
+                    .build());
 
-        return AuthenticationResponse.builder()
-                .jwtToken(jwtToken)
-                .build();
+        } catch (AuthenticationException authenticationException) {
+            return ResponseEntity.status(400).body(
+                    ErrorResponse.builder().errorMessage("Invalid credentials").build()
+            );
+        }
     }
 }

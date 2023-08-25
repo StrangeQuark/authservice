@@ -26,8 +26,8 @@ public class AuthenticationController {
      * @return {@link ResponseEntity}
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegistrationRequest request) {
-        return ResponseEntity.ok(authenticationService.register(request));
+    public ResponseEntity<?> register(@RequestBody RegistrationRequest request) {
+        return authenticationService.register(request);
     }
 
     /**
@@ -36,7 +36,7 @@ public class AuthenticationController {
      * @return {@link ResponseEntity}
      */
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+    public ResponseEntity<?> authenticate(@RequestBody AuthenticationRequest request) {
+        return authenticationService.authenticate(request);
     }
 }
