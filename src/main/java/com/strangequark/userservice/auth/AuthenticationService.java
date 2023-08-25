@@ -46,21 +46,21 @@ public class AuthenticationService {
     /**
      * Business logic for registering a new user
      * @param registrationRequest
-     * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with {@link ErrorResponse}
+     * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> register(RegistrationRequest registrationRequest) {
 
         //Check if the username has already been registered
         if(userRepository.findByUsername(registrationRequest.getUsername()).isPresent()) {
             return ResponseEntity.status(409).body(
-                    ErrorResponse.builder().errorMessage("Username already registered").build()
+                    new ErrorResponse("Username already registered")
             );
         }
 
         //Check if the email has already been registered
         if(!userRepository.findByEmail(registrationRequest.getEmail()).equals(Optional.empty())) {
             return ResponseEntity.status(409).body(
-                    ErrorResponse.builder().errorMessage("Email already registered").build()
+                    new ErrorResponse("Email already registered")
             );
         }
 
@@ -86,7 +86,7 @@ public class AuthenticationService {
     /**
      * Business logic for authenticating a user
      * @param authenticationRequest
-     * @return {@link AuthenticationResponse}
+     * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> authenticate(AuthenticationRequest authenticationRequest) {
         try {
@@ -104,13 +104,15 @@ public class AuthenticationService {
             //Create a JWT token to authenticate the user
             String jwtToken = jwtService.generateToken(user);
 
+            //Return a 200 response with the jwtToken
             return ResponseEntity.ok(AuthenticationResponse.builder()
                     .jwtToken(jwtToken)
                     .build());
 
         } catch (AuthenticationException authenticationException) {
-            return ResponseEntity.status(400).body(
-                    ErrorResponse.builder().errorMessage("Invalid credentials").build()
+            //Throw a 401 (Unauthorized) error if invalid credentials are given
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid credentials")
             );
         }
     }
