@@ -1,14 +1,31 @@
 package com.strangequark.userservice.error;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+import java.time.LocalDateTime;
+
+/**
+ * Response object for errors
+ */
 public class ErrorResponse {
+    /**
+     * Timestamp of when the error occurred
+     */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
+    private LocalDateTime timestamp;
+
+    /**
+     * Message included in the error
+     */
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private String errorMessage;
+
+    public ErrorResponse() {
+        this.timestamp = LocalDateTime.now();
+    }
+
+    public ErrorResponse(String errorMessage) {
+        this();
+        this.errorMessage = errorMessage;
+    }
 }
