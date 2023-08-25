@@ -78,9 +78,7 @@ public class AuthenticationService {
         //Create a JWT token to return with the response
         String jwtToken = jwtService.generateToken(user);
 
-        return ResponseEntity.ok(AuthenticationResponse.builder()
-                .jwtToken(jwtToken)
-                .build());
+        return ResponseEntity.ok(new AuthenticationResponse(jwtToken));
     }
 
     /**
@@ -105,9 +103,7 @@ public class AuthenticationService {
             String jwtToken = jwtService.generateToken(user);
 
             //Return a 200 response with the jwtToken
-            return ResponseEntity.ok(AuthenticationResponse.builder()
-                    .jwtToken(jwtToken)
-                    .build());
+            return ResponseEntity.ok(new AuthenticationResponse(jwtToken));
 
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
