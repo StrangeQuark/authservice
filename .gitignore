@@ -3,6 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/javadocs
 
 ### Application properties file ###
 src/main/resources/application.properties
