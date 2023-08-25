@@ -20,10 +20,16 @@ public class ErrorResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private String errorMessage;
 
+    /**
+     * Default constructor, set the timestamp
+     */
     public ErrorResponse() {
         this.timestamp = LocalDateTime.now();
     }
 
+    /**
+     * Constructor if only errorMessage is passed
+     */
     public ErrorResponse(String errorMessage) {
         this();
         this.errorMessage = errorMessage;
