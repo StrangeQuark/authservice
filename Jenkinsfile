@@ -4,13 +4,13 @@ pipeline {
     stages {
         stage("build") {
             steps {
-
+                mvn clean install
             }
         }
 
         stage("deploy") {
             steps {
-
+                mvn deploy
             }
         }
     }
