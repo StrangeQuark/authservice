@@ -1,16 +1,21 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven 3.3.9'
+        jdk 'jdk17'
+    }
+
     stages {
         stage("build") {
             steps {
-                mvn clean install
+                sh 'mvn clean install'
             }
         }
 
         stage("deploy") {
             steps {
-                mvn deploy
+                sh 'mvn deploy'
             }
         }
     }
