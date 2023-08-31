@@ -4,11 +4,11 @@ WORKDIR /userservice
 
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
-RUN ./mvnw dependency:go-offline
+RUN mvnw dependency:go-offline
 
 COPY src ./src
 
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["./mvnw", "spring-boot:run"]
+CMD ["mvnw", "spring-boot:run"]
