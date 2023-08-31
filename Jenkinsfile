@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage("build") {
             steps {
-                echo 'java --version'
+                sh 'type nul > test.txt'
             }
         }
 
