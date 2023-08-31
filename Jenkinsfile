@@ -9,13 +9,13 @@ pipeline {
     stages {
         stage("build") {
             steps {
-                sh 'type nul > test.txt'
+                bat 'type nul > test.txt'
             }
         }
 
         stage("deploy") {
             steps {
-                sh 'docker-compose up'
+                bat 'docker-compose up'
             }
         }
     }
