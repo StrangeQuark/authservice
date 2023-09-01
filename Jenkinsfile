@@ -4,8 +4,9 @@ pipeline {
     stages {
         stage("deploy") {
             steps {
-                bat 'docker-compose up'
-                sleep 15
+                timeout(time: 15, unit: 'SECONDS') {
+                    bat 'docker-compose up'
+                }
                 script {
                     env.curlOutput = bat 'curl -s -o /dev/null -w "%{http_code}" localhost:8080'
                 }
