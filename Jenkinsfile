@@ -4,8 +4,8 @@ pipeline {
     stages {
         stage("deploy") {
             steps {
-                timeout(time: 15, unit: 'SECONDS') {
-                    bat 'docker-compose up'
+                timeout(time: 5, unit: 'SECONDS') {
+                    bat 'JENKINS_NODE_COOKIE=dontKillMe docker-compose up'
                 }
                 script {
                     env.curlOutput = bat 'curl -s -o /dev/null -w "%{http_code}" localhost:8080'
