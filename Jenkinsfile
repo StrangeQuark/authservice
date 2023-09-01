@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage("deploy") {
             steps {
-                timeout(time: 15, unit: 'SECONDS') {
+                timeout(time: 5, unit: 'SECONDS') {
                     bat 'docker-compose up'
                 }
                 script {
