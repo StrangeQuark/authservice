@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage("deploy") {
             steps {
-                start 'deploy.bat'
+                bat "start 'deploy.bat'"
                 script {
                     env.curlOutput = bat 'curl -s -o /dev/null -w "%{http_code}" localhost:8080'
                 }
