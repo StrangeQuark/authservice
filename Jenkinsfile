@@ -5,7 +5,7 @@ pipeline {
         stage("deploy") {
             steps {
                 timeout(time: 5, unit: 'SECONDS') {
-                    bat 'export JENKINS_NODE_COOKIE=dontKillMe'
+                    sh 'export JENKINS_NODE_COOKIE=dontKillMe'
                     bat 'docker-compose up'
                 }
                 script {
