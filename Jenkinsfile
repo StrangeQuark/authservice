@@ -6,7 +6,7 @@ pipeline {
             steps {
                 script {
                     withEnv(['JENKINS_NODE_COOKIE=dontkill']) {
-                        start 'deploy.bat'
+                        start deploy.bat
                     }
                 }
                 sleep 10
