@@ -9,7 +9,7 @@ pipeline {
                         bat "start deploy.bat"
                     }
                 }
-                sleep 15
+//                 sleep 15
                 script {
                     bat 'curl -s -o /dev/null -w \"%{http_code}\" localhost:8080'
                 }
