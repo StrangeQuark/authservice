@@ -11,7 +11,7 @@ pipeline {
                 }
 //                 sleep 15
                 script {
-                    bat 'curl -s -o /dev/null -w \"%{http_code}\" localhost:8080'
+                    bat 'curl -s -o /dev/null -w %{http_code} localhost:8080'
                 }
 //                 echo "CURL OUTPUT: ${env.curlOutput}"
 //                 if(env.curlOutput == '403') {
