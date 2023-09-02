@@ -11,12 +11,12 @@ pipeline {
                 }
                 sleep 15
                 script {
-                    env.curlOutput = bat "curl -i localhost:8080"
-                    echo env.curlOutput
-                    if(env.curlOutput == null) {
+                    env.CURLOUTPUT = bat "curl -i localhost:8080"
+                    echo env.CURLOUTPUT
+                    if(env.CURLOUTPUT == null) {
                         echo "Test"
                     }
-                    echo "CURL OUTPUT: ${env.curlOutput}"
+                    echo "CURL OUTPUT: ${env.CURLOUTPUT}"
                 }
 //                 echo "CURL OUTPUT: ${env.curlOutput}"
 //                 if(env.curlOutput == '403') {
