@@ -12,7 +12,8 @@ pipeline {
                 sleep 10
                 script {
                     curlOutput = bat "curl -i localhost:8080"
-                    if(bat "curl -i localhost:8080" == "HTTP/1.1 403
+                    echo curlOutput
+                    if(curlOutput == "HTTP/1.1 403
                                                         X-Content-Type-Options: nosniff
                                                         X-XSS-Protection: 0
                                                         Cache-Control: no-cache, no-store, max-age=0, must-revalidate
