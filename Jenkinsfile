@@ -9,7 +9,7 @@ pipeline {
                         bat "start deploy.bat"
                     }
                 }
-                sleep 10
+                sleep 15
                 script {
                     env.curlOutput = bat "curl -i localhost:8080"
                     echo env.curlOutput
