@@ -6,16 +6,19 @@ pipeline {
             steps {
                 script {
                     try {
-                        bat "start deploy.bat"
+                        //Run the start script
+                        bat "docker-compose up"
 
+                        //Sleep for 15 seconds to allow the server to start
                         sleep 15
 
-                        def response = httpRequest 'http://localhost:8080/api/v1/health'
+                        //Make a health check request
+                        def response = httpRequest 'http://localhost:8080/api/v1/healt'
 
+                        //Keep the process alive if the healthcheck is a success
                         env.JENKINS_NODE_COOKIE="dontKill"
-                        echo "Cookie ${JENKINS_NODE_COOKIE}"
                     } catch(Exception ex) {
-                        error("Fail")
+                        error("The health check did not pass")
                     }
                 }
             }
