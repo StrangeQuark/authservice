@@ -7,7 +7,7 @@ pipeline {
                 script {
                     try {
                         //Run the start script
-                        bat "docker-compose up"
+                        bat "start deploy.bat"
 
                         //Sleep for 15 seconds to allow the server to start
                         sleep 15
