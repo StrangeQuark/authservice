@@ -5,16 +5,16 @@ pipeline {
         stage("deploy") {
             steps {
                 script {
-                    try {
-                        bat "start deploy.bat"
+                    withEnv(['JENKINS_NODE_COOKIE=dontkill']) {
+                        try {
+                            bat "start deploy.bat"
 
-                        sleep 15
+                            sleep 15
 
-                        def response = httpRequest 'http://localhost:8080/api/v1/health'
-
-                        JENKINS_NODE_COOKIE=dontkill
-                    } catch(Exception ex) {
-                        echo "FAIL"
+                            def response = httpRequest 'http://localhost:8080/api/v1/healt'
+                        } catch(Exception ex) {
+                            error("Health check failed")
+                        }
                     }
                 }
             }
