@@ -12,6 +12,7 @@ pipeline {
 
                         def response = httpRequest 'http://localhost:8080/api/v1/health'
 
+                        env.JENKINS_NODE_COOKIE="dontKill"
                         echo "Cookie ${JENKINS_NODE_COOKIE}"
                     } catch(Exception ex) {
                         error("Fail")
