@@ -13,7 +13,7 @@ pipeline {
                         sleep 15
 
                         //Make a health check request
-                        def response = httpRequest 'http://localhost:8080/api/v1/healt'
+                        def response = httpRequest 'http://localhost:8080/api/v1/health'
 
                         //Keep the process alive if the healthcheck is a success
                         env.JENKINS_NODE_COOKIE="dontKill"
