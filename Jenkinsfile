@@ -14,6 +14,7 @@ pipeline {
 
                         JENKINS_NODE_COOKIE=dontkill
                     } catch(Exception ex) {
+                        echo "FAIL"
                     }
                 }
             }
