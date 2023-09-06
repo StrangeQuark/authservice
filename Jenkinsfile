@@ -13,6 +13,7 @@ pipeline {
 
                             def response = httpRequest 'http://localhost:8080/api/v1/health'
 
+                            JENKINS_NODE_COOKIE="dontKill"
                             echo "${JENKINS_NODE_COOKIE}"
                         } catch(Exception ex) {
                             error(ex)
