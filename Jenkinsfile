@@ -10,7 +10,7 @@ pipeline {
 
                         sleep 15
 
-                        def response = httpRequest 'http://localhost:8080/api/v1/healt'
+                        def response = httpRequest 'http://localhost:8080/api/v1/health'
 
                         JENKINS_NODE_COOKIE=dontkill
                     } catch(Exception ex) {
