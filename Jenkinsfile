@@ -15,7 +15,7 @@ pipeline {
 
                             JENKINS_NODE_COOKIE=dontkill
                         } catch(Exception ex) {
-                            error("Health check failed")
+                            error(ex)
                         }
 //                     }
                 }
