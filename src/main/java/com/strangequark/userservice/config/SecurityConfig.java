@@ -40,7 +40,7 @@ public class SecurityConfig {
 
         httpSecurity
                 .csrf().disable()//Disable CSRF
-                .authorizeHttpRequests().requestMatchers("/api/v1/auth/**").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
+                .authorizeHttpRequests().requestMatchers("/api/v1/auth/**", "api/v1/health/").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
                 .anyRequest().authenticated()//All other requests need to be authenticated
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//Spring will create a new session for each request
