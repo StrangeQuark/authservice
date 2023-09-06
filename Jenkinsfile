@@ -10,7 +10,7 @@ pipeline {
 
                         sleep 30
 
-                        def response = httpRequest 'http://localhost:8080/api/v1/health'
+                        def response = httpRequest 'http://localhost:8080/api/v1/healt'
 
                         echo "Status: ${response.status}"
                         if(response.status != 200) {
