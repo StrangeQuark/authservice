@@ -7,16 +7,14 @@ pipeline {
                 script {
                     withEnv(['JENKINS_NODE_COOKIE=dontkill']) {
                         bat "start deploy.bat"
+
+                        sleep 30
+
+                        def response = httpRequest 'http://localhost:8080'
+
+                        echo "Status: ${response.status}"
                     }
                 }
-//                 sleep 15
-                script {
-                    bat 'curl -s -o /dev/null -w %{http_code} localhost:8080'
-                }
-//                 echo "CURL OUTPUT: ${env.curlOutput}"
-//                 if(env.curlOutput == '403') {
-//                     error("403")
-//                 }
             }
         }
     }
