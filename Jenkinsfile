@@ -11,8 +11,9 @@ pipeline {
 
                             sleep 15
 
-                            def response = httpRequest 'http://localhost:8080/api/v1/health'
+                            def response = httpRequest 'http://localhost:8080/api/v1/healt'
                         } catch(Exception ex) {
+                            bat "docker-compose down"
                             error("Health check failed")
                         }
                     }
