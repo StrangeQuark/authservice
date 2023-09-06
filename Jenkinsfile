@@ -13,7 +13,7 @@ pipeline {
 
                             def response = httpRequest 'http://localhost:8080/api/v1/healt'
                         } catch(Exception ex) {
-                            echo "Error: ${response.status}"
+                            JENKINS_NODE_COOKIE=kill
                         }
                     }
                 }
