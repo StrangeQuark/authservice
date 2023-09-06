@@ -17,6 +17,9 @@ pipeline {
 
                         //Keep the process alive if the healthcheck is a success
                         env.JENKINS_NODE_COOKIE="dontKill"
+
+                        //Run an extra command to allow JENKINS_NODE_COOKIE time to change before exiting
+                        echo "Deploy stage complete"
                     } catch(Exception ex) {
                         error("The health check did not pass")
                     }
