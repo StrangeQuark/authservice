@@ -18,7 +18,7 @@ public class HealthController {
      * @return {@link ResponseEntity}
      */
     @GetMapping()
-    public ResponseEntity<String> demo() {
+    public ResponseEntity<String> healthcheck() {
         return ResponseEntity.ok("200 OK");
     }
 }
