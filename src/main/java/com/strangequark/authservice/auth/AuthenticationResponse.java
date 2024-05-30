@@ -1,4 +1,4 @@
-package com.strangequark.userservice.auth;
+package com.strangequark.authservice.auth;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

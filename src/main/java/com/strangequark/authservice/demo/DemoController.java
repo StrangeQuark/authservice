@@ -1,4 +1,4 @@
-package com.strangequark.userservice.demo;
+package com.strangequark.authservice.demo;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

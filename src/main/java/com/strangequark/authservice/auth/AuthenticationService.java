@@ -1,10 +1,10 @@
-package com.strangequark.userservice.auth;
+package com.strangequark.authservice.auth;
 
-import com.strangequark.userservice.config.JwtService;
-import com.strangequark.userservice.error.ErrorResponse;
-import com.strangequark.userservice.user.Role;
-import com.strangequark.userservice.user.User;
-import com.strangequark.userservice.user.UserRepository;
+import com.strangequark.authservice.config.JwtService;
+import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.user.Role;
+import com.strangequark.authservice.user.User;
+import com.strangequark.authservice.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +24,7 @@ import java.util.Optional;
 public class AuthenticationService {
 
     /**
-     * {@link UserRepository} for fetching {@link com.strangequark.userservice.user.User} from the database
+     * {@link UserRepository} for fetching {@link com.strangequark.authservice.user.User} from the database
      */
     private final UserRepository userRepository;
 

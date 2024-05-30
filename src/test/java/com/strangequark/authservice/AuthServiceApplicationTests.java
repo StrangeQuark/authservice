@@ -1,10 +1,10 @@
-package com.strangequark.userservice;
+package com.strangequark.authservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class UserserviceApplicationTests {
+class AuthServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

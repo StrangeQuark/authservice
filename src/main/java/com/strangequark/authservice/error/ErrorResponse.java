@@ -1,4 +1,4 @@
-package com.strangequark.userservice.error;
+package com.strangequark.authservice.error;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

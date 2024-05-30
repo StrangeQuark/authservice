@@ -1,6 +1,6 @@
-package com.strangequark.userservice.config;
+package com.strangequark.authservice.config;
 
-import com.strangequark.userservice.user.UserRepository;
+import com.strangequark.authservice.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

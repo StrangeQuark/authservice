@@ -1,4 +1,4 @@
-package com.strangequark.userservice.auth;
+package com.strangequark.authservice.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,21 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request object for authentication requests
+ * Request object for registration requests
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationRequest {
+public class RegistrationRequest {
 
     /**
-     * Username of authenticating user
+     * Username of new user
      */
     private String username;
 
     /**
-     * Password of authenticating user
+     * Email of new user
+     */
+    private String email;
+
+    /**
+     * Password of new user
      */
     private String password;
 }

@@ -1,4 +1,4 @@
-package com.strangequark.userservice.user;
+package com.strangequark.authservice.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
-* An object to capture all the information related to users to be stored in our "userservice" database in the
+* An object to capture all the information related to users to be stored in our "authservice" database in the
 * "users" table
 *
 * @author StrangeQuark

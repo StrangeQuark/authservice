@@ -1,4 +1,4 @@
-package com.strangequark.userservice.health;
+package com.strangequark.authservice.health;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

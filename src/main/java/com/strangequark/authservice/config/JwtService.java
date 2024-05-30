@@ -1,4 +1,4 @@
-package com.strangequark.userservice.config;
+package com.strangequark.authservice.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

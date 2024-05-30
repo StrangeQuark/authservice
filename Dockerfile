@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk-focal
 
-WORKDIR /userservice
+WORKDIR /authservice
 
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
@@ -9,7 +9,7 @@ RUN ./mvnw dependency:go-offline
 
 COPY src ./src
 
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=6001
+EXPOSE 6001
 
 CMD ["./mvnw", "spring-boot:run"]

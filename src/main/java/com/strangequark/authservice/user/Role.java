@@ -1,4 +1,4 @@
-package com.strangequark.userservice.user;
+package com.strangequark.authservice.user;
 
 /**
  * Various roles for users

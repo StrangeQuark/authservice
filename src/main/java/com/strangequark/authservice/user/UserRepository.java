@@ -1,4 +1,4 @@
-package com.strangequark.userservice.user;
+package com.strangequark.authservice.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
