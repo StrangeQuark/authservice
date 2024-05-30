@@ -1,0 +1,22 @@
+version: '1.0.0'
+
+services:
+  app:
+    build: .
+    ports:
+      - "6001:6001"
+    container_name: auth-app
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/authservice
+      - SPRING_DATASOURCE_USERNAME=CHANGEME
+      - SPRING_DATASOURCE_PASSWORD=CHANGEME
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+  db:
+    image: 'postgres:13.1-alpine'
+    container_name: auth-database
+    environment:
+      - POSTGRES_USER=CHANGEME
+      - POSTGRES_PASSWORD=CHANGEME
+      - POSTGRES_DB=authservice
