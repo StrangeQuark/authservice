@@ -9,7 +9,7 @@ services:
     depends_on:
       - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/users
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/authservice
       - SPRING_DATASOURCE_USERNAME=CHANGEME
       - SPRING_DATASOURCE_PASSWORD=CHANGEME
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -19,4 +19,4 @@ services:
     environment:
       - POSTGRES_USER=CHANGEME
       - POSTGRES_PASSWORD=CHANGEME
-      - POSTGRES_DB=users
+      - POSTGRES_DB=authservice
