@@ -22,15 +22,22 @@ import java.util.function.Function;
 public class JwtService {
 
     /**
-     * The JWT secret key defined in the application.properties
+     * The JWT access secret key defined in the application.properties
      */
-    @Value("${jwtSecretKey}")
-    private String JWT_SECRET_KEY;
+    @Value("${accessSecretKey}")
+    private String ACCESS_SECRET_KEY;
+
+    /**
+     * The JWT refresh secret key defined in the application.properties
+     */
+    @Value("${refreshSecretKey}")
+    private String REFRESH_SECRET_KEY;
 
     /**
      * The amount of time in milliseconds that the JWT token will expire
      */
-    private final int JWT_TOKEN_EXPIRATION_TIME = 1000 * 60;//1 minute
+    private final int ACCESS_TOKEN_EXPIRATION_TIME = 1000 * 60 * 10;//10 minutes
+    private final int REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;//14 days
 
     /**
      * Extract the username from the JWT token
@@ -70,35 +77,54 @@ public class JwtService {
     private Claims extractAllClaims(String jwtToken) {
         return Jwts
                 .parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(getSigningKey(true))
                 .build()
                 .parseClaimsJws(jwtToken)
                 .getBody();
     }
 
     /**
-     * Generate a JWT token without extra claims, expiring after {@link #JWT_TOKEN_EXPIRATION_TIME}
+     * Generate a JWT token without extra claims, expiring after {@link #ACCESS_TOKEN_EXPIRATION_TIME} or {@link #REFRESH_TOKEN_EXPIRATION_TIME}
      * @param userDetails The user's details, used to extract the username of the current user
      * @return Generated JWT token
      */
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(UserDetails userDetails, boolean refreshToken) {
+        if(refreshToken)
+            return generateRefreshToken(new HashMap<>(), userDetails);
+        return generateAccessToken(new HashMap<>(), userDetails);
     }
 
     /**
-     * Generate a JWT token from the extra claims and user's username, expiring after {@link #JWT_TOKEN_EXPIRATION_TIME}
+     * Generate a JWT refresh token from the extra claims and user's username, expiring after {@link #REFRESH_TOKEN_EXPIRATION_TIME}
      * @param extraClaims The extra claims to be added into the JWT token
      * @param userDetails The user's details, used to extract the username of the current user
      * @return Generated JWT token
      */
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_EXPIRATION_TIME))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
+                .signWith(getSigningKey(true), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * Generate a JWT token from the extra claims and user's username, expiring after {@link #ACCESS_TOKEN_EXPIRATION_TIME} or {@link #REFRESH_TOKEN_EXPIRATION_TIME}
+     * @param extraClaims The extra claims to be added into the JWT token
+     * @param userDetails The user's details, used to extract the username of the current user
+     * @return Generated JWT token
+     */
+    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return Jwts
+                .builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
+                .signWith(getSigningKey(false), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -106,8 +132,9 @@ public class JwtService {
      * Retrieve and decode the JWT signing key defined in application.properties
      * @return The decoded SHA key
      */
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET_KEY);
+    private Key getSigningKey(boolean refreshToken) {
+        String key = refreshToken ? REFRESH_SECRET_KEY : ACCESS_SECRET_KEY;
+        byte[] keyBytes = Decoders.BASE64.decode(key);
 
         return Keys.hmacShaKeyFor(keyBytes);
     }
