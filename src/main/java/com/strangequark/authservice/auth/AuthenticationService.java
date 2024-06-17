@@ -76,9 +76,9 @@ public class AuthenticationService {
         userRepository.save(user);
 
         //Create a JWT token to return with the response
-        String jwtToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateToken(user, true);
 
-        return ResponseEntity.ok(new AuthenticationResponse(jwtToken));
+        return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
     }
 
     /**
@@ -100,10 +100,10 @@ public class AuthenticationService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Create a JWT token to authenticate the user
-            String jwtToken = jwtService.generateToken(user);
+            String refreshToken = jwtService.generateToken(user, true);
 
             //Return a 200 response with the jwtToken
-            return ResponseEntity.ok(new AuthenticationResponse(jwtToken));
+            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
 
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
