@@ -53,14 +53,14 @@ public class AuthenticationService {
         //Check if the username has already been registered
         if(userRepository.findByUsername(registrationRequest.getUsername()).isPresent()) {
             return ResponseEntity.status(409).body(
-                    new ErrorResponse("Username already registered")
+                    new ErrorResponse("Username already registered", 410)
             );
         }
 
         //Check if the email has already been registered
         if(!userRepository.findByEmail(registrationRequest.getEmail()).equals(Optional.empty())) {
             return ResponseEntity.status(409).body(
-                    new ErrorResponse("Email already registered")
+                    new ErrorResponse("Email already registered", 401)
             );
         }
 
