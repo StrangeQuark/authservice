@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Optional;
 
 /**
  * {@link Service} for serving access token
@@ -40,7 +39,7 @@ public class AccessService {
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
-//
+
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
