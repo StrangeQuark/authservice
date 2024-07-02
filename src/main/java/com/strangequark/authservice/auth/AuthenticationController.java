@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     /**
-     * {@link AuthenticationService} for registering and authenticating users
+     * {@link AuthenticationService}
      */
     private final AuthenticationService authenticationService;
 
     /**
      * Post request endpoint for registering a new user
-     * @param request {@link RegistrationRequest} containing
+     * @param request {@link RegistrationRequest}
      * @return {@link ResponseEntity}
      */
     @PostMapping("/register")
@@ -32,7 +32,7 @@ public class AuthenticationController {
 
     /**
      * Post request endpoint for authenticating a user
-     * @param request {@link AuthenticationRequest} containing
+     * @param request {@link AuthenticationRequest}
      * @return {@link ResponseEntity}
      */
     @PostMapping("/authenticate")
