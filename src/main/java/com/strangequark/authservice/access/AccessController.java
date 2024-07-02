@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AccessController {
     /**
-     * {@link AuthenticationService} for registering and authenticating users
+     * {@link AccessService}
      */
     private final AccessService accessService;
 
