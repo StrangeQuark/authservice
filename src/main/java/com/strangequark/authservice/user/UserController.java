@@ -33,7 +33,7 @@ public class UserController {
     }
 
     /**
-     * Post request endpoint for updating a user's authoriizations
+     * Post request endpoint for updating a user's authorizations
      * @param request {@link String}
      * @return {@link ResponseEntity}
      */

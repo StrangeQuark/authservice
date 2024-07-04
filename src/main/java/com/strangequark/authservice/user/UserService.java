@@ -79,7 +79,7 @@ public class UserService {
     }
 
     /**
-     * Business logic updating user's password
+     * Business logic updating user's authorizations
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> updateAuthorizations(Set<String> authorizations) {
