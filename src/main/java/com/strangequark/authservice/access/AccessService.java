@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * {@link Service} for serving access token
@@ -44,8 +47,12 @@ public class AccessService {
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+            //Create a HashMap for sending the user's list of authorizations as extra claims in the JWT
+            Map<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("authorizations", user.getAuthorizations());
+
             //Create a JWT token to authenticate the user
-            String accessToken = jwtService.generateToken(user, false);
+            String accessToken = jwtService.generateAccessToken(extraClaims, user);
 
             //Return a 200 response with the jwtToken
             return ResponseEntity.ok(new AuthenticationResponse(accessToken));

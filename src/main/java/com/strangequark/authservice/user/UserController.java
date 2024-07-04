@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 
 /**
  * {@link RestController} for demoing the application
@@ -28,5 +30,15 @@ public class UserController {
     @PostMapping("/update-password")
     public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordRequest request) {
         return userService.updatePassword(request);
+    }
+
+    /**
+     * Post request endpoint for updating a user's authorizations
+     * @param request {@link String}
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/update-authorizations")
+    public ResponseEntity<?> updateAuthorizations(@RequestBody Set<String> body) {
+        return userService.updateAuthorizations(body);
     }
 }
