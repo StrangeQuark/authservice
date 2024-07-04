@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Set;
+
 
 /**
  * {@link Service} for serving access token
@@ -50,9 +52,6 @@ public class UserService {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
-            System.out.println(jwtService.extractUsername(authToken));
-            System.out.println(updatePasswordRequest.getPassword());
-
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                             jwtService.extractUsername(authToken),
@@ -63,8 +62,6 @@ public class UserService {
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-            System.out.println(user.getPassword());
 
             //Set the user's new password and save
             user.setPassword(passwordEncoder.encode(updatePasswordRequest.getNewPassword()));
@@ -77,6 +74,34 @@ public class UserService {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
             return ResponseEntity.status(401).body(
                     new ErrorResponse("Invalid password")
+            );
+        }
+    }
+
+    /**
+     * Business logic updating user's password
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> updateAuthorizations(Set<String> authorizations) {
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Set the user's new password and save
+            user.appendAuthorizations(authorizations);
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+
+        } catch (AuthenticationException authenticationException) {
+            //Throw a 401 (Unauthorized) error if invalid credentials are given
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid credentials")
             );
         }
     }

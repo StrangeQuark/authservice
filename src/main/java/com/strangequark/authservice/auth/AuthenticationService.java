@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 /**
@@ -68,6 +69,7 @@ public class AuthenticationService {
         User user = User.builder()
                 .username(registrationRequest.getUsername())
                 .email(registrationRequest.getEmail())
+                .authorizations(new LinkedHashSet<>())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
                 .role(Role.USER)
                 .build();

@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
 * An object to capture all the information related to users to be stored in our "authservice" database in the
@@ -55,6 +56,11 @@ public class User implements UserDetails {
     private Role role;
 
     /**
+     * A set of authorizations for the user
+     */
+    private Set<String> authorizations;
+
+    /**
      * Returns all the authorities granted to this user
      * @return The list of authorities granted to this user, depending on which role the user is assigned
      */
@@ -97,5 +103,12 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    /**
+     * Append to the list of authorizations
+     */
+    public void appendAuthorizations(Set<String> auths) {
+        authorizations.addAll(auths);
     }
 }
