@@ -2,7 +2,6 @@ package com.strangequark.authservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.strangequark.authservice.error.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
