@@ -93,10 +93,9 @@ public class UserService {
             //Return a 200 response with a success message
             return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
 
-        } catch (AuthenticationException authenticationException) {
-            //Throw a 401 (Unauthorized) error if invalid credentials are given
+        } catch (Exception ex) {
             return ResponseEntity.status(401).body(
-                    new ErrorResponse("Invalid password")
+                    new ErrorResponse("There was an error in the request, please contact the system administrator")
             );
         }
     }
@@ -117,10 +116,9 @@ public class UserService {
             //Return a 200 response with a success message
             return ResponseEntity.ok(new UserResponse("Authorizations were successfully removed"));
 
-        } catch (AuthenticationException authenticationException) {
-            //Throw a 401 (Unauthorized) error if invalid credentials are given
+        } catch (Exception ex) {
             return ResponseEntity.status(401).body(
-                    new ErrorResponse("Invalid password")
+                    new ErrorResponse("There was an error in the request, please contact the system administrator")
             );
         }
     }
