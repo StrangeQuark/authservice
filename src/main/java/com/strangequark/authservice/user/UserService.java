@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Set;
+
 /**
  * {@link Service} for serving access token
  */
@@ -66,6 +68,54 @@ public class UserService {
 
             //Return a 200 response with a success message
             return ResponseEntity.ok(new UserResponse("Password was successfully reset"));
+
+        } catch (AuthenticationException authenticationException) {
+            //Throw a 401 (Unauthorized) error if invalid credentials are given
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid password")
+            );
+        }
+    }
+
+    public ResponseEntity<?> addAuthorizations(Set<String> authorizations) {
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Append the authorizations and save
+            user.appendAuthorizations(authorizations);
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+
+        } catch (AuthenticationException authenticationException) {
+            //Throw a 401 (Unauthorized) error if invalid credentials are given
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Invalid password")
+            );
+        }
+    }
+
+    public ResponseEntity<?> removeAuthorizations(Set<String> authorizations) {
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Remove the authorizations and save
+            user.removeAuthorizations(authorizations);
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("Authorizations were successfully removed"));
 
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given

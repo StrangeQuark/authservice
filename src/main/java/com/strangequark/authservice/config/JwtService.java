@@ -1,5 +1,6 @@
 package com.strangequark.authservice.config;
 
+import com.strangequark.authservice.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -11,8 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -85,46 +85,22 @@ public class JwtService {
 
     /**
      * Generate a JWT token without extra claims, expiring after {@link #ACCESS_TOKEN_EXPIRATION_TIME} or {@link #REFRESH_TOKEN_EXPIRATION_TIME}
-     * @param userDetails The user's details, used to extract the username of the current user
+     * @param user The user object to extract the username and authorizations
+     * @param refreshToken Flag to specify refresh or access token
      * @return Generated JWT token
      */
-    public String generateToken(UserDetails userDetails, boolean refreshToken) {
-        if(refreshToken)
-            return generateRefreshToken(new HashMap<>(), userDetails);
-        return generateAccessToken(new HashMap<>(), userDetails);
-    }
-
-    /**
-     * Generate a JWT refresh token from the extra claims and user's username, expiring after {@link #REFRESH_TOKEN_EXPIRATION_TIME}
-     * @param extraClaims The extra claims to be added into the JWT token
-     * @param userDetails The user's details, used to extract the username of the current user
-     * @return Generated JWT token
-     */
-    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateToken(User user, boolean refreshToken) {
         return Jwts
                 .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setClaims(null)
+                .setId(UUID.randomUUID().toString())
+                .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
-                .signWith(getSigningKey(true), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    /**
-     * Generate a JWT token from the extra claims and user's username, expiring after {@link #ACCESS_TOKEN_EXPIRATION_TIME} or {@link #REFRESH_TOKEN_EXPIRATION_TIME}
-     * @param extraClaims The extra claims to be added into the JWT token
-     * @param userDetails The user's details, used to extract the username of the current user
-     * @return Generated JWT token
-     */
-    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
-                .signWith(getSigningKey(false), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() +
+                        (refreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
+                ))
+                .setAudience(refreshToken ? null : user.getAuthorizations().toString())
+                .signWith(getSigningKey(refreshToken), SignatureAlgorithm.HS256)
                 .compact();
     }
 
