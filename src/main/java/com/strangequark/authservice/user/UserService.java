@@ -2,7 +2,12 @@ package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,9 +15,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -121,5 +128,22 @@ public class UserService {
                     new ErrorResponse("There was an error in the request, please contact the system administrator")
             );
         }
+    }
+
+    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(UpdatePasswordRequest request) {
+        String credentials = request.getCredentials();
+
+        // Try to find the user by username first, and if not found, by email
+        Optional<User> userOptional = userRepository.findByUsername(credentials)
+                .or(() -> userRepository.findByEmail(credentials));
+
+        if (userOptional.isPresent()) {
+            String email = userOptional.get().getEmail();
+            EmailUtility.sendEmail("http://localhost:6005/sendPasswordResetEmail", email, "Password reset");
+            return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
+        }
+
+        // Handle the case where neither username nor email exists
+        return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
     }
 }

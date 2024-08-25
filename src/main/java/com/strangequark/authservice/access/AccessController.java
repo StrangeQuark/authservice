@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
  * {@link RestController} for demoing the application
  */
 @RestController
-@RequestMapping("/api/v1/access")
+@RequestMapping("/access")
 @RequiredArgsConstructor
 public class AccessController {
     /**

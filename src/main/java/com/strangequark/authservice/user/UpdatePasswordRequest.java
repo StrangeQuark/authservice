@@ -13,6 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdatePasswordRequest {
+    /**
+     * Username or email of the user
+     */
+    private String credentials;
 
     /**
      * Password of authenticating user

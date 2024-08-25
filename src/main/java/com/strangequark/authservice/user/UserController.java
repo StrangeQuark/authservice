@@ -1,6 +1,7 @@
 package com.strangequark.authservice.user;
 
 import lombok.RequiredArgsConstructor;
+import org.hibernate.sql.Update;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,7 +14,7 @@ import java.util.Set;
  * {@link RestController} for demoing the application
  */
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
     /**
@@ -49,5 +50,15 @@ public class UserController {
     @PostMapping("/remove-authorizations")
     public ResponseEntity<?> removeAuthorizations(@RequestBody Set<String> authorizations) {
         return userService.removeAuthorizations(authorizations);
+    }
+
+    /**
+     * Post request endpoint for verifying if a user exists
+     * @param {@link List} of strings of authorities to be removed from the user
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/verify-user-and-send-email")
+    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UpdatePasswordRequest request) {
+        return userService.verifyUserAndSendPasswordResetEmail(request);
     }
 }

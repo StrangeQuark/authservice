@@ -18,6 +18,7 @@ public class AuthServiceApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
+				//Allow the reactService through the CORS policy
 				registry.addMapping("/**").allowedOrigins("http://localhost:3001");
 			}
 		};
