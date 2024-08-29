@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * {@link RestController} responsible for health check
  */
 @RestController
-@RequestMapping("/health")
+@RequestMapping("/auth/health")
 @RequiredArgsConstructor
 public class HealthController {
     /**
