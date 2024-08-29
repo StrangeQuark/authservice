@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 public class EmailUtility {
-    public static void sendEmail(String url, String recipient, String subject) {
+    public static void sendEmail(String recipient, String subject) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -18,6 +18,6 @@ public class EmailUtility {
 
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
-        new RestTemplate().postForObject(url, requestEntity, String.class);
+        new RestTemplate().postForObject("http://localhost:6005/email/sendPasswordResetEmail", requestEntity, String.class);
     }
 }

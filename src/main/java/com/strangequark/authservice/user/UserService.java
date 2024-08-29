@@ -134,7 +134,7 @@ public class UserService {
 
         if (userOptional.isPresent()) {
             String email = userOptional.get().getEmail();
-            EmailUtility.sendEmail("http://localhost:6005/sendPasswordResetEmail", email, "Password reset");
+            EmailUtility.sendEmail(email, "Password reset");
             return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
         }
 

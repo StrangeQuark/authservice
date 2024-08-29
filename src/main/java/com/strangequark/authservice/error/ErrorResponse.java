@@ -21,7 +21,7 @@ public class ErrorResponse {
     private String errorMessage;
 
     /**
-     * Message included in the error
+     * Code for the error
      */
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     private int errorCode;
