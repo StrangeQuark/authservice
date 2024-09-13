@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Set;
 
 /**
- * {@link RestController} for demoing the application
+ * {@link RestController} for manipulating {@link User} objects
  */
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
     /**
-     * {@link UserService}
+     * {@link UserService} for executing business logic on User objects
      */
     private final UserService userService;
 
@@ -52,7 +52,7 @@ public class UserController {
     }
 
     /**
-     * Post request endpoint for verifying if a user exists
+     * Post request endpoint for initiating password resets
      * @param {@link List} of strings of authorities to be removed from the user
      * @return {@link ResponseEntity}
      */

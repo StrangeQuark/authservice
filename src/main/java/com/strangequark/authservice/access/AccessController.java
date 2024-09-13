@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 /**
- * {@link RestController} for demoing the application
+ * {@link RestController} for issuing Access Tokens
  */
 @RestController
 @RequestMapping("/access")

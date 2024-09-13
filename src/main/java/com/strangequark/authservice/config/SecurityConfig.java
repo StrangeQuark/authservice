@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Spring {@link Configuration} for implementing and injecting all declared beans upon startup
+ * Spring {@link Configuration} for security settings
  */
 @Configuration
 @EnableWebSecurity
@@ -24,7 +24,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
-     * {@link AuthenticationProvider}
+     * {@link AuthenticationProvider} neccessary for the security filter
      */
     private final AuthenticationProvider authenticationProvider;
 

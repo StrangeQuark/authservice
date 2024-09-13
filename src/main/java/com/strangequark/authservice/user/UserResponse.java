@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
+/**
+ * Response object for user requests
+ */
 public class UserResponse {
     /**
-     * Timestamp of when the error occurred
+     * Timestamp of the response
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime timestamp;
@@ -25,7 +28,7 @@ public class UserResponse {
     }
 
     /**
-     * Constructor if only message is passed
+     * Constructor if only a message is passed
      */
     public UserResponse(String message) {
         this();

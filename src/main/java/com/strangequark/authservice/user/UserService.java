@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * {@link Service} for serving access token
+ * {@link Service} for manipulating {@link User} objects
  */
 @Service
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * {@link AuthenticationManager} for validating the user
+     * {@link AuthenticationManager} for authenticating the user
      */
     private final AuthenticationManager authenticationManager;
 
@@ -80,6 +80,10 @@ public class UserService {
         }
     }
 
+    /**
+     * Business logic adding authorities to a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
     public ResponseEntity<?> addAuthorizations(Set<String> authorizations) {
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
@@ -103,6 +107,10 @@ public class UserService {
         }
     }
 
+    /**
+     * Business logic for removing authorities from a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
     public ResponseEntity<?> removeAuthorizations(Set<String> authorizations) {
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
@@ -126,6 +134,10 @@ public class UserService {
         }
     }
 
+    /**
+     * Business logic for initiating the password reset process
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
     public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(UpdatePasswordRequest request) {
         String credentials = request.getCredentials();
 

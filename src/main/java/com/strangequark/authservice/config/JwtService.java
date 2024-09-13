@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * A service for performing operations on JWT tokens. Uses @Service to specify that this is a Spring bean
+ * A service for performing operations on JWT tokens.
  */
 @Service
 public class JwtService {
@@ -58,7 +58,7 @@ public class JwtService {
 //    }
 
     /**
-     * Extract a single claim from all claims
+     * Extract a single claim from the JWT token
      * @param jwtToken The JWT token from which the claim is to be extracted
      * @param claimsResolver The function to specify which claim to extract
      * @return The specified claim to be extracted

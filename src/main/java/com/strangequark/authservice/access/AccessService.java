@@ -15,7 +15,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 
 /**
- * {@link Service} for serving access token
+ * {@link Service} for serving access tokens
  */
 @Service
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class AccessService {
     private final JwtService jwtService;
 
     /**
-     * Business logic checking refresh token
+     * Business logic checking refresh token, and returning an access token if successful
      * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> serveAccessToken() {

@@ -14,7 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Spring {@link Configuration} for implementing and injecting all declared beans upon startup
+ * Spring {@link Configuration} for application settings
  */
 @Configuration
 @RequiredArgsConstructor

@@ -16,8 +16,6 @@ import java.util.Set;
 /**
 * An object to capture all the information related to users to be stored in our "authservice" database in the
 * "users" table
-*
-* @author StrangeQuark
 */
 
 @Data
