@@ -2,6 +2,7 @@ package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.utility.EmailType;
 import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -134,7 +135,7 @@ public class UserService {
 
         if (userOptional.isPresent()) {
             String email = userOptional.get().getEmail();
-            EmailUtility.sendEmail(email, "Password reset");
+            EmailUtility.sendEmail(email, "Password reset", EmailType.PASSWORD_RESET);
             return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
         }
 

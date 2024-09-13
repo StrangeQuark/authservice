@@ -56,6 +56,11 @@ public class User implements UserDetails {
     private Role role;
 
     /**
+     * Boolean whether the account is enabled or disabled
+     */
+    private boolean isEnabled;
+
+    /**
      * A set of authorizations for the user
      */
     private Set<String> authorizations;
@@ -102,7 +107,14 @@ public class User implements UserDetails {
      */
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
+    }
+
+    /**
+     * Set the enabled boolean for the account
+     */
+    public void setEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
     }
 
     /**

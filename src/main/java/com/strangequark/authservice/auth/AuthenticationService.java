@@ -5,6 +5,8 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
+import com.strangequark.authservice.utility.EmailType;
+import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -70,12 +72,16 @@ public class AuthenticationService {
                 .username(registrationRequest.getUsername())
                 .email(registrationRequest.getEmail())
                 .role(Role.USER)
+                .isEnabled(false) //User must confirm their account through an email to enable it
                 .authorizations(new LinkedHashSet<>())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
                 .build();
 
         //Save the user to the database
         userRepository.save(user);
+
+        //Send an email so the user can enable their account
+        EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
 
         //Create a JWT token to return with the response
         String refreshToken = jwtService.generateToken(user, true);
