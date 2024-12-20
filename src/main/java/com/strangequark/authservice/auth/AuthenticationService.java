@@ -116,7 +116,7 @@ public class AuthenticationService {
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
             return ResponseEntity.status(401).body(
-                    new ErrorResponse("Invalid credentials")
+                    new ErrorResponse(authenticationException.getMessage())
             );
         }
     }

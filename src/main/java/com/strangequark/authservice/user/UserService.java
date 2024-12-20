@@ -5,6 +5,7 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.utility.EmailType;
 import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -149,6 +151,24 @@ public class UserService {
             String email = userOptional.get().getEmail();
             EmailUtility.sendEmail(email, "Password reset", EmailType.PASSWORD_RESET);
             return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
+        }
+
+        // Handle the case where neither username nor email exists
+        return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
+    }
+
+    /**
+     * Business logic for enabling a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> enableUser(Map<String, String> requestBody) {
+        // Check if the User exists
+        Optional<User> userOptional = userRepository.findByEmail(requestBody.get("email"));
+
+        if (userOptional.isPresent()) {
+            userOptional.get().setEnabled(true);
+            userRepository.save(userOptional.get());
+            return ResponseEntity.ok(new UserResponse("User is enabled"));
         }
 
         // Handle the case where neither username nor email exists

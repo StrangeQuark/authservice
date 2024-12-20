@@ -1,12 +1,11 @@
 package com.strangequark.authservice.user;
 
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -59,5 +58,15 @@ public class UserController {
     @PostMapping("/verify-user-and-send-email")
     public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UpdatePasswordRequest request) {
         return userService.verifyUserAndSendPasswordResetEmail(request);
+    }
+
+    /**
+     * Get request for enabling a user
+     * @param {@link Map} containing the email address of the user to enable
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/enableUser")
+    public ResponseEntity<?> enableUser(@RequestBody Map<String, String> requestBody) {
+        return userService.enableUser(requestBody);
     }
 }
