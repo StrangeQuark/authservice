@@ -1,14 +1,21 @@
-# About this project
+# Auth service
 The purpose of this project is to provide a simple Spring Boot JWT authentication and authorization application
 which can be easily launched with docker
 
-# Getting Started
-Simply clone main branch of the project and open in your favorite IDE. The `.env` file contains dummy values that
-should be changed to fit your purposes.
+# Tools
+Spring Boot, PostgreSQL, and Docker
 
-Once configured, start your docker engine and run 
-```docker-compose up```
-This will start a PostgreSQL database and the auth service in separate docker containers. The service should now be live on localhost:6001
+# Getting Started
+It is highly recommended that the service is ran using docker, the `.env` file contains dummy values that should be 
+changed to fit your purposes. This service also assumes that external networks are available
+with the names authdb-network and shared-network. These can be created by running the following commands:
+
+`docker network create authdb-network`
+
+`docker network create shared-network`
+
+Note that these commands only need to be run once. After the networks have been created you can simply use the
+`docker-compose up --build` command to run the application, there are no other steps needed
 
 A sample Postman collection for testing this service can be found here:
 [Auth Service Postman Collection](https://github.com/StrangeQuark/authservice/blob/develop/AuthService.postman_collection.json)

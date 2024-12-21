@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 /**
- * An interface to manage our users' information in the database via Spring's JPA
+ * An interface to manage the users' information in the database via Spring's JPA
  */
 public interface UserRepository extends JpaRepository<User, Integer> {
 

@@ -13,11 +13,13 @@ public class AuthServiceApplication {
 		SpringApplication.run(AuthServiceApplication.class, args);
 	}
 
+	//Configure the CORS policy, allow the ReactService through
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
+				//Allow the reactService through the CORS policy
 				registry.addMapping("/**").allowedOrigins("http://localhost:3001");
 			}
 		};

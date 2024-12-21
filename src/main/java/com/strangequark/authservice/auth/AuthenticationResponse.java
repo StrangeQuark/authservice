@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  */
 public class AuthenticationResponse {
     /**
-     * Timestamp of when the error occurred
+     * Timestamp of the response
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime timestamp;
@@ -28,7 +28,7 @@ public class AuthenticationResponse {
     }
 
     /**
-     * Constructor if only errorMessage is passed
+     * Constructor if a JWT token is being returned
      */
     public AuthenticationResponse(String jwtToken) {
         this();

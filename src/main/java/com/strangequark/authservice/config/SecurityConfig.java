@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Spring {@link Configuration} for implementing and injecting all declared beans upon startup
+ * Spring {@link Configuration} for security settings
  */
 @Configuration
 @EnableWebSecurity
@@ -24,7 +24,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
-     * {@link AuthenticationProvider}
+     * {@link AuthenticationProvider} neccessary for the security filter
      */
     private final AuthenticationProvider authenticationProvider;
 
@@ -40,7 +40,7 @@ public class SecurityConfig {
 
         httpSecurity
                 .csrf().disable()//Disable CSRF
-                .authorizeHttpRequests().requestMatchers("/api/v1/auth/**", "api/v1/health/**").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
+                .authorizeHttpRequests().requestMatchers("/auth/**", "/auth/health/**", "/user/verify-user-and-send-email", "/user/enableUser").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
                 .anyRequest().authenticated()//All other requests need to be authenticated
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//Spring will create a new session for each request

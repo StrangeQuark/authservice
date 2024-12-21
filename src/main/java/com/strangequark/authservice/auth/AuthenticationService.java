@@ -5,6 +5,8 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
+import com.strangequark.authservice.utility.EmailType;
+import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 /**
@@ -68,12 +71,17 @@ public class AuthenticationService {
         User user = User.builder()
                 .username(registrationRequest.getUsername())
                 .email(registrationRequest.getEmail())
-                .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
                 .role(Role.USER)
+                .isEnabled(false) //User must confirm their account through an email to enable it
+                .authorizations(new LinkedHashSet<>())
+                .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
                 .build();
 
         //Save the user to the database
         userRepository.save(user);
+
+        //Send an email so the user can enable their account
+        EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
 
         //Create a JWT token to return with the response
         String refreshToken = jwtService.generateToken(user, true);
@@ -108,7 +116,7 @@ public class AuthenticationService {
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
             return ResponseEntity.status(401).body(
-                    new ErrorResponse("Invalid credentials")
+                    new ErrorResponse(authenticationException.getMessage())
             );
         }
     }

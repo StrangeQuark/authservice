@@ -22,8 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * A filter to be run every time a request is made to the "users" table. Uses @Component to specify that this is a
- * Spring bean
+ * A filter to be run every time a request is made to the "users" table.
  */
 
 @Component

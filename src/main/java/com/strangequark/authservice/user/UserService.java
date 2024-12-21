@@ -2,6 +2,8 @@ package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.utility.EmailType;
+import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,8 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 /**
- * {@link Service} for serving access token
+ * {@link Service} for manipulating {@link User} objects
  */
 @Service
 @RequiredArgsConstructor
@@ -36,7 +42,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * {@link AuthenticationManager} for validating the user
+     * {@link AuthenticationManager} for authenticating the user
      */
     private final AuthenticationManager authenticationManager;
 
@@ -73,5 +79,98 @@ public class UserService {
                     new ErrorResponse("Invalid password")
             );
         }
+    }
+
+    /**
+     * Business logic adding authorities to a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> addAuthorizations(Set<String> authorizations) {
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Append the authorizations and save
+            user.appendAuthorizations(authorizations);
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("There was an error in the request, please contact the system administrator")
+            );
+        }
+    }
+
+    /**
+     * Business logic for removing authorities from a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> removeAuthorizations(Set<String> authorizations) {
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Remove the authorizations and save
+            user.removeAuthorizations(authorizations);
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("Authorizations were successfully removed"));
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("There was an error in the request, please contact the system administrator")
+            );
+        }
+    }
+
+    /**
+     * Business logic for initiating the password reset process
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(UpdatePasswordRequest request) {
+        String credentials = request.getCredentials();
+
+        // Try to find the user by username first, and if not found, by email
+        Optional<User> userOptional = userRepository.findByUsername(credentials)
+                .or(() -> userRepository.findByEmail(credentials));
+
+        if (userOptional.isPresent()) {
+            String email = userOptional.get().getEmail();
+            EmailUtility.sendEmail(email, "Password reset", EmailType.PASSWORD_RESET);
+            return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
+        }
+
+        // Handle the case where neither username nor email exists
+        return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
+    }
+
+    /**
+     * Business logic for enabling a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> enableUser(Map<String, String> requestBody) {
+        // Check if the User exists
+        Optional<User> userOptional = userRepository.findByEmail(requestBody.get("email"));
+
+        if (userOptional.isPresent()) {
+            userOptional.get().setEnabled(true);
+            userRepository.save(userOptional.get());
+            return ResponseEntity.ok(new UserResponse("User is enabled"));
+        }
+
+        // Handle the case where neither username nor email exists
+        return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
     }
 }

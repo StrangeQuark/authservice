@@ -13,7 +13,7 @@ pipeline {
                         sleep 15
 
                         //Make an httpRequest to the health check URL
-                        def response = httpRequest 'http://localhost:6001/api/v1/health'
+                        def response = httpRequest 'http://localhost:6001/health'
                     } catch(Exception ex) {
                         //Compose down the docker container
                         bat "docker-compose down"

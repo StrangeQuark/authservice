@@ -11,12 +11,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
 * An object to capture all the information related to users to be stored in our "authservice" database in the
 * "users" table
-*
-* @author StrangeQuark
 */
 
 @Data
@@ -53,6 +52,16 @@ public class User implements UserDetails {
      */
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    /**
+     * Boolean whether the account is enabled or disabled
+     */
+    private boolean isEnabled;
+
+    /**
+     * A set of authorizations for the user
+     */
+    private Set<String> authorizations;
 
     /**
      * Returns all the authorities granted to this user
@@ -96,6 +105,27 @@ public class User implements UserDetails {
      */
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
+    }
+
+    /**
+     * Set the enabled boolean for the account
+     */
+    public void setEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    /**
+     * Append to the list of authorizations
+     */
+    public void appendAuthorizations(Set<String> auths) {
+        authorizations.addAll(auths);
+    }
+
+    /**
+     * Remove from the list of authorizations
+     */
+    public void removeAuthorizations(Set<String> auths) {
+        authorizations.removeAll(auths);
     }
 }

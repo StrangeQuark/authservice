@@ -22,15 +22,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:6001/api/v1/access",
+					"raw": "http://localhost:6001/access",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
-						"api",
-						"v1",
 						"access"
 					]
 				}
@@ -58,15 +56,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/api/v1/health",
+					"raw": "http://localhost:6001/auth/health",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
-						"api",
-						"v1",
+						"auth",
 						"health"
 					]
 				}
@@ -100,17 +97,44 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/api/v1/auth/register",
+					"raw": "http://localhost:6001/auth/register",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
-						"api",
-						"v1",
 						"auth",
 						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Enable user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"email@email.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/user/enableUser",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"user",
+						"enableUser"
 					]
 				}
 			},
@@ -143,15 +167,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/api/v1/auth/authenticate",
+					"raw": "http://localhost:6001/auth/authenticate",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
-						"api",
-						"v1",
 						"auth",
 						"authenticate"
 					]
@@ -196,17 +218,161 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/api/v1/user/update-password",
+					"raw": "http://localhost:6001/user/update-password",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
-						"api",
-						"v1",
 						"user",
 						"update-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Authorizations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{REFRESH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    \"Auth 2\",\r\n    \"Auth 3\",\r\n    \"t\"\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/user/add-authorizations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"user",
+						"add-authorizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Authorizations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{REFRESH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    \"Auth 2\"\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/user/remove-authorizations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"user",
+						"remove-authorizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify user exists",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"credentials\": \"email@email.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/user/verify-user-and-send-email",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"user",
+						"verify-user-and-send-email"
 					]
 				}
 			},
