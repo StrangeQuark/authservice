@@ -17,6 +17,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}
       - REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY}
+      - DOCKER_DEPLOYMENT=true
   db:
     image: 'postgres:13.1-alpine'
     container_name: auth-database
