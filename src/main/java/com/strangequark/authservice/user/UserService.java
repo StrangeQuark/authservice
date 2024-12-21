@@ -5,7 +5,6 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.utility.EmailType;
 import com.strangequark.authservice.utility.EmailUtility;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
