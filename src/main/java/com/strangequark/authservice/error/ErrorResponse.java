@@ -12,7 +12,7 @@ public class ErrorResponse {
      * Timestamp of when the error occurred
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
-    private LocalDateTime timestamp;
+    private final LocalDateTime timestamp;
 
     /**
      * Message included in the error

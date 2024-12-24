@@ -12,7 +12,7 @@ public class UserResponse {
      * Timestamp of the response
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
-    private LocalDateTime timestamp;
+    private final LocalDateTime timestamp;
 
     /**
      * Response message sent back to the user
