@@ -147,8 +147,7 @@ public class UserService {
                 .or(() -> userRepository.findByEmail(credentials));
 
         if (userOptional.isPresent()) {
-            String email = userOptional.get().getEmail();
-            EmailUtility.sendEmail(email, "Password reset", EmailType.PASSWORD_RESET);
+            EmailUtility.sendEmail(userOptional.get().getEmail(), "Password reset", EmailType.PASSWORD_RESET);
             return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
         }
 
