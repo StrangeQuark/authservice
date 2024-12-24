@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.net.ConnectException;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
