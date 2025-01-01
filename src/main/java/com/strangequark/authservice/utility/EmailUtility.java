@@ -1,3 +1,5 @@
+// Integration file: Email
+
 package com.strangequark.authservice.utility;
 
 import org.json.JSONObject;

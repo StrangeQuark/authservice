@@ -2,8 +2,8 @@ package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
-import com.strangequark.authservice.utility.EmailType;
-import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.EmailType; // Integration line: Email
+import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -135,7 +135,7 @@ public class UserService {
         }
     }
 
-    /**
+    /** Integration function start: Email
      * Business logic for initiating the password reset process
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
@@ -153,7 +153,7 @@ public class UserService {
 
         // Handle the case where neither username nor email exists
         return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
-    }
+    } // Integration function end: Email
 
     /**
      * Business logic for enabling a user

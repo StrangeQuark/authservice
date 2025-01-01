@@ -5,8 +5,8 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import com.strangequark.authservice.utility.EmailType;
-import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.EmailType; // Integration line: Email
+import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -79,8 +79,8 @@ public class AuthenticationService {
                     .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
                     .build();
 
-            //Send an email so the user can enable their account
-            EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+            //Send an email so the user can enable their account   -   Integration line: Email
+            EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
 
             //Save the user to the database
             userRepository.save(user);
