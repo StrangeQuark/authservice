@@ -5,8 +5,8 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import com.strangequark.authservice.utility.EmailType;
-import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.EmailType; // Integration line: Email
+import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -67,26 +68,32 @@ public class AuthenticationService {
             );
         }
 
-        //Build the user object to be saved to the database
-        User user = User.builder()
-                .username(registrationRequest.getUsername())
-                .email(registrationRequest.getEmail())
-                .role(Role.USER)
-                .isEnabled(false) //User must confirm their account through an email to enable it
-                .authorizations(new LinkedHashSet<>())
-                .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
-                .build();
+        try {
+            //Build the user object to be saved to the database
+            User user = User.builder()
+                    .username(registrationRequest.getUsername())
+                    .email(registrationRequest.getEmail())
+                    .role(Role.USER)
+                    .isEnabled(false) //User must confirm their account through an email to enable it
+                    .authorizations(new LinkedHashSet<>())
+                    .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
+                    .build();
 
-        //Save the user to the database
-        userRepository.save(user);
+            //Send an email so the user can enable their account   -   Integration line: Email
+            EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
 
-        //Send an email so the user can enable their account
-        EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+            //Save the user to the database
+            userRepository.save(user);
 
-        //Create a JWT token to return with the response
-        String refreshToken = jwtService.generateToken(user, true);
+            //Create a JWT token to return with the response
+            String refreshToken = jwtService.generateToken(user, true);
 
-        return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+        } catch (ResourceAccessException resourceAccessException) {
+            return ResponseEntity.status(401).body(
+                    new ErrorResponse("Unable to send email")
+            );
+        }
     }
 
     /**
