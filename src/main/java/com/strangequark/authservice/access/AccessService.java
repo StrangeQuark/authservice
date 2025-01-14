@@ -5,7 +5,6 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +17,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * {@link Service} for serving access tokens
  */
 @Service
-@RequiredArgsConstructor
 public class AccessService {
 
     /**
@@ -30,6 +28,11 @@ public class AccessService {
      * {@link JwtService} for generating a JWT token to return with the registration response
      */
     private final JwtService jwtService;
+
+    public AccessService(UserRepository userRepository, JwtService jwtService) {
+        this. userRepository = userRepository;
+        this.jwtService = jwtService;
+    }
 
     /**
      * Business logic checking refresh token, and returning an access token if successful

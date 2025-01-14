@@ -1,15 +1,12 @@
 package com.strangequark.authservice.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -18,13 +15,21 @@ import java.util.Set;
 * "users" table
 */
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "users")//Put User objects in the "users" DB table
 public class User implements UserDetails {
+
+    public User() {
+    }
+    public User(String username, String email, Role role, boolean isEnabled, LinkedHashSet authorizations, String password) {
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.isEnabled = isEnabled;
+        this.authorizations = authorizations;
+        this.password = password;
+    }
+
     /**
      * A unique auto-generated ID for each user
      */
@@ -127,5 +132,55 @@ public class User implements UserDetails {
      */
     public void removeAuthorizations(Set<String> auths) {
         authorizations.removeAll(auths);
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Set<String> getAuthorizations() {
+        return authorizations;
+    }
+
+    public void setAuthorizations(Set<String> authorizations) {
+        this.authorizations = authorizations;
     }
 }

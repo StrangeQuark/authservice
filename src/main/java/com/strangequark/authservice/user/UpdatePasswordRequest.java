@@ -1,17 +1,8 @@
 package com.strangequark.authservice.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * Request object for updating the user's password
  */
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class UpdatePasswordRequest {
     /**
      * Username or email of the user
@@ -27,4 +18,28 @@ public class UpdatePasswordRequest {
      * New password for update request
      */
     private String newPassword;
+
+    public String getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(String credentials) {
+        this.credentials = credentials;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
 }

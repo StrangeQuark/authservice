@@ -1,7 +1,6 @@
 package com.strangequark.authservice.config;
 
 import com.strangequark.authservice.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,13 +16,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * Spring {@link Configuration} for application settings
  */
 @Configuration
-@RequiredArgsConstructor
 public class ApplicationConfig {
 
     /**
      * {@link UserRepository} for fetching the user from the database
      */
     private final UserRepository userRepository;
+
+    public ApplicationConfig(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * {@link Bean} for overriding the {@link UserDetailsService#loadUserByUsername(String)} method
