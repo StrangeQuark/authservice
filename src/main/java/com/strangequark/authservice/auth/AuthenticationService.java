@@ -7,7 +7,6 @@ import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +23,6 @@ import java.util.Optional;
  * {@link Service} for registering and authenticating user requests
  */
 @Service
-@RequiredArgsConstructor
 public class AuthenticationService {
 
     /**
@@ -46,6 +44,14 @@ public class AuthenticationService {
      * {@link AuthenticationManager} for authenticating JWT tokens
      */
     private final AuthenticationManager authenticationManager;
+
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+                                 AuthenticationManager authenticationManager) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
+    }
 
     /**
      * Business logic for registering a new user
@@ -70,14 +76,8 @@ public class AuthenticationService {
 
         try {
             //Build the user object to be saved to the database
-            User user = User.builder()
-                    .username(registrationRequest.getUsername())
-                    .email(registrationRequest.getEmail())
-                    .role(Role.USER)
-                    .isEnabled(false) //User must confirm their account through an email to enable it
-                    .authorizations(new LinkedHashSet<>())
-                    .password(passwordEncoder.encode(registrationRequest.getPassword()))//Encode the password before saving to database
-                    .build();
+            User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
+                    false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
             //Send an email so the user can enable their account   -   Integration line: Email
             EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email

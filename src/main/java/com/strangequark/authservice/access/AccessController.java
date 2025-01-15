@@ -1,6 +1,5 @@
 package com.strangequark.authservice.access;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,12 +11,15 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/access")
-@RequiredArgsConstructor
 public class AccessController {
     /**
      * {@link AccessService}
      */
     private final AccessService accessService;
+
+    public AccessController(AccessService accessService) {
+        this.accessService = accessService;
+    }
 
     /**
      * Get request endpoint for retrieving a new access key

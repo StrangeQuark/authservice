@@ -1,6 +1,5 @@
 package com.strangequark.authservice.user;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,12 +14,15 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping("/user")
-@RequiredArgsConstructor
 public class UserController {
     /**
      * {@link UserService} for executing business logic on User objects
      */
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * Post request endpoint for updating a user's password

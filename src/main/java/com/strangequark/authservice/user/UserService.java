@@ -4,7 +4,6 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,7 +22,6 @@ import java.util.Set;
  * {@link Service} for manipulating {@link User} objects
  */
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     /**
@@ -45,6 +43,13 @@ public class UserService {
      * {@link AuthenticationManager} for authenticating the user
      */
     private final AuthenticationManager authenticationManager;
+
+    public UserService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+    }
 
     /**
      * Business logic updating user's password
