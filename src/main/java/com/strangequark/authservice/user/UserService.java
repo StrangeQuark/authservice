@@ -62,13 +62,13 @@ public class UserService {
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                            jwtService.extractUsername(authToken),
+                            jwtService.extractUsername(authToken, false),
                             updatePasswordRequest.getPassword()
                     )
             );
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Set the user's new password and save
@@ -96,7 +96,7 @@ public class UserService {
                     .getHeader("Authorization").substring(7);
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Append the authorizations and save
@@ -123,7 +123,7 @@ public class UserService {
                     .getHeader("Authorization").substring(7);
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Remove the authorizations and save

@@ -45,7 +45,7 @@ public class AccessService {
                     .getHeader("Authorization").substring(7);
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, true))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Verify the refresh token against the User's refresh token

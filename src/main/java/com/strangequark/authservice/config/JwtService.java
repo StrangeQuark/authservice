@@ -44,8 +44,8 @@ public class JwtService {
      * @param jwtToken The JWT token from which the username is to be extracted
      * @return The username contained in the JWT token
      */
-    public String extractUsername(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getSubject);
+    public String extractUsername(String jwtToken, boolean isRefreshToken) {
+        return extractClaim(jwtToken, Claims::getSubject, isRefreshToken);
     }
 
 //    /**
@@ -63,8 +63,8 @@ public class JwtService {
      * @param claimsResolver The function to specify which claim to extract
      * @return The specified claim to be extracted
      */
-    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(jwtToken);
+    public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver, boolean isRefreshToken) {
+        final Claims claims = extractAllClaims(jwtToken, isRefreshToken);
 
         return claimsResolver.apply(claims);
     }
@@ -74,10 +74,10 @@ public class JwtService {
      * @param jwtToken The JWT token from which the claims are to be extracted
      * @return The Claims contained in the JWT token
      */
-    private Claims extractAllClaims(String jwtToken) {
+    private Claims extractAllClaims(String jwtToken, boolean isRefreshToken) {
         return Jwts
                 .parserBuilder()
-                .setSigningKey(getSigningKey(false))
+                .setSigningKey(getSigningKey(isRefreshToken))
                 .build()
                 .parseClaimsJws(jwtToken)
                 .getBody();
@@ -89,7 +89,7 @@ public class JwtService {
      * @param refreshToken Flag to specify refresh or access token
      * @return Generated JWT token
      */
-    public String generateToken(User user, boolean refreshToken) {
+    public String generateToken(User user, boolean isRefreshToken) {
         return Jwts
                 .builder()
                 .setClaims(null)
@@ -97,10 +97,10 @@ public class JwtService {
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() +
-                        (refreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
+                        (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
-                .setAudience(refreshToken ? null : user.getAuthorizations().toString())
-                .signWith(getSigningKey(refreshToken), SignatureAlgorithm.HS256)
+                .setAudience(isRefreshToken ? null : user.getAuthorizations().toString())
+                .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -108,8 +108,8 @@ public class JwtService {
      * Retrieve and decode the JWT signing key defined in application.properties
      * @return The decoded SHA key
      */
-    private Key getSigningKey(boolean refreshToken) {
-        String key = refreshToken ? REFRESH_SECRET_KEY : ACCESS_SECRET_KEY;
+    private Key getSigningKey(boolean isRefreshToken) {
+        String key = isRefreshToken ? REFRESH_SECRET_KEY : ACCESS_SECRET_KEY;
         byte[] keyBytes = Decoders.BASE64.decode(key);
 
         return Keys.hmacShaKeyFor(keyBytes);
@@ -121,10 +121,10 @@ public class JwtService {
      * @param userDetails Used to validate if the JWT token belongs to the user
      * @return True: Token is valid, False: Token is invalid
      */
-    public boolean isTokenValid(String jwtToken, UserDetails userDetails) {
-        final String username = extractUsername(jwtToken);
+    public boolean isTokenValid(String jwtToken, UserDetails userDetails,boolean isRefreshToken) {
+        final String username = extractUsername(jwtToken, isRefreshToken);
 
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(jwtToken);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(jwtToken, isRefreshToken);
     }
 
     /**
@@ -132,8 +132,8 @@ public class JwtService {
      * @param jwtToken The JWT to check
      * @return True: Token is expired, False: Token is not expired
      */
-    private boolean isTokenExpired(String jwtToken) {
-        return extractExpiration(jwtToken).before(new Date());
+    private boolean isTokenExpired(String jwtToken, boolean isRefreshToken) {
+        return extractExpiration(jwtToken, isRefreshToken).before(new Date());
     }
 
     /**
@@ -141,7 +141,7 @@ public class JwtService {
      * @param jwtToken The JWT to check
      * @return The expiration date of the JWT toekn
      */
-    private Date extractExpiration(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getExpiration);
+    private Date extractExpiration(String jwtToken, boolean isRefreshToken) {
+        return extractClaim(jwtToken, Claims::getExpiration, isRefreshToken);
     }
 }

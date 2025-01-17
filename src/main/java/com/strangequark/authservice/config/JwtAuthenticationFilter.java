@@ -63,6 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String authorizationHeader = request.getHeader("Authorization");
             final String jwtToken;
             final String username;
+            final boolean isRefreshToken;
 
             //Check if the authorizationHeader is null or does not start with "Bearer "
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -70,11 +71,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
+            //Check the path, set refresh or access token
+            isRefreshToken = request.getRequestURI().equals("/access");
+
             //Insert the authorization header, excluding the "Bearer " substring
             jwtToken = authorizationHeader.substring(7);
 
             //Extract the username from the JWT token
-            username = jwtService.extractUsername(jwtToken);
+            username = jwtService.extractUsername(jwtToken, isRefreshToken);
 
             //SecurityContextHolder.getContext().getAuthentication() == null -> User is not yet authenticated (Connected)
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -82,7 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
                 //Check if the JWT token is valid for the user
-                if (jwtService.isTokenValid(jwtToken, userDetails)) {
+                if (jwtService.isTokenValid(jwtToken, userDetails, isRefreshToken)) {
 
                     //Create a new authentication token from the UserDetails
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
