@@ -85,10 +85,7 @@ public class AuthenticationService {
             //Save the user to the database
             userRepository.save(user);
 
-            //Create a JWT token to return with the response
-            String refreshToken = jwtService.generateToken(user, true);
-
-            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+            return ResponseEntity.ok(new AuthenticationResponse());
         } catch (ResourceAccessException resourceAccessException) {
             return ResponseEntity.status(401).body(
                     new ErrorResponse("Unable to send email")
