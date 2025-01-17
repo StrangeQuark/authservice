@@ -59,6 +59,11 @@ public class User implements UserDetails {
     private Role role;
 
     /**
+     * Refresh JWT token
+     */
+    private String refreshToken;
+
+    /**
      * Boolean whether the account is enabled or disabled
      */
     private boolean isEnabled;
@@ -182,5 +187,13 @@ public class User implements UserDetails {
 
     public void setAuthorizations(Set<String> authorizations) {
         this.authorizations = authorizations;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

@@ -114,9 +114,12 @@ public class AuthenticationService {
             //Create a JWT token to authenticate the user
             String refreshToken = jwtService.generateToken(user, true);
 
-            //Return a 200 response with the jwtToken
-            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+            //Add the refresh token to the user and save
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
 
+            //Return a 200 response with the JWT refresh token
+            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
             return ResponseEntity.status(401).body(
