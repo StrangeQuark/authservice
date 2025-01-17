@@ -5,6 +5,7 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,6 +47,12 @@ public class AccessService {
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Verify the refresh token against the User's refresh token
+            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(authToken))
+                return ResponseEntity.status(401).body(
+                        new ErrorResponse("Refresh token is invalid")
+                );
 
             //Create a JWT token to authenticate the user
             String accessToken = jwtService.generateToken(user, false);
