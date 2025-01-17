@@ -85,10 +85,7 @@ public class AuthenticationService {
             //Save the user to the database
             userRepository.save(user);
 
-            //Create a JWT token to return with the response
-            String refreshToken = jwtService.generateToken(user, true);
-
-            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+            return ResponseEntity.ok(new AuthenticationResponse());
         } catch (ResourceAccessException resourceAccessException) {
             return ResponseEntity.status(401).body(
                     new ErrorResponse("Unable to send email")
@@ -117,9 +114,12 @@ public class AuthenticationService {
             //Create a JWT token to authenticate the user
             String refreshToken = jwtService.generateToken(user, true);
 
-            //Return a 200 response with the jwtToken
-            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+            //Add the refresh token to the user and save
+            user.setRefreshToken(refreshToken);
+            userRepository.save(user);
 
+            //Return a 200 response with the JWT refresh token
+            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
         } catch (AuthenticationException authenticationException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
             return ResponseEntity.status(401).body(
