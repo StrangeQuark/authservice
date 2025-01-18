@@ -42,6 +42,7 @@ public class JwtService {
     /**
      * Extract the username from the JWT token
      * @param jwtToken The JWT token from which the username is to be extracted
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return The username contained in the JWT token
      */
     public String extractUsername(String jwtToken, boolean isRefreshToken) {
@@ -61,6 +62,7 @@ public class JwtService {
      * Extract a single claim from the JWT token
      * @param jwtToken The JWT token from which the claim is to be extracted
      * @param claimsResolver The function to specify which claim to extract
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return The specified claim to be extracted
      */
     public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver, boolean isRefreshToken) {
@@ -72,6 +74,7 @@ public class JwtService {
     /**
      * Extract all the claims from the JWT token
      * @param jwtToken The JWT token from which the claims are to be extracted
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return The Claims contained in the JWT token
      */
     private Claims extractAllClaims(String jwtToken, boolean isRefreshToken) {
@@ -86,7 +89,7 @@ public class JwtService {
     /**
      * Generate a JWT token without extra claims, expiring after {@link #ACCESS_TOKEN_EXPIRATION_TIME} or {@link #REFRESH_TOKEN_EXPIRATION_TIME}
      * @param user The user object to extract the username and authorizations
-     * @param refreshToken Flag to specify refresh or access token
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return Generated JWT token
      */
     public String generateToken(User user, boolean isRefreshToken) {
@@ -106,6 +109,7 @@ public class JwtService {
 
     /**
      * Retrieve and decode the JWT signing key defined in application.properties
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return The decoded SHA key
      */
     private Key getSigningKey(boolean isRefreshToken) {
@@ -119,6 +123,7 @@ public class JwtService {
      * Check if the JWT token is valid, belongs to the current user, and is not expired
      * @param jwtToken The JWT token to check
      * @param userDetails Used to validate if the JWT token belongs to the user
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return True: Token is valid, False: Token is invalid
      */
     public boolean isTokenValid(String jwtToken, UserDetails userDetails,boolean isRefreshToken) {
@@ -130,6 +135,7 @@ public class JwtService {
     /**
      * Check if the JWT token is expired
      * @param jwtToken The JWT to check
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return True: Token is expired, False: Token is not expired
      */
     private boolean isTokenExpired(String jwtToken, boolean isRefreshToken) {
@@ -139,6 +145,7 @@ public class JwtService {
     /**
      * Extract the expiration date from the JWT token
      * @param jwtToken The JWT to check
+     * @param isRefreshToken Flag to specify refresh or access token
      * @return The expiration date of the JWT toekn
      */
     private Date extractExpiration(String jwtToken, boolean isRefreshToken) {
