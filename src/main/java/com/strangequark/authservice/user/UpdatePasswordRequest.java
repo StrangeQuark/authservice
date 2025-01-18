@@ -19,6 +19,12 @@ public class UpdatePasswordRequest {
      */
     private String newPassword;
 
+    public UpdatePasswordRequest(String credentials, String password, String newPassword) {
+        this.credentials = credentials;
+        this.password = password;
+        this.newPassword = newPassword;
+    }
+
     public String getCredentials() {
         return credentials;
     }
