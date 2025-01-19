@@ -6,7 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +21,7 @@ public class User implements UserDetails {
 
     public User() {
     }
-    public User(String username, String email, Role role, boolean isEnabled, LinkedHashSet authorizations, String password) {
+    public User(String username, String email, Role role, boolean isEnabled, HashSet<String> authorizations, String password) {
         this.username = username;
         this.email = email;
         this.role = role;
