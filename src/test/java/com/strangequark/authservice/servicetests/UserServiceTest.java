@@ -26,12 +26,10 @@ public class UserServiceTest {
     private UserRepository userRepository;
     @Autowired
     private JwtService jwtService;
-
     @Autowired
     private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     private User testUser;
     private String accessToken;
 
@@ -101,11 +99,8 @@ public class UserServiceTest {
 
     @AfterEach
     void teardown() {
-        try {
-            userRepository.delete(testUser);
-            accessToken = null;
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
+        userRepository.deleteAll();
+        accessToken = null;
+        testUser = null;
     }
 }
