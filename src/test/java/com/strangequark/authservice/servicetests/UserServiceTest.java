@@ -12,7 +12,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.LinkedHashSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,7 +38,10 @@ public class UserServiceTest {
 
     @BeforeEach
     void setup() {
-        testUser = new User("testUser", "test@test.com", Role.USER, true, new LinkedHashSet(), passwordEncoder.encode("password"));
+        HashSet<String> testAuthorizations = new HashSet<>();
+        testAuthorizations.add("testAuthorization1");
+
+        testUser = new User("testUser", "test@test.com", Role.USER, true, testAuthorizations, passwordEncoder.encode("password"));
         userRepository.save(testUser);
 
         accessToken = jwtService.generateToken(testUser, false);
@@ -54,6 +60,43 @@ public class UserServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Password was successfully reset", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void addAuthorizationsTest() {
+        Set<String> authorizations = new HashSet<>();
+        authorizations.add("Auth 1");
+        authorizations.add("test 2");
+
+        ResponseEntity<?> response =  userService.addAuthorizations(authorizations);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("Authorizations were successfully added", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void removeAuthorizationsTest() {
+        Set<String> authorzationsToRemove = new HashSet<>();
+        authorzationsToRemove.add("testAuthorization1");
+
+        ResponseEntity<?> response =  userService.removeAuthorizations(authorzationsToRemove);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("Authorizations were successfully removed", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void enableUserTest() {
+        User disabledTestUser = new User("disabledTestUser", "disabledTest@test.com", Role.USER, false, new HashSet<>(), passwordEncoder.encode("password"));
+        userRepository.save(disabledTestUser);
+
+        Map<String, String> request = new HashMap<>();
+        request.put("email", "disabledTest@test.com");
+
+        ResponseEntity<?> response =  userService.enableUser(request);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("User is enabled", ((UserResponse) response.getBody()).getMessage());
     }
 
     @AfterEach
