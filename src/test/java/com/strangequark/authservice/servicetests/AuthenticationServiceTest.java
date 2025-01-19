@@ -2,6 +2,7 @@ package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.auth.AuthenticationRequest;
 import com.strangequark.authservice.auth.AuthenticationService;
+import com.strangequark.authservice.auth.RegistrationRequest;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
@@ -47,6 +48,15 @@ public class AuthenticationServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + accessToken);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    }
+
+    @Test
+    void registerTest() {
+        RegistrationRequest request = new RegistrationRequest("registerTestUser", "registerTest@test.com", "registerPassword");
+
+        ResponseEntity<?> response =  authenticationService.register(request);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
     }
 
     @Test

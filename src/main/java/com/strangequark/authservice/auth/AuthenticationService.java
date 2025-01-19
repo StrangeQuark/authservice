@@ -5,8 +5,9 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import com.strangequark.authservice.utility.EmailType;
-import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.EmailType; // Integration line: Email
+import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,12 @@ import java.util.Optional;
  */
 @Service
 public class AuthenticationService {
+
+    /**
+     * Defines whether test run or not
+     */
+    @Value("${isTestRun}")
+    private boolean isTestRun;
 
     /**
      * {@link UserRepository} for fetching {@link com.strangequark.authservice.user.User} from the database
@@ -80,7 +87,8 @@ public class AuthenticationService {
                     false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
             //Send an email so the user can enable their account   -   Integration line: Email
-            EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
+            if(!isTestRun) // Integration line: Email
+                EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
 
             //Save the user to the database
             userRepository.save(user);
