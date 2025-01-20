@@ -1,7 +1,6 @@
 package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.access.AccessService;
-import com.strangequark.authservice.auth.RegistrationRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
