@@ -10,6 +10,8 @@ import com.strangequark.authservice.utility.EmailUtility; // Integration line: E
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -128,10 +130,15 @@ public class AuthenticationService {
 
             //Return a 200 response with the JWT refresh token
             return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
-        } catch (AuthenticationException authenticationException) {
+        } catch (DisabledException disabledException) {
+            //Throw a 409 (Resource State conflict) error if invalid credentials are given
+            return ResponseEntity.status(409).body(
+                    new ErrorResponse(disabledException.getMessage())
+            );
+        } catch (BadCredentialsException badCredentialsException) {
             //Throw a 401 (Unauthorized) error if invalid credentials are given
             return ResponseEntity.status(401).body(
-                    new ErrorResponse(authenticationException.getMessage())
+                    new ErrorResponse(badCredentialsException.getMessage())
             );
         }
     }
