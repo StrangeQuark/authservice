@@ -19,8 +19,15 @@ public class AuthServiceApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
+				boolean dockerDeployment = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT"));
+
 				//Allow the reactService through the CORS policy
-				registry.addMapping("/**").allowedOrigins("http://localhost:3001");
+				registry.addMapping("/**").allowedOrigins(
+						dockerDeployment ? "http://react-app:3001/" : "http://localhost:3001/"
+				);
+				registry.addMapping("/**").allowedOrigins(
+						dockerDeployment ? "http://gateway-app:8080/" : "http://localhost:8080/"
+				);
 			}
 		};
 	}
