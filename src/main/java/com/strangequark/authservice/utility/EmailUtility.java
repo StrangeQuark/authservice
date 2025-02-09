@@ -37,9 +37,9 @@ public class EmailUtility {
         String url = "";
         switch (emailType) {
             case REGISTER -> url = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT")) ?
-                    "http://email-app:6005/email/sendRegisterEmail" : "http://localhost:6005/email/sendRegisterEmail";
+                    "http://email-service:6005/email/sendRegisterEmail" : "http://localhost:6005/email/sendRegisterEmail";
             case PASSWORD_RESET -> url = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT")) ?
-                    "http://email-app:6005/email/sendPasswordResetEmail" : "http://localhost:6005/email/sendPasswordResetEmail";
+                    "http://email-service:6005/email/sendPasswordResetEmail" : "http://localhost:6005/email/sendPasswordResetEmail";
         }
         new RestTemplate().postForObject(url, requestEntity, String.class);
     }

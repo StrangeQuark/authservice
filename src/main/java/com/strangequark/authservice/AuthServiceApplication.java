@@ -22,12 +22,13 @@ public class AuthServiceApplication {
 				boolean dockerDeployment = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT"));
 
 				//Allow the reactService through the CORS policy
-				registry.addMapping("/**").allowedOrigins(
-						dockerDeployment ? "http://react-app:3001/" : "http://localhost:3001/"
-				);
-				registry.addMapping("/**").allowedOrigins(
-						dockerDeployment ? "http://gateway-app:8080/" : "http://localhost:8080/"
-				);
+				registry.addMapping("/**")
+						.allowedOrigins(
+								"http://react-service:3001", "http://localhost:3001",
+								"http://gateway-service:8080", "http://localhost:8080"
+						)
+						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+				.allowCredentials(true);
 			}
 		};
 	}

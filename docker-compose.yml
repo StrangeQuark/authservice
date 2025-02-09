@@ -1,16 +1,16 @@
 version: '1.0.0'
 
 services:
-  app:
+  auth-service:
     build: .
     networks:
       - shared-network
       - authdb-network
     ports:
       - "6001:6001"
-    container_name: auth-app
+    container_name: auth-service
     depends_on:
-      - db
+      - auth-db
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
@@ -18,9 +18,9 @@ services:
       - ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}
       - REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY}
       - DOCKER_DEPLOYMENT=true
-  db:
+  auth-db:
     image: 'postgres:13.1-alpine'
-    container_name: auth-database
+    container_name: auth-db
     networks:
       - authdb-network
     environment:
