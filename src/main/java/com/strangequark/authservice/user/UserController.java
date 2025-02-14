@@ -56,7 +56,7 @@ public class UserController {
 
     /** Integration function start: Email
      * Post request endpoint for initiating password resets
-     * @param {@link List} of strings of authorities to be removed from the user
+     * @param {@link UpdatePasswordRequest} containing user credentials
      * @return {@link ResponseEntity}
      */
     @PostMapping("/verify-user-and-send-email")
@@ -65,7 +65,7 @@ public class UserController {
     } // Integration function end: Email
 
     /**
-     * Get request for enabling a user
+     * Post request endpoint for enabling a user
      * @param {@link Map} containing the email address of the user to enable
      * @return {@link ResponseEntity}
      */
