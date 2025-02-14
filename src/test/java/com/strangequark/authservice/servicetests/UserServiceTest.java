@@ -15,16 +15,16 @@ import java.util.Set;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
-public class UserServiceTest extends BaseServiceTest{
+public class UserServiceTest extends BaseServiceTest {
 
     @Autowired
     private UserService userService;
 
     @Test
     void updatePasswordTest() {
-        UpdatePasswordRequest updatePasswordRequest = new UpdatePasswordRequest(testUser.getUsername(), "password", "newPassword");
+        UserRequest userRequest = new UserRequest(testUser.getUsername(), "password", "newPassword");
 
-        ResponseEntity<?> response =  userService.updatePassword(updatePasswordRequest);
+        ResponseEntity<?> response =  userService.updatePassword(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Password was successfully reset", ((UserResponse) response.getBody()).getMessage());
@@ -65,5 +65,16 @@ public class UserServiceTest extends BaseServiceTest{
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("User is enabled", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void deleteUserTest() {
+        UserRequest userRequest = new UserRequest(testUser.getUsername(), "password");
+
+        ResponseEntity<?> response =  userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("User was deleted", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 }

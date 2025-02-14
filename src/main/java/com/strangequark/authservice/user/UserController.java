@@ -26,11 +26,11 @@ public class UserController {
 
     /**
      * Post request endpoint for updating a user's password
-     * @param request {@link UpdatePasswordRequest}
+     * @param request {@link UserRequest}
      * @return {@link ResponseEntity}
      */
     @PostMapping("/update-password")
-    public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordRequest request) {
+    public ResponseEntity<?> updatePassword(@RequestBody UserRequest request) {
         return userService.updatePassword(request);
     }
 
@@ -56,21 +56,32 @@ public class UserController {
 
     /** Integration function start: Email
      * Post request endpoint for initiating password resets
-     * @param {@link List} of strings of authorities to be removed from the user
+     * @param {@link UserRequest} containing user credentials
      * @return {@link ResponseEntity}
      */
     @PostMapping("/verify-user-and-send-email")
-    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UpdatePasswordRequest request) {
+    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UserRequest request) {
         return userService.verifyUserAndSendPasswordResetEmail(request);
     } // Integration function end: Email
 
     /**
-     * Get request for enabling a user
+     * Post request endpoint for enabling a user
      * @param {@link Map} containing the email address of the user to enable
      * @return {@link ResponseEntity}
      */
     @PostMapping("/enableUser")
     public ResponseEntity<?> enableUser(@RequestBody Map<String, String> requestBody) {
         return userService.enableUser(requestBody);
+    }
+
+
+    /**
+     * Post request endpoint for deleting a user
+     * @param {@link UserRequest} containing the user's credentials
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/deleteUser")
+    public ResponseEntity<?> deleteUser(@RequestBody UserRequest userRequest) {
+        return userService.deleteUser(userRequest);
     }
 }

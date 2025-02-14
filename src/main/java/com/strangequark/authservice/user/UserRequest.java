@@ -3,7 +3,7 @@ package com.strangequark.authservice.user;
 /**
  * Request object for updating the user's password
  */
-public class UpdatePasswordRequest {
+public class UserRequest {
     /**
      * Username or email of the user
      */
@@ -19,9 +19,13 @@ public class UpdatePasswordRequest {
      */
     private String newPassword;
 
-    public UpdatePasswordRequest(String credentials, String password, String newPassword) {
+    public UserRequest(String credentials, String password) {
         this.credentials = credentials;
         this.password = password;
+    }
+
+    public UserRequest(String credentials, String password, String newPassword) {
+        this(credentials, password);
         this.newPassword = newPassword;
     }
 
