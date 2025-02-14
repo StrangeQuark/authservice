@@ -22,9 +22,9 @@ public class UserServiceTest extends BaseServiceTest{
 
     @Test
     void updatePasswordTest() {
-        UpdatePasswordRequest updatePasswordRequest = new UpdatePasswordRequest(testUser.getUsername(), "password", "newPassword");
+        UserRequest userRequest = new UserRequest(testUser.getUsername(), "password", "newPassword");
 
-        ResponseEntity<?> response =  userService.updatePassword(updatePasswordRequest);
+        ResponseEntity<?> response =  userService.updatePassword(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Password was successfully reset", ((UserResponse) response.getBody()).getMessage());

@@ -26,11 +26,11 @@ public class UserController {
 
     /**
      * Post request endpoint for updating a user's password
-     * @param request {@link UpdatePasswordRequest}
+     * @param request {@link UserRequest}
      * @return {@link ResponseEntity}
      */
     @PostMapping("/update-password")
-    public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordRequest request) {
+    public ResponseEntity<?> updatePassword(@RequestBody UserRequest request) {
         return userService.updatePassword(request);
     }
 
@@ -56,11 +56,11 @@ public class UserController {
 
     /** Integration function start: Email
      * Post request endpoint for initiating password resets
-     * @param {@link UpdatePasswordRequest} containing user credentials
+     * @param {@link UserRequest} containing user credentials
      * @return {@link ResponseEntity}
      */
     @PostMapping("/verify-user-and-send-email")
-    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UpdatePasswordRequest request) {
+    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UserRequest request) {
         return userService.verifyUserAndSendPasswordResetEmail(request);
     } // Integration function end: Email
 

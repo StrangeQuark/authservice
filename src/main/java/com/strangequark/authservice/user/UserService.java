@@ -55,7 +55,7 @@ public class UserService {
      * Business logic updating user's password
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> updatePassword(UpdatePasswordRequest updatePasswordRequest) {
+    public ResponseEntity<?> updatePassword(UserRequest userRequest) {
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
@@ -63,7 +63,7 @@ public class UserService {
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                             jwtService.extractUsername(authToken, false),
-                            updatePasswordRequest.getPassword()
+                            userRequest.getPassword()
                     )
             );
 
@@ -72,7 +72,7 @@ public class UserService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Set the user's new password and save
-            user.setPassword(passwordEncoder.encode(updatePasswordRequest.getNewPassword()));
+            user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
             userRepository.save(user);
 
             //Return a 200 response with a success message
@@ -144,7 +144,7 @@ public class UserService {
      * Business logic for initiating the password reset process
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(UpdatePasswordRequest request) {
+    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(UserRequest request) {
         String credentials = request.getCredentials();
 
         // Try to find the user by username first, and if not found, by email
