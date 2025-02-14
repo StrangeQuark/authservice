@@ -73,4 +73,15 @@ public class UserController {
     public ResponseEntity<?> enableUser(@RequestBody Map<String, String> requestBody) {
         return userService.enableUser(requestBody);
     }
+
+
+    /**
+     * Post request endpoint for deleting a user
+     * @param {@link UserRequest} containing the user's credentials
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/deleteUser")
+    public ResponseEntity<?> deleteUser(@RequestBody UserRequest userRequest) {
+        return userService.deleteUser(userRequest);
+    }
 }

@@ -15,7 +15,7 @@ import java.util.Set;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles("test")
-public class UserServiceTest extends BaseServiceTest{
+public class UserServiceTest extends BaseServiceTest {
 
     @Autowired
     private UserService userService;
@@ -65,5 +65,16 @@ public class UserServiceTest extends BaseServiceTest{
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("User is enabled", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void deleteUserTest() {
+        UserRequest userRequest = new UserRequest(testUser.getUsername(), "password");
+
+        ResponseEntity<?> response =  userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("User was deleted", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 }

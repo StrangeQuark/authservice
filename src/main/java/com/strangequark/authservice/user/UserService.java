@@ -177,4 +177,34 @@ public class UserService {
         // Handle the case where neither username nor email exists
         return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
     }
+
+    /**
+     * Business logic for deleting a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> deleteUser(UserRequest userRequest) {
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                            jwtService.extractUsername(authToken, false),
+                            userRequest.getPassword()
+                    )
+            );
+
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            //Delete the user
+            userRepository.delete(user);
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("User was deleted"));
+        } catch (Exception ex) {
+            return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
 }

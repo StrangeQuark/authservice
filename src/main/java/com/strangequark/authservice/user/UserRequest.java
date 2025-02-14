@@ -19,9 +19,13 @@ public class UserRequest {
      */
     private String newPassword;
 
-    public UserRequest(String credentials, String password, String newPassword) {
+    public UserRequest(String credentials, String password) {
         this.credentials = credentials;
         this.password = password;
+    }
+
+    public UserRequest(String credentials, String password, String newPassword) {
+        this(credentials, password);
         this.newPassword = newPassword;
     }
 
