@@ -19,6 +19,9 @@ public class UserRequest {
      */
     private String newPassword;
 
+    public UserRequest() {
+    }
+
     public UserRequest(String credentials, String password) {
         this.credentials = credentials;
         this.password = password;
