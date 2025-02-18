@@ -84,4 +84,14 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@RequestBody UserRequest userRequest) {
         return userService.deleteUser(userRequest);
     }
+
+    /**
+     * Post request endpoint for updating a user's email
+     * @param {@link UserRequest} containing the user's credentials
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/updateUserEmail")
+    public ResponseEntity<?> updateUserEmail(@RequestBody UserRequest userRequest) {
+        return userService.updateUserEmail(userRequest);
+    }
 }
