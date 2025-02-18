@@ -77,4 +77,16 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals("User was deleted", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
+
+    @Test
+    void updateUserEmailTest() {
+        String newEmail = "new@test.com";
+        UserRequest userRequest = new UserRequest(newEmail, "password");
+
+        ResponseEntity<?> response =  userService.updateUserEmail(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("Email was updated", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals(userRepository.findByUsername(testUser.getUsername()).get().getEmail(), newEmail);
+    }
 }
