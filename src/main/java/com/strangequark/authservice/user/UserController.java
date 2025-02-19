@@ -91,7 +91,7 @@ public class UserController {
      * @return {@link ResponseEntity}
      */
     @PostMapping("/updateEmail")
-    public ResponseEntity<?> updateUserEmail(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<?> updateEmail(@RequestBody UserRequest userRequest) {
         return userService.updateEmail(userRequest);
     }
 }
