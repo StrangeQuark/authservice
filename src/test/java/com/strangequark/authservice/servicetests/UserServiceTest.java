@@ -79,14 +79,26 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
-    void updateUserEmailTest() {
+    void updateEmailTest() {
         String newEmail = "new@test.com";
         UserRequest userRequest = new UserRequest(newEmail, "password");
 
-        ResponseEntity<?> response =  userService.updateUserEmail(userRequest);
+        ResponseEntity<?> response =  userService.updateEmail(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Email was updated", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertEquals(userRepository.findByUsername(testUser.getUsername()).get().getEmail(), newEmail);
+    }
+
+    @Test
+    void updateUsernameTest() {
+        String newUsername = "newUsername";
+        UserRequest userRequest = new UserRequest(newUsername, "password");
+
+        ResponseEntity<?> response =  userService.updateUsername(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(newUsername).isPresent());
+        Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 }
