@@ -98,7 +98,6 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.updateUsername(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("Username was updated", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertTrue(userRepository.findByUsername(newUsername).isPresent());
         Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }

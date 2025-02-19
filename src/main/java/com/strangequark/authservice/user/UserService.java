@@ -1,5 +1,6 @@
 package com.strangequark.authservice.user;
 
+import com.strangequark.authservice.auth.AuthenticationResponse;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
@@ -259,12 +260,18 @@ public class UserService {
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            //Update the user's email
+            //Update the user's username
             user.setUsername(userRequest.getCredentials());
+
+            //Create a JWT token to authenticate the user
+            String refreshToken = jwtService.generateToken(user, true);
+
+            //Add the refresh token to the user and save
+            user.setRefreshToken(refreshToken);
             userRepository.save(user);
 
             //Return a 200 response with a success message
-            return ResponseEntity.ok(new UserResponse("Username was updated"));
+            return ResponseEntity.ok(new UpdateUsernameResponse(refreshToken, jwtService.generateToken(user, false)));
         } catch (Exception ex) {
             return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));
         }
