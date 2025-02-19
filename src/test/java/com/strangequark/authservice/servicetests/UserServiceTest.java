@@ -79,11 +79,11 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
-    void updateUserEmailTest() {
+    void updateEmailTest() {
         String newEmail = "new@test.com";
         UserRequest userRequest = new UserRequest(newEmail, "password");
 
-        ResponseEntity<?> response =  userService.updateUserEmail(userRequest);
+        ResponseEntity<?> response =  userService.updateEmail(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Email was updated", ((UserResponse) response.getBody()).getMessage());

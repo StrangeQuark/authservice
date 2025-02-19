@@ -212,7 +212,7 @@ public class UserService {
      * Business logic for updating a user's email
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> updateUserEmail(UserRequest userRequest) {
+    public ResponseEntity<?> updateEmail(UserRequest userRequest) {
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);

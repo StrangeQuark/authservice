@@ -90,8 +90,8 @@ public class UserController {
      * @param {@link UserRequest} containing the user's credentials
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/updateUserEmail")
+    @PostMapping("/updateEmail")
     public ResponseEntity<?> updateUserEmail(@RequestBody UserRequest userRequest) {
-        return userService.updateUserEmail(userRequest);
+        return userService.updateEmail(userRequest);
     }
 }
