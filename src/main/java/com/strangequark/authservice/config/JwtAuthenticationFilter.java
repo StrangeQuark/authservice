@@ -72,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             //Check the path, set refresh or access token
-            isRefreshToken = request.getRequestURI().equals("/access");
+            isRefreshToken = request.getRequestURI().equals("/auth/access");
 
             //Insert the authorization header, excluding the "Bearer " substring
             jwtToken = authorizationHeader.substring(7);
