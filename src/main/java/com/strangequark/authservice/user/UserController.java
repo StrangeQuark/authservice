@@ -13,7 +13,7 @@ import java.util.Set;
  * {@link RestController} for manipulating {@link User} objects
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/auth/user")
 public class UserController {
     /**
      * {@link UserService} for executing business logic on User objects
