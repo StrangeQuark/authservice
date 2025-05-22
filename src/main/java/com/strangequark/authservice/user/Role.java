@@ -10,6 +10,11 @@ public enum Role {
     USER,
 
     /**
+     * Developer role
+     */
+    DEVELOPER,
+
+    /**
      * Administrator role
      */
     ADMIN
