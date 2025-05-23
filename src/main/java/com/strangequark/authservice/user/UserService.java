@@ -87,26 +87,63 @@ public class UserService {
         }
     }
 
+//    Commented because only admins should be able to add authorizations to users - uncomment to allow users to add auths to themselves
+//    /**
+//     * Business logic adding authorities to a user
+//     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+//     */
+//    public ResponseEntity<?> addAuthorizations(Set<String> authorizations) {
+//        try {
+//            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+//                    .getHeader("Authorization").substring(7);
+//
+//            //Get the user, throw an exception if the username is not found
+//            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+//                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//
+//            //Append the authorizations and save
+//            user.appendAuthorizations(authorizations);
+//            userRepository.save(user);
+//
+//            //Return a 200 response with a success message
+//            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+//
+//        } catch (Exception ex) {
+//            return ResponseEntity.status(401).body(
+//                    new ErrorResponse("There was an error in the request, please contact the system administrator")
+//            );
+//        }
+//    }
+
     /**
      * Business logic adding authorities to a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> addAuthorizations(Set<String> authorizations) {
+    public ResponseEntity<?> addAuthorizationsToUser(UserRequest request) {
         try {
+            String username = request.getCredentials();
+
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting user not found"));
 
-            //Append the authorizations and save
-            user.appendAuthorizations(authorizations);
-            userRepository.save(user);
+            if(requestingUser.getRole() == Role.ADMIN) {
+                //Get the user, throw an exception if the username is not found
+                User user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            //Return a 200 response with a success message
-            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+                //Append the authorizations and save
+                user.appendAuthorizations(request.getAuthorizations());
+                userRepository.save(user);
 
+                //Return a 200 response with a success message
+                return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+            }
+
+            return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
         } catch (Exception ex) {
             return ResponseEntity.status(401).body(
                     new ErrorResponse("There was an error in the request, please contact the system administrator")
