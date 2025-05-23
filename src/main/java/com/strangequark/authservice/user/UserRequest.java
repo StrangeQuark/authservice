@@ -1,5 +1,7 @@
 package com.strangequark.authservice.user;
 
+import java.util.Set;
+
 /**
  * Request object for updating the user's password
  */
@@ -19,6 +21,11 @@ public class UserRequest {
      */
     private String newPassword;
 
+    /**
+     * Authorizations for update request
+     */
+    private Set<String> authorizations;
+
     public UserRequest() {
     }
 
@@ -30,6 +37,11 @@ public class UserRequest {
     public UserRequest(String credentials, String password, String newPassword) {
         this(credentials, password);
         this.newPassword = newPassword;
+    }
+
+    public UserRequest(String credentials, Set<String> authorizations) {
+        this.credentials = credentials;
+        this.authorizations = authorizations;
     }
 
     public String getCredentials() {
@@ -54,5 +66,13 @@ public class UserRequest {
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
+    }
+
+    public Set<String> getAuthorizations() {
+        return authorizations;
+    }
+
+    public void setAuthorizations(Set<String> authorizations) {
+        this.authorizations = authorizations;
     }
 }
