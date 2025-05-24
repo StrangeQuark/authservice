@@ -31,11 +31,33 @@ pipeline {
     agent { label 'Host PC' }
 
     stages {
+        stage("Retrieve Env Vars") {
+            steps {
+                script {
+                    def response = httpRequest(
+                        url: 'http://localhost:6020/api/vault/getVariablesByEnvironment/authservice/e3',
+                        httpMode: 'GET',
+                        acceptType: 'APPLICATION_JSON'
+                    )
+
+                    def json = readJSON text: response.content
+                    def envFileContent = ''
+
+                    json.each { key, value ->
+                        envFileContent += "${key}=${value}\n"
+                    }
+
+                    writeFile file: '.env', text: envFileContent
+                    echo "Environment variables written to .env"
+                }
+            }
+        }
+
         stage("Deploy & Health Check") {
             steps {
                 script {
                     try {
-                        bat "docker-compose up --build -d"
+                        bat "docker-compose --env-file .env up --build -d"
 
                         def maxRetries = 4 * 10
                         def retryInterval = 15
@@ -44,11 +66,11 @@ pipeline {
                         for (int i = 0; i < maxRetries; i++) {
                             try {
                                 echo "Health check attempt ${i + 1}..."
-                                def response = httpRequest(
+                                def healthResponse = httpRequest(
                                     url: 'http://localhost:6001/auth/health',
                                     validResponseCodes: '200'
                                 )
-                                echo "App is healthy: ${response.status}"
+                                echo "App is healthy: ${healthResponse.status}"
                                 success = true
                                 break
                             } catch (err) {
@@ -73,3 +95,4 @@ pipeline {
         }
     }
 }
+
