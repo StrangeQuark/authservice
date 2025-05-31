@@ -32,8 +32,14 @@ public class AccessService {
      */
     private final JwtService jwtService;
 
+    /**
+     * Constructs a new {@code AccessService} with the given dependencies.
+     *
+     * @param userRepository {@link UserRepository} for fetching {@link User} from the database
+     * @param jwtService     {@link JwtService} for generating a JWT access token
+     */
     public AccessService(UserRepository userRepository, JwtService jwtService) {
-        this. userRepository = userRepository;
+        this.userRepository = userRepository;
         this.jwtService = jwtService;
     }
 
