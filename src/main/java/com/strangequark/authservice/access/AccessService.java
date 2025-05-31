@@ -5,6 +5,8 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  */
 @Service
 public class AccessService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessService.class);
 
     /**
      * {@link UserRepository} for fetching {@link User} from the database
@@ -43,15 +46,23 @@ public class AccessService {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
+            LOGGER.info("Attempt to serve accessToken for jwt: " + authToken);
+
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, true))
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    .orElseThrow(() -> {
+                        LOGGER.error("User was not found for jwt: " + authToken);
+                        return new UsernameNotFoundException("User not found");
+                    });
 
             //Verify the refresh token against the User's refresh token
-            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(authToken))
+            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(authToken)) {
+                LOGGER.error("The refresh token is invalid: " + authToken);
+
                 return ResponseEntity.status(401).body(
                         new ErrorResponse("Refresh token is invalid")
                 );
+            }
 
             //Create a JWT token to authenticate the user
             String accessToken = jwtService.generateToken(user, false);
@@ -59,10 +70,11 @@ public class AccessService {
             //Return a 200 response with the jwtToken
             return ResponseEntity.ok(new AuthenticationResponse(accessToken));
 
-        } catch (AuthenticationException authenticationException) {
-            //Throw a 401 (Unauthorized) error if invalid credentials are given
-            return ResponseEntity.status(401).body(
-                    new ErrorResponse("Invalid credentials")
+        } catch (NullPointerException exception) {
+            LOGGER.error(exception.getMessage());
+
+            return ResponseEntity.status(500).body(
+                    new ErrorResponse("NPE - trouble getting the request")
             );
         }
     }
