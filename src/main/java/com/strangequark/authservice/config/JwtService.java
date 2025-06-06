@@ -24,13 +24,13 @@ public class JwtService {
     /**
      * The JWT access secret key defined in the application.properties
      */
-    @Value("${accessSecretKey}")
+    @Value("${ACCESS_SECRET_KEY}")
     private String ACCESS_SECRET_KEY;
 
     /**
      * The JWT refresh secret key defined in the application.properties
      */
-    @Value("${refreshSecretKey}")
+    @Value("${REFRESH_SECRET_KEY}")
     private String REFRESH_SECRET_KEY;
 
     /**
