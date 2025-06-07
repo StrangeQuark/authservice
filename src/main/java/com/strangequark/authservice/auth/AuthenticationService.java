@@ -35,8 +35,8 @@ public class AuthenticationService {
     /**
      * Defines whether test run or not
      */
-    @Value("${isTestRun}")
-    private boolean isTestRun;
+    @Value("${IS_TEST_RUN}")
+    private boolean IS_TEST_RUN;
 
     /**
      * {@link UserRepository} for fetching {@link com.strangequark.authservice.user.User} from the database
@@ -98,7 +98,7 @@ public class AuthenticationService {
                     false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
             //Send an email so the user can enable their account   -   Integration line: Email
-            if(!isTestRun) // Integration line: Email
+            if(!IS_TEST_RUN) // Integration line: Email
                 EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
 
             //Save the user to the database
