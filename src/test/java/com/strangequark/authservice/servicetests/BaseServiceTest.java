@@ -23,6 +23,7 @@ public abstract class BaseServiceTest {
     @Autowired
     public PasswordEncoder passwordEncoder;
     public User testUser;
+    public User testAdmin;
     private String accessToken;
 
     @BeforeEach
@@ -47,5 +48,18 @@ public abstract class BaseServiceTest {
         userRepository.deleteAll();
         accessToken = null;
         testUser = null;
+    }
+
+    void setupAdminUser() {
+        testAdmin = new User("testAdmin", "admin@test.com", Role.ADMIN, true, new HashSet<>(), passwordEncoder.encode("adminPassword"));
+        testAdmin.setRefreshToken(jwtService.generateToken(testAdmin, true));
+        userRepository.save(testAdmin);
+
+        accessToken = jwtService.generateToken(testAdmin, false);
+
+        //Set the accessToken to the Authorization header in the requestContextHolder
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer " + accessToken);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 }
