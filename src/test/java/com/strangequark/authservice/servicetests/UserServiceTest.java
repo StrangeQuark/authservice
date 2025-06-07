@@ -27,7 +27,7 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.updatePassword(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("Password was successfully reset", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("Password was successfully updated", ((UserResponse) response.getBody()).getMessage());
     }
 
 //    @Test
@@ -41,6 +41,21 @@ public class UserServiceTest extends BaseServiceTest {
 //        Assertions.assertEquals(200, response.getStatusCode().value());
 //        Assertions.assertEquals("Authorizations were successfully added", ((UserResponse) response.getBody()).getMessage());
 //    }
+
+    @Test
+    void addAuthorizationsToUserTest() {
+        //Init the Admin user as the request context holder
+        setupAdminUser();
+
+        Set<String> authorizations = new HashSet<>();
+        authorizations.add("Auth 1");
+        authorizations.add("test 2");
+
+        ResponseEntity<?> response =  userService.addAuthorizationsToUser(new UserRequest(testUser.getUsername(), authorizations));
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("Authorizations were successfully added", ((UserResponse) response.getBody()).getMessage());
+    }
 
     @Test
     void removeAuthorizationsTest() {
