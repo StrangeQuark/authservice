@@ -80,7 +80,7 @@ public class UserController {
      * @param {@link Map} containing the email address of the user to enable
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/enableUser")
+    @PostMapping("/enable-user")
     public ResponseEntity<?> enableUser(@RequestBody Map<String, String> requestBody) {
         return userService.enableUser(requestBody);
     }
@@ -91,7 +91,7 @@ public class UserController {
      * @param {@link UserRequest} containing the user's credentials
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/deleteUser")
+    @PostMapping("/delete-user")
     public ResponseEntity<?> deleteUser(@RequestBody UserRequest userRequest) {
         return userService.deleteUser(userRequest);
     }
@@ -101,7 +101,7 @@ public class UserController {
      * @param {@link UserRequest} containing the user's credentials
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/updateEmail")
+    @PostMapping("/update-email")
     public ResponseEntity<?> updateEmail(@RequestBody UserRequest userRequest) {
         return userService.updateEmail(userRequest);
     }
@@ -111,7 +111,7 @@ public class UserController {
      * @param {@link UserRequest} containing the user's credentials
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/updateUsername")
+    @PostMapping("/update-username")
     public ResponseEntity<?> updateUsername(@RequestBody UserRequest userRequest) {
         return userService.updateUsername(userRequest);
     }
