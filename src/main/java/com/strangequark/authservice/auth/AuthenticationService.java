@@ -97,9 +97,14 @@ public class AuthenticationService {
             User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
                     false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
-            //Send an email so the user can enable their account   -   Integration line: Email
-            if(!IS_TEST_RUN) // Integration line: Email
-                EmailUtility.sendAsyncEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
+            //Send an email so the user can enable their account   -   Integration function start: Email
+            if (!IS_TEST_RUN) {
+                ResponseEntity<?> response = EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+                if (response.getStatusCode().value() != 200) {
+                    LOGGER.error("Error when sending registration email: " + response.getBody());
+                    return ResponseEntity.status(401).body(new ErrorResponse("Unable to send email: " + response.getBody()));
+                }
+            }// Integration function end: Email
 
             //Save the user to the database
             userRepository.save(user);
