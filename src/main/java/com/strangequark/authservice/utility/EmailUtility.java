@@ -2,16 +2,22 @@
 
 package com.strangequark.authservice.utility;
 
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Properties;
+
 /**
  * Utility for sending API requests to the EmailService
  */
 public class EmailUtility {
+
+    private static String SENDER = "donotreply@authservice.com";
 
     /**
      * Business logic sending an API request to the EmailService
@@ -27,7 +33,7 @@ public class EmailUtility {
         //Create the request body
         JSONObject requestBody = new JSONObject();
         requestBody.put("recipient", recipient);
-        requestBody.put("sender", "donotreply@authservice.com");
+        requestBody.put("sender", SENDER);
         requestBody.put("subject", subject);
 
         //Compile the HttpEntity
@@ -42,5 +48,24 @@ public class EmailUtility {
                     "http://email-service:6005/email/sendPasswordResetEmail" : "http://localhost:6005/email/sendPasswordResetEmail";
         }
         new RestTemplate().postForObject(url, requestEntity, String.class);
+    }
+
+    public static void sendAsyncEmail(String recipient, String subject, EmailType emailType) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "email-kafka:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        String topic = "";
+
+        switch (emailType) {
+            case REGISTER -> topic = "register-email-events";
+            case PASSWORD_RESET -> topic = "password-reset-email-events";
+        }
+
+        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+        producer.send(new ProducerRecord<>(topic, "{\"recipient\":\"" + recipient + "\",\"sender\":\"" + SENDER +
+                "\",\"email\":\"\",\"subject\":\"" + subject + "\"}"));
+        producer.close();
     }
 }
