@@ -5,9 +5,7 @@ package com.strangequark.authservice.utility;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Properties;
@@ -25,7 +23,7 @@ public class EmailUtility {
      * @param subject
      * @param emailType
      */
-    public static void sendEmail(String recipient, String subject, EmailType emailType) {
+    public static ResponseEntity<?> sendEmail(String recipient, String subject, EmailType emailType) {
         //Set the headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -43,11 +41,17 @@ public class EmailUtility {
         String url = "";
         switch (emailType) {
             case REGISTER -> url = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT")) ?
-                    "http://email-service:6005/email/sendRegisterEmail" : "http://localhost:6005/email/sendRegisterEmail";
+                    "http://email-service:6005/email/send-register-email" : "http://localhost:6005/email/send-register-email";
             case PASSWORD_RESET -> url = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT")) ?
-                    "http://email-service:6005/email/sendPasswordResetEmail" : "http://localhost:6005/email/sendPasswordResetEmail";
+                    "http://email-service:6005/email/send-password-reset-email" : "http://localhost:6005/email/send-password-reset-email";
         }
-        new RestTemplate().postForObject(url, requestEntity, String.class);
+
+        return new RestTemplate().exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
     }
 
     public static void sendAsyncEmail(String recipient, String subject, EmailType emailType) {
