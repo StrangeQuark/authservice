@@ -99,7 +99,7 @@ public class AuthenticationService {
 
             //Send an email so the user can enable their account   -   Integration line: Email
             if(!IS_TEST_RUN) // Integration line: Email
-                EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
+                EmailUtility.sendAsyncEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER); // Integration line: Email
 
             //Save the user to the database
             userRepository.save(user);
