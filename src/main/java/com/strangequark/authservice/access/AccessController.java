@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * {@link RestController} for issuing Access Tokens
  */
 @RestController
-@RequestMapping("/auth/access")
+@RequestMapping("/api/auth/access")
 public class AccessController {
     /**
      * {@link AccessService}

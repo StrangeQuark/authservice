@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * {@link RestController} for user registration and authentication
  */
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthenticationController {
 
     /**
