@@ -33,12 +33,6 @@ public class AuthenticationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
 
     /**
-     * Defines whether test run or not
-     */
-    @Value("${IS_TEST_RUN}")
-    private boolean IS_TEST_RUN;
-
-    /**
      * {@link UserRepository} for fetching {@link com.strangequark.authservice.user.User} from the database
      */
     private final UserRepository userRepository;
@@ -90,33 +84,32 @@ public class AuthenticationService {
             );
         }
 
+        LOGGER.info("Attempting to build user object");
+
+        //Build the user object to be saved to the database
+        User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
+                false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
+
+        //Send an email so the user can enable their account   -   Integration function start: Email
+        LOGGER.info("Attempting to send registration email");
         try {
-            LOGGER.info("Attempting to build user object");
-
-            //Build the user object to be saved to the database
-            User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
-                    false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
-
-            //Send an email so the user can enable their account   -   Integration function start: Email
-            if (!IS_TEST_RUN) {
-                ResponseEntity<?> response = EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
-                if (response.getStatusCode().value() != 200) {
-                    LOGGER.error("Error when sending registration email: " + response.getBody());
-                    return ResponseEntity.status(401).body(new ErrorResponse("Unable to send email: " + response.getBody()));
-                }
-            }// Integration function end: Email
-
-            //Save the user to the database
-            userRepository.save(user);
-
-            LOGGER.info("User successfully created");
-            return ResponseEntity.ok(new AuthenticationResponse());
+            ResponseEntity<?> response = EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+            if (response.getStatusCode().value() != 200) {
+                LOGGER.error("Error when sending registration email: " + response.getBody());
+                return ResponseEntity.status(401).body(new ErrorResponse("Unable to send email: " + response.getBody()));
+            }
         } catch (ResourceAccessException resourceAccessException) {
-            LOGGER.error("Unable to send email: " + resourceAccessException.getMessage());
-            return ResponseEntity.status(401).body(
-                    new ErrorResponse("Unable to send email")
-            );
-        }
+            //If we are unable to reach the email service, proceed with user creation and set user as enabled
+            LOGGER.error("Unable to reach email service: " + resourceAccessException.getMessage());
+            LOGGER.info("Continuing to register user, setting user to enabled");
+            user.setEnabled(true);
+        }// Integration function end: Email
+
+        //Save the user to the database
+        userRepository.save(user);
+
+        LOGGER.info("User successfully created");
+        return ResponseEntity.ok(new AuthenticationResponse());
     }
 
     /**
