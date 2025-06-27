@@ -1,6 +1,5 @@
 package com.strangequark.authservice.auth;
 
-import com.strangequark.authservice.access.AccessService;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
@@ -10,20 +9,17 @@ import com.strangequark.authservice.utility.EmailType; // Integration line: Emai
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.LinkedHashSet;
-import java.util.Optional;
 
 /**
  * {@link Service} for registering and authenticating user requests
@@ -101,9 +97,9 @@ public class AuthenticationService {
         } catch (ResourceAccessException resourceAccessException) {
             //If we are unable to reach the email service, proceed with user creation and set user as enabled
             LOGGER.error("Unable to reach email service: " + resourceAccessException.getMessage());
-            LOGGER.info("Continuing to register user, setting user to enabled");
+            LOGGER.info("Continuing to register user, setting user to enabled");// Integration function end: Email
             user.setEnabled(true);
-        }// Integration function end: Email
+        }// Integration line: Email
 
         //Save the user to the database
         userRepository.save(user);
