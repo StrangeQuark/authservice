@@ -29,8 +29,12 @@ public class UserRequest {
     public UserRequest() {
     }
 
-    public UserRequest(String credentials, String password) {
+    public UserRequest(String credentials) {
         this.credentials = credentials;
+    }
+
+    public UserRequest(String credentials, String password) {
+        this(credentials);
         this.password = password;
     }
 
@@ -40,7 +44,7 @@ public class UserRequest {
     }
 
     public UserRequest(String credentials, Set<String> authorizations) {
-        this.credentials = credentials;
+        this(credentials);
         this.authorizations = authorizations;
     }
 
