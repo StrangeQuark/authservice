@@ -214,10 +214,10 @@ public class UserService {
     }
 
     /** Integration function start: Email
-     * Business logic for initiating the password reset process
+     * Business logic for initiating the password reset email process
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(UserRequest request) {
+    public ResponseEntity<?> sendPasswordResetEmail(UserRequest request) {
         LOGGER.info("Attempting to verify user and send password reset email");
 
         // Try to find the user by username first, and if not found, by email
@@ -225,7 +225,13 @@ public class UserService {
                 .or(() -> userRepository.findByEmail(request.getCredentials()));
 
         if (userOptional.isPresent()) {
-            EmailUtility.sendAsyncEmail(userOptional.get().getEmail(), "Password reset", EmailType.PASSWORD_RESET);
+            try {
+                EmailUtility.sendAsyncEmail(userOptional.get().getEmail(), "Password reset", EmailType.PASSWORD_RESET);
+            } catch (Exception ex) {
+                LOGGER.error("Unable to send password reset email to kafka");
+                LOGGER.error(ex.getMessage());
+                return ResponseEntity.status(500).body(new ErrorResponse("Unable to send password reset email"));
+            }
 
             LOGGER.info("User is present, password reset email has been sent");
 

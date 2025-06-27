@@ -56,4 +56,11 @@ public class ErrorResponse {
         this(errorMessage);
         this.errorCode = errorCode;
     }
+
+    /**
+     * Getter method for error message
+     */
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 }

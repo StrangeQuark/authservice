@@ -65,14 +65,15 @@ public class UserController {
         return userService.removeAuthorizations(authorizations);
     }
 
-    /** Integration function start: Email
+    // Integration function start: Email
+    /**
      * Post request endpoint for initiating password resets
      * @param {@link UserRequest} containing user credentials
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/verify-user-and-send-email")
-    public ResponseEntity<?> verifyUserAndSendPasswordResetEmail(@RequestBody UserRequest request) {
-        return userService.verifyUserAndSendPasswordResetEmail(request);
+    @PostMapping("/send-password-reset-email")
+    public ResponseEntity<?> sendPasswordResetEmail(@RequestBody UserRequest request) {
+        return userService.sendPasswordResetEmail(request);
     } // Integration function end: Email
 
     /**

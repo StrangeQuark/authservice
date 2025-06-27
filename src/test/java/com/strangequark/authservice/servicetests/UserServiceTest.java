@@ -1,5 +1,6 @@
 package com.strangequark.authservice.servicetests;
 
+import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,16 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Authorizations were successfully removed", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void sendPasswordResetEmailTest() {
+        UserRequest request = new UserRequest(testUser.getEmail());
+
+        ResponseEntity<?> response =  userService.sendPasswordResetEmail(request);
+
+        Assertions.assertEquals(500, response.getStatusCode().value());
+        Assertions.assertEquals("Unable to send password reset email", ((ErrorResponse) response.getBody()).getErrorMessage());
     }
 
     @Test
