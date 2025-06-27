@@ -5,8 +5,8 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import com.strangequark.authservice.utility.EmailType;
-import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.EmailType; // Integration line: Email
+import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
