@@ -225,6 +225,7 @@ public class UserService {
                 .or(() -> userRepository.findByEmail(request.getCredentials()));
 
         if (userOptional.isPresent()) {
+            LOGGER.info("User found, attempting to send email");
             try {
                 EmailUtility.sendAsyncEmail(userOptional.get().getEmail(), "Password reset", EmailType.PASSWORD_RESET);
             } catch (Exception ex) {

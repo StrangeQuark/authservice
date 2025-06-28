@@ -40,10 +40,8 @@ public class EmailUtility {
         //Check the email type, and send to the correct EmailService endpoint accordingly
         String url = "";
         switch (emailType) {
-            case REGISTER -> url = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT")) ?
-                    "http://email-service:6005/api/email/send-register-email" : "http://localhost:6005/api/email/send-register-email";
-            case PASSWORD_RESET -> url = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT")) ?
-                    "http://email-service:6005/api/email/send-password-reset-email" : "http://localhost:6005/api/email/send-password-reset-email";
+            case REGISTER -> url = "http://email-service:6005/api/email/send-register-email";
+            case PASSWORD_RESET -> url = "http://email-service:6005/api/email/send-password-reset-email" : "http://localhost:6005/api/email/send-password-reset-email";
         }
 
         return new RestTemplate().exchange(
