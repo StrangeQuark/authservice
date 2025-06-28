@@ -64,13 +64,10 @@ public class SecurityConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                boolean dockerDeployment = Boolean.parseBoolean(System.getenv("DOCKER_DEPLOYMENT"));
-
                 //Allow the reactService through the CORS policy
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "http://react-service:3001", "http://localhost:3001",
-                                "http://gateway-service:8080", "http://localhost:8080"
+                                "http://react-service:6000"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowCredentials(true);
