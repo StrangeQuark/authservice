@@ -41,7 +41,7 @@ public class EmailUtility {
         String url = "";
         switch (emailType) {
             case REGISTER -> url = "http://email-service:6005/api/email/send-register-email";
-            case PASSWORD_RESET -> url = "http://email-service:6005/api/email/send-password-reset-email" : "http://localhost:6005/api/email/send-password-reset-email";
+            case PASSWORD_RESET -> url = "http://email-service:6005/api/email/send-password-reset-email";
         }
 
         return new RestTemplate().exchange(
