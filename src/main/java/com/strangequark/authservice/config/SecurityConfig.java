@@ -1,5 +1,6 @@
 package com.strangequark.authservice.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -27,6 +28,12 @@ public class SecurityConfig {
      * {@link AuthenticationProvider} neccessary for the security filter
      */
     private final AuthenticationProvider authenticationProvider;
+
+    /**
+     * Array of strings to allow through CORS policy
+     */
+    @Value("${cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -66,11 +73,12 @@ public class SecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 //Allow the reactService through the CORS policy
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                                "http://react-service:6000"
-                        )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowCredentials(true);
+                        .allowedOrigins(allowedOrigins)
+                        .allowedMethods("GET", "POST", "DELETE")
+                        .allowCredentials(true)
+                        .allowedHeaders("Authorization", "Content-Type")
+                        .exposedHeaders("Authorization")
+                        .maxAge(3600);;
             }
         };
     }
