@@ -78,7 +78,7 @@ public class SecurityConfig {
                         .allowCredentials(true)
                         .allowedHeaders("Authorization", "Content-Type")
                         .exposedHeaders("Authorization")
-                        .maxAge(3600);;
+                        .maxAge(3600);
             }
         };
     }
