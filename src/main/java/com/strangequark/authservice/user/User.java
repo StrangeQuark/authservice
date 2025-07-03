@@ -1,14 +1,13 @@
 package com.strangequark.authservice.user;
 
+import com.strangequark.authservice.utility.EncryptDecryptConverter;
+import com.strangequark.authservice.utility.RoleEncryptDecryptConverter;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
 * An object to capture all the information related to users to be stored in our "authservice" database in the
@@ -35,16 +34,18 @@ public class User implements UserDetails {
      */
     @Id
     @GeneratedValue
-    private Integer id;
+    private UUID id;
 
     /**
      * A unique username for each user
      */
+    @Convert(converter = EncryptDecryptConverter.class)
     private String username;
 
     /**
      * A unique email address for each user
      */
+    @Convert(converter = EncryptDecryptConverter.class)
     private String email;
 
     /**
@@ -55,12 +56,14 @@ public class User implements UserDetails {
     /**
      * A {@link Role} for the user
      */
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = RoleEncryptDecryptConverter.class)
     private Role role;
 
     /**
      * Refresh JWT token
      */
+    @Convert(converter = EncryptDecryptConverter.class)
+    @Column(length = 2048)
     private String refreshToken;
 
     /**
@@ -71,6 +74,7 @@ public class User implements UserDetails {
     /**
      * A set of authorizations for the user
      */
+    @Convert(converter = EncryptDecryptConverter.class)
     private Set<String> authorizations;
 
     /**
@@ -139,11 +143,11 @@ public class User implements UserDetails {
         authorizations.removeAll(auths);
     }
 
-    public Integer getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
