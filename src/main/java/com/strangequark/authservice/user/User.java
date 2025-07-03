@@ -5,10 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
 * An object to capture all the information related to users to be stored in our "authservice" database in the
@@ -35,7 +32,7 @@ public class User implements UserDetails {
      */
     @Id
     @GeneratedValue
-    private Integer id;
+    private UUID id;
 
     /**
      * A unique username for each user
@@ -139,11 +136,11 @@ public class User implements UserDetails {
         authorizations.removeAll(auths);
     }
 
-    public Integer getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
