@@ -7,55 +7,6 @@
 	},
 	"item": [
 		{
-			"name": "Access",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.environment.set(\"ACCESS_TOKEN\", pm.response.json().jwtToken);"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"packages": {},
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{REFRESH_TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:6001/auth/access",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "6001",
-					"path": [
-						"auth",
-						"access"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Healthcheck",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -76,15 +27,69 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/health",
+					"raw": "http://localhost:6001/api/auth/health",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"ACCESS_TOKEN\", pm.response.json().jwtToken);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{REFRESH_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:6001/api/auth/access",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"access"
 					]
 				}
 			},
@@ -117,45 +122,16 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/register",
+					"raw": "http://localhost:6001/api/auth/register",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"register"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Enable user",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:6001/auth/user/enable-user",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "6001",
-					"path": [
-						"auth",
-						"user",
-						"enable-user"
 					]
 				}
 			},
@@ -180,7 +156,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "// {\r\n//     \"username\": \"testUser\",\r\n//     \"password\": \"password123!\"\r\n// }\r\n\r\n{\r\n    \"username\": \"StrangeQuark\",\r\n    \"password\": \"Lothrix29896624!\"\r\n}",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"password\": \"password123!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -188,15 +164,47 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/authenticate",
+					"raw": "http://localhost:6001/api/auth/authenticate",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Enable user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/api/auth/user/enable-user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"user",
+						"enable-user"
 					]
 				}
 			},
@@ -239,68 +247,17 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/update-password",
+					"raw": "http://localhost:6001/api/auth/user/update-password",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
 						"update-password"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Add Authorizations",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{ACCESS_TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "[\r\n    \"Auth 2\",\r\n    \"Auth 3\",\r\n    \"t\"\r\n]",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:6001/auth/user/add-authorizations",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "6001",
-					"path": [
-						"auth",
-						"user",
-						"add-authorizations"
 					]
 				}
 			},
@@ -343,13 +300,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/add-authorizations-to-user",
+					"raw": "http://localhost:6001/api/auth/user/add-authorizations-to-user",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
 						"add-authorizations-to-user"
@@ -395,13 +353,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/remove-authorizations",
+					"raw": "http://localhost:6001/api/auth/user/remove-authorizations",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
 						"remove-authorizations"
@@ -447,13 +406,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/delete-user",
+					"raw": "http://localhost:6001/api/auth/user/delete-user",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
 						"delete-user"
@@ -499,13 +459,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/update-email",
+					"raw": "http://localhost:6001/api/auth/user/update-email",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
 						"update-email"
@@ -552,13 +513,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/update-username",
+					"raw": "http://localhost:6001/api/auth/user/update-username",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
 						"update-username"
@@ -568,7 +530,7 @@
 			"response": []
 		},
 		{
-			"name": "Verify user exists",
+			"name": "Send password reset email",
 			"event": [
 				{
 					"listen": "test",
@@ -589,7 +551,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"credentials\": \"t@t.com\"\r\n}",
+					"raw": "{\r\n    \"credentials\": \"test@t.com\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -597,16 +559,17 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/auth/user/verify-user-and-send-email",
+					"raw": "http://localhost:6001/api/auth/user/send-password-reset-email",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "6001",
 					"path": [
+						"api",
 						"auth",
 						"user",
-						"verify-user-and-send-email"
+						"send-password-reset-email"
 					]
 				}
 			},
