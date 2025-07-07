@@ -34,9 +34,13 @@ public class JwtService {
     private String REFRESH_SECRET_KEY;
 
     /**
-     * The amount of time in milliseconds that the JWT token will expire
+     * The amount of time in milliseconds that an access token will expire
      */
     private final int ACCESS_TOKEN_EXPIRATION_TIME = 1000 * 60 * 10;//10 minutes
+
+    /**
+     * The amount of time in milliseconds that a refresh token will expire
+     */
     private final int REFRESH_TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;//14 days
 
     /**

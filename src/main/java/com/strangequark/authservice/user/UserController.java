@@ -20,6 +20,11 @@ public class UserController {
      */
     private final UserService userService;
 
+    /**
+     * Constructs a new {@code UserController} with the given dependencies.
+     *
+     * @param userService {@link UserService} for performing business logic on {@link User} object requests
+     */
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -85,7 +90,6 @@ public class UserController {
     public ResponseEntity<?> enableUser(@RequestBody Map<String, String> requestBody) {
         return userService.enableUser(requestBody);
     }
-
 
     /**
      * Post request endpoint for deleting a user
