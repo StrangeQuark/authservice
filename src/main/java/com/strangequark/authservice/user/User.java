@@ -18,8 +18,22 @@ import java.util.*;
 @Table(name = "users")//Put User objects in the "users" DB table
 public class User implements UserDetails {
 
+    /**
+     * Default constructor, leave all fields unset
+     */
     public User() {
     }
+
+    /**
+     * Constructs a new {@code User} with the given dependencies.
+     *
+     * @param username Username of the {@link User} object
+     * @param email Email address of the {@link User} object
+     * @param role {@link Role} of the {@link User} object
+     * @param isEnabled {@link Boolean} to determine if the {@link User} is enabled or disabled
+     * @param authorizations {@link HashSet} Set of authorizations assigned to {@link User}
+     * @param password Password of the {@link User} object
+     */
     public User(String username, String email, Role role, boolean isEnabled, HashSet<String> authorizations, String password) {
         this.username = username;
         this.email = email;
@@ -30,7 +44,7 @@ public class User implements UserDetails {
     }
 
     /**
-     * A unique auto-generated ID for each user
+     * A unique auto-generated {@link UUID} for each user
      */
     @Id
     @GeneratedValue
@@ -143,60 +157,102 @@ public class User implements UserDetails {
         authorizations.removeAll(auths);
     }
 
+    /**
+     * Get ID for user object
+     */
     public UUID getId() {
         return id;
     }
 
+    /**
+     * Set ID for user object
+     */
     public void setId(UUID id) {
         this.id = id;
     }
 
+    /**
+     * Get username for user object
+     */
     @Override
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Set username for user object
+     */
     public void setUsername(String username) {
         this.username = username;
     }
 
+    /**
+     * Get email address for user object
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Set email address for user object
+     */
     public void setEmail(String email) {
         this.email = email;
     }
 
+    /**
+     * Get password for user object
+     */
     @Override
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Set password for user object
+     */
     public void setPassword(String password) {
         this.password = password;
     }
 
+    /**
+     * Get {@link Role} for user object
+     */
     public Role getRole() {
         return role;
     }
 
+    /**
+     * Set {@link Role} for user object
+     */
     public void setRole(Role role) {
         this.role = role;
     }
 
+    /**
+     * Get {@link Set} of authorizations for user object
+     */
     public Set<String> getAuthorizations() {
         return authorizations;
     }
 
+    /**
+     * Set {@link Set} of authorizations for user object
+     */
     public void setAuthorizations(Set<String> authorizations) {
         this.authorizations = authorizations;
     }
 
+    /**
+     * Get refresh token for user object
+     */
     public String getRefreshToken() {
         return refreshToken;
     }
 
+    /**
+     * Set refresh token for user object
+     */
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }

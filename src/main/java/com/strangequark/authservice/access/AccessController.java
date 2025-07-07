@@ -17,6 +17,11 @@ public class AccessController {
      */
     private final AccessService accessService;
 
+    /**
+     * Constructs a new {@code AccessController} with the given dependencies.
+     *
+     * @param accessService {@link AccessService} for handling Access request business logic
+     */
     public AccessController(AccessService accessService) {
         this.accessService = accessService;
     }

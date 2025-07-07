@@ -18,6 +18,11 @@ public class AuthenticationController {
      */
     private final AuthenticationService authenticationService;
 
+    /**
+     * Constructs a new {@code AuthenticationController} with the given dependencies.
+     *
+     * @param authenticationService {@link AuthenticationService} for handling authentication requests' business logic
+     */
     public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }

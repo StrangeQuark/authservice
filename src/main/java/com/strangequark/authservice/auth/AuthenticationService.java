@@ -26,6 +26,9 @@ import java.util.LinkedHashSet;
  */
 @Service
 public class AuthenticationService {
+    /**
+     * {@link Logger} for writing {@link AuthenticationService} application logs
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationService.class);
 
     /**
@@ -48,6 +51,14 @@ public class AuthenticationService {
      */
     private final AuthenticationManager authenticationManager;
 
+    /**
+     * Constructs a new {@code AuthenticationService} with the given dependencies.
+     *
+     * @param userRepository {@link UserRepository} for performing transactions on the User database
+     * @param passwordEncoder {@link PasswordEncoder} for encoding/decoding passwords in the User database
+     * @param jwtService {@link JwtService} for generating JWT tokens
+     * @param authenticationManager {@link AuthenticationManager} for authenticating JWT tokens
+     */
     public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
                                  AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
@@ -102,6 +113,7 @@ public class AuthenticationService {
         }// Integration line: Email
 
         //Save the user to the database
+        LOGGER.info("Saving user to database");
         userRepository.save(user);
 
         LOGGER.info("User successfully created");
@@ -128,14 +140,18 @@ public class AuthenticationService {
             User user = userRepository.findByUsername(authenticationRequest.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+            LOGGER.info("User found, creating refresh token");
+
             //Create a JWT token to authenticate the user
             String refreshToken = jwtService.generateToken(user, true);
 
             //Add the refresh token to the user and save
+            LOGGER.info("Saving refresh token to user in database");
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
 
             //Return a 200 response with the JWT refresh token
+            LOGGER.info("Authentication successful");
             return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
         } catch (DisabledException disabledException) {
             LOGGER.error("Account is disabled");

@@ -23,6 +23,11 @@ public class ApplicationConfig {
      */
     private final UserRepository userRepository;
 
+    /**
+     * Constructs a new {@code ApplicationConfig} with the given dependencies.
+     *
+     * @param userRepository {@link UserRepository} for processing requests to the User database
+     */
     public ApplicationConfig(UserRepository userRepository) {
         this.userRepository = userRepository;
     }

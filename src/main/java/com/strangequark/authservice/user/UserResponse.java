@@ -35,14 +35,23 @@ public class UserResponse {
         this.message = message;
     }
 
+    /**
+     * Get {@link LocalDateTime} timestamp for the response object
+     */
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
+    /**
+     * Get message for the response object
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Set message for the response object
+     */
     public void setMessage(String message) {
         this.message = message;
     }

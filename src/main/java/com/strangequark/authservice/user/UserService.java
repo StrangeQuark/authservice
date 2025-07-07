@@ -47,6 +47,14 @@ public class UserService {
      */
     private final AuthenticationManager authenticationManager;
 
+    /**
+     * Constructs a new {@code UserService} with the given dependencies.
+     *
+     * @param userRepository {@link UserRepository} for performing transactions on the User database
+     * @param passwordEncoder {@link PasswordEncoder} for encoding/decoding passwords in the User database
+     * @param jwtService {@link JwtService} for generating JWT tokens
+     * @param authenticationManager {@link AuthenticationManager} for authenticating JWT tokens
+     */
     public UserService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
         this.userRepository = userRepository;
         this.jwtService = jwtService;

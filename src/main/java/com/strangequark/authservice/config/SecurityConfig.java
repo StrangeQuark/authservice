@@ -35,6 +35,12 @@ public class SecurityConfig {
     @Value("${cors.allowed-origins}")
     private String[] allowedOrigins;
 
+    /**
+     * Constructs a new {@code SecurityConfig} with the given dependencies.
+     *
+     * @param jwtAuthenticationFilter {@link JwtAuthenticationFilter} for processing JWT during authentication requests
+     * @param authenticationProvider {@link AuthenticationProvider} for performing authentication
+     */
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationProvider = authenticationProvider;
@@ -49,7 +55,6 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-
         httpSecurity
                 .csrf().disable()//Disable CSRF
                 .authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/authenticate", "/api/auth/health/**", "/api/auth/user/send-password-reset-email", "/api/auth/user/enable-user").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
@@ -65,7 +70,10 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-    //Configure the CORS policy, allow the ReactService through
+    /**
+     * This bean is responsible for configuring all the CORS security of the application
+     * @return {@link WebMvcConfigurer} to specify which methods, headers, and origins to allow reach the API
+     */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {

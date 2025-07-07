@@ -19,6 +19,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  */
 @Service
 public class AccessService {
+    /**
+     * {@link Logger} for writing {@link AccessService} application logs
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessService.class);
 
     /**
@@ -73,11 +76,11 @@ public class AccessService {
             String accessToken = jwtService.generateToken(user, false);
 
             //Return a 200 response with the jwtToken
+            LOGGER.info("Access token successfully served");
             return ResponseEntity.ok(new AuthenticationResponse(accessToken));
 
         } catch (NullPointerException exception) {
             LOGGER.error(exception.getMessage());
-
             return ResponseEntity.status(500).body(
                     new ErrorResponse("NPE - trouble getting the request")
             );
