@@ -100,7 +100,7 @@ public class JwtService {
         return Jwts
                 .builder()
                 .setClaims(null)
-                .setId(UUID.randomUUID().toString())
+                .setId(user.getId().toString())
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() +
