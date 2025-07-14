@@ -1,10 +1,7 @@
 package com.strangequark.authservice.user;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -119,5 +116,15 @@ public class UserController {
     @PostMapping("/update-username")
     public ResponseEntity<?> updateUsername(@RequestBody UserRequest userRequest) {
         return userService.updateUsername(userRequest);
+    }
+
+    /**
+     * Get request endpoint for retrieving a user's ID from their username
+     * @param {@link UserRequest} containing the user's credentials
+     * @return {@link ResponseEntity}
+     */
+    @GetMapping("/get-user-id")
+    public ResponseEntity<?> getUserId(@PathVariable String username) {
+        return userService.getUserId(username);
     }
 }
