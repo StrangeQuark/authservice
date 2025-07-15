@@ -405,4 +405,23 @@ public class UserService {
             return ResponseEntity.status(404).body(new ErrorResponse("There was an error processing your request"));
         }
     }
+
+    /**
+     * Business logic for retrieving a user's ID
+     * @return {@link ResponseEntity} with user's ID if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> getUserId(String username) {
+        try {
+            LOGGER.info("Attempting to get user ID");
+
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("No user exists with that username"));
+
+            LOGGER.info("User Id retrieval success");
+            return ResponseEntity.ok(user.getId());
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
 }
