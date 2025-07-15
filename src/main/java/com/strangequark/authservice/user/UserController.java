@@ -124,7 +124,7 @@ public class UserController {
      * @return {@link ResponseEntity}
      */
     @GetMapping("/get-user-id")
-    public ResponseEntity<?> getUserId(@PathVariable String username) {
+    public ResponseEntity<?> getUserId(@RequestParam String username) {
         return userService.getUserId(username);
     }
 }

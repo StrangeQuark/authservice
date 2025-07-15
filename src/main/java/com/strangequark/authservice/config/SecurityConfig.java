@@ -57,7 +57,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf().disable()//Disable CSRF
-                .authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/authenticate", "/api/auth/health/**", "/api/auth/user/send-password-reset-email", "/api/auth/user/enable-user").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
+                .authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/authenticate", "/api/auth/health/**", "/api/auth/user/send-password-reset-email", "/api/auth/user/enable-user", "/api/auth/user/get-user-id").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
                 .anyRequest().authenticated()//All other requests need to be authenticated
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//Spring will create a new session for each request
