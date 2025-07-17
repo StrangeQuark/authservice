@@ -2,6 +2,7 @@ pipeline {
     agent { label 'Host PC' }
 
     stages {
+        // Integration function start: Vault
         stage("Retrieve Env Vars") {
             steps {
                 script {
@@ -22,7 +23,7 @@ pipeline {
                     echo "Environment variables written to .env"
                 }
             }
-        }
+        }// Integration function end: Vault
 
         stage("Deploy & Health Check") {
             steps {
@@ -38,7 +39,7 @@ pipeline {
                             try {
                                 echo "Health check attempt ${i + 1}..."
                                 def healthResponse = httpRequest(
-                                    url: 'http://localhost:6001/auth/health',
+                                    url: 'http://localhost:6001/api/auth/health',
                                     validResponseCodes: '200'
                                 )
                                 echo "App is healthy: ${healthResponse.status}"
@@ -66,4 +67,3 @@ pipeline {
         }
     }
 }
-
