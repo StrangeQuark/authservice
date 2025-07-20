@@ -146,8 +146,6 @@ public class UserService {
         LOGGER.info("Attempting to add authorizations to user");
 
         try {
-            String username = request.getCredentials();
-
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
@@ -158,26 +156,26 @@ public class UserService {
                         return new UsernameNotFoundException("Requesting user not found");
                     });
 
-            if(requestingUser.getRole() == Role.ADMIN) {
-                //Get the user, throw an exception if the username is not found
-                User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> {
-                            LOGGER.error("Requested user not found");
-                            return new UsernameNotFoundException("User not found");
-                        });
+            //Get the user, throw an exception if the username is not found
+            User user = userRepository.findByUsername(request.getCredentials())
+                    .orElseThrow(() -> {
+                        LOGGER.error("Requested user not found");
+                        return new UsernameNotFoundException("User not found");
+                    });
 
-                //Append the authorizations and save
-                user.appendAuthorizations(request.getAuthorizations());
-                userRepository.save(user);
-
-                LOGGER.info("Authorization successfully added");
-
-                //Return a 200 response with a success message
-                return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+            if(requestingUser.getRole() != Role.ADMIN || requestingUser.getRole() != Role.SUPER) {
+                LOGGER.error("Requesting user is unauthorized to make that request, needs to be ADMIN or SUPER role");
+                return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
             }
 
-            LOGGER.error("Requesting user is unauthorized to make that request, needs ADMIN role");
-            return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
+            //Append the authorizations and save
+            user.appendAuthorizations(request.getAuthorizations());
+            userRepository.save(user);
+
+            LOGGER.info("Authorization successfully added");
+
+            //Return a 200 response with a success message
+            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
         } catch (NullPointerException exception) {
             LOGGER.error(exception.getMessage());
             return ResponseEntity.status(500).body(
@@ -198,11 +196,27 @@ public class UserService {
                     .getHeader("Authorization").substring(7);
 
             //Get the user, throw an exception if the username is not found
+            User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+                    .orElseThrow(() -> {
+                        LOGGER.error("Requesting user was not found for JWT: " + authToken);
+                        return new UsernameNotFoundException("Requesting user not found");
+                    });
+
+            //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
                     .orElseThrow(() -> {
                         LOGGER.error("User not found for JWT: " + authToken);
                         return new UsernameNotFoundException("User not found");
                     });
+
+            if(requestingUser.getRole() != Role.ADMIN || requestingUser.getRole() != Role.SUPER || !requestingUser.getId().equals(user.getId())) {
+                if(user.getRole() == Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
+                    LOGGER.error("ADMIN users cannot remove roles of other ADMINS");
+                    return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
+                }
+                LOGGER.error("Requesting user is unauthorized to make that request, needs to be self or ADMIN role");
+                return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
+            }
 
             //Remove the authorizations and save
             user.removeAuthorizations(authorizations);
