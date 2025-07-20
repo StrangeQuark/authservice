@@ -20,4 +20,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @param email The email to be retrieved
      */
     Optional<User> findByEmail(String email);
+
+    /**
+     * Determine if at least 1 user exists with a given role
+     * @param role {@link Role}
+     */
+    boolean existsByRole(Role role);
 }

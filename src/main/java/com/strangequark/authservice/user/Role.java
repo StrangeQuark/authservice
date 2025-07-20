@@ -17,5 +17,10 @@ public enum Role {
     /**
      * Administrator role
      */
-    ADMIN
+    ADMIN,
+
+    /**
+     * Super user role
+     */
+    SUPER
 }

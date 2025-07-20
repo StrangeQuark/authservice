@@ -16,6 +16,7 @@ services:
       - ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}
       - REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - BOOTSTRAP_SECRET_KEY=${BOOTSTRAP_SECRET_KEY}
   auth-db:
     image: 'postgres:13.1-alpine'
     container_name: auth-db
