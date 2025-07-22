@@ -2,8 +2,6 @@ package com.strangequark.authservice.utility;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -13,28 +11,46 @@ import java.util.Base64;
 /**
  * Utility service for automatically encrypting and decrypting fields in {@link com.strangequark.authservice.user.User} objects
  */
-@Component
-public class EncryptionService {
+public class EncryptionUtility {
     /**
-     * {@link Logger} for writing {@link EncryptionService} application logs
+     * {@link Logger} for writing {@link EncryptionUtility} application logs
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(EncryptionService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EncryptionUtility.class);
 
     /**
      * Encryption algorithm
      */
-    private final String ALGORITHM = "AES";
+    private static final String ALGORITHM = "AES";
 
     /**
      * Secret key used for encryption/decryption
      */
-    @Value("${ENCRYPTION_KEY}")
-    private String ENCRYPTION_KEY;
+    private static final String ENCRYPTION_KEY = resolveKey();
+
+    /**
+     * Utility configuration method for getting the encryption key from properties/env vars
+     */
+    private static String resolveKey() {
+        LOGGER.info("Attempting to resolve encryption key");
+
+        String key = System.getProperty("ENCRYPTION_KEY");
+        if (key == null) {
+            LOGGER.info("Unable to grab from properties, attempt with environment variables");
+            key = System.getenv("ENCRYPTION_KEY");
+        }
+        if (key == null || key.length() != 32) {
+            LOGGER.error("ENCRYPTION_KEY must be set and 32 chars long");
+            throw new IllegalStateException("ENCRYPTION_KEY must be set and 32 chars long");
+        }
+
+        LOGGER.info("Encryption key successfully resolved");
+        return key;
+    }
 
     /**
      * Utility method for automatically encrypting data
      */
-    public String encrypt(String data) {
+    public static String encrypt(String data) {
         try {
             LOGGER.info("Attempting to encrypt data");
 
@@ -54,7 +70,7 @@ public class EncryptionService {
     /**
      * Utility method for automatically decrypting data
      */
-    public String decrypt(String data) {
+    public static String decrypt(String data) {
         try {
             LOGGER.info("Attempting to decrypt data");
             SecretKey key = new SecretKeySpec(ENCRYPTION_KEY.getBytes(), ALGORITHM);

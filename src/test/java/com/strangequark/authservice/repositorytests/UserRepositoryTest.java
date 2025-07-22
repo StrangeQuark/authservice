@@ -3,11 +3,9 @@ package com.strangequark.authservice.repositorytests;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -38,6 +36,14 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Value("${ENCRYPTION_KEY}")
+    String encryptionKey;
+
+    @BeforeAll
+    void setupEncryptionKey() {
+        System.setProperty("ENCRYPTION_KEY", encryptionKey);
+    }
 
     @BeforeEach
     void setup() {
