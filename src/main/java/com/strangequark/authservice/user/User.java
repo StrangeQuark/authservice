@@ -1,6 +1,6 @@
 package com.strangequark.authservice.user;
 
-import com.strangequark.authservice.utility.EncryptDecryptConverter;
+import com.strangequark.authservice.utility.StringEncryptDecryptConverter;
 import com.strangequark.authservice.utility.RoleEncryptDecryptConverter;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,13 +53,13 @@ public class User implements UserDetails {
     /**
      * A unique username for each user
      */
-    @Convert(converter = EncryptDecryptConverter.class)
+    @Convert(converter = StringEncryptDecryptConverter.class)
     private String username;
 
     /**
      * A unique email address for each user
      */
-    @Convert(converter = EncryptDecryptConverter.class)
+    @Convert(converter = StringEncryptDecryptConverter.class)
     private String email;
 
     /**
@@ -76,7 +76,7 @@ public class User implements UserDetails {
     /**
      * Refresh JWT token
      */
-    @Convert(converter = EncryptDecryptConverter.class)
+    @Convert(converter = StringEncryptDecryptConverter.class)
     @Column(length = 2048)
     private String refreshToken;
 
@@ -88,7 +88,7 @@ public class User implements UserDetails {
     /**
      * A set of authorizations for the user
      */
-    @Convert(converter = EncryptDecryptConverter.class)
+    @Convert(converter = StringEncryptDecryptConverter.class)
     private Set<String> authorizations;
 
     /**

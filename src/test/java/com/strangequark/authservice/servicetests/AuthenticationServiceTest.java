@@ -5,15 +5,9 @@ import com.strangequark.authservice.auth.AuthenticationService;
 import com.strangequark.authservice.auth.RegistrationRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
 public class AuthenticationServiceTest extends BaseServiceTest{
     @Autowired
     private AuthenticationService authenticationService;
