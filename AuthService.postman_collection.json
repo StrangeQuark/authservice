@@ -43,6 +43,49 @@
 			"response": []
 		},
 		{
+			"name": "Get User ID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/api/auth/user/get-user-id?username=testUser",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"user",
+						"get-user-id"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "testUser"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Access",
 			"event": [
 				{
@@ -292,7 +335,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"credentials\": \"testUser\",\r\n    \"authorizations\": [\r\n        \"Auth 2\",\r\n        \"Auth 3\",\r\n        \"t\"\r\n    ]\r\n}",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"authorizations\": [\r\n        \"Auth 2\",\r\n        \"Auth 3\",\r\n        \"t\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -345,7 +388,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[\r\n    \"Auth 2\"\r\n]",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"authorizations\": [\r\n        \"Auth 2\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -398,7 +441,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"credentials\": \"testUser\",\r\n    \"password\": \"password123!\"\r\n}",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"password\": \"password123!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -451,7 +494,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"credentials\": \"new@test.com\",\r\n    \"password\": \"password123!\"\r\n}",
+					"raw": "{\r\n    \"email\": \"new@test.com\",\r\n    \"password\": \"password123!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -505,7 +548,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"credentials\": \"newUsername\",\r\n    \"password\": \"password123!\"\r\n}",
+					"raw": "{\r\n    \"username\": \"newUsername\",\r\n    \"password\": \"password123!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -551,7 +594,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"credentials\": \"test@t.com\"\r\n}",
+					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -570,6 +613,55 @@
 						"auth",
 						"user",
 						"send-password-reset-email"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bootstrap Super User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-BOOTSTRAP-SECRET",
+						"value": "6F54AFE5EBE3355E3E6932ADA8FB9F00BA1780E80B277AB56F23A5AE806C0660",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"testSuper\",\r\n    \"email\": \"super@t.com\",\r\n    \"password\": \"password123!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/api/auth/internal/bootstrap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"internal",
+						"bootstrap"
 					]
 				}
 			},
