@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -52,15 +51,6 @@ public class JwtService {
     public String extractUsername(String jwtToken, boolean isRefreshToken) {
         return extractClaim(jwtToken, Claims::getSubject, isRefreshToken);
     }
-
-//    /**
-//     * Extract the email from the JWT token
-//     * @param jwtToken The JWT token from which the email is to be extracted
-//     * @return The email contained in the JWT token
-//     */
-//    public String extractEmail(String jwtToken) {
-//        return extractClaim(jwtToken, Claims::getSubject);
-//    }
 
     /**
      * Extract a single claim from the JWT token

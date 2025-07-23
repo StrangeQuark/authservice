@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * {@link RestController} for manipulating {@link User} objects
@@ -35,17 +34,6 @@ public class UserController {
     public ResponseEntity<?> updatePassword(@RequestBody UserRequest request) {
         return userService.updatePassword(request);
     }
-
-//    Commented because only admins should be able to add authorizations to users - uncomment to allow users to add auths to themselves
-//    /**
-//     * Post request endpoint for adding to a user's set of authorities
-//     * @param {@link List} of strings of authorities to be added to the user
-//     * @return {@link ResponseEntity}
-//     */
-//    @PostMapping("/add-authorizations")
-//    public ResponseEntity<?> addAuthorizations(@RequestBody Set<String> authorizations) {
-//        return userService.addAuthorizations(authorizations);
-//    }
 
     /**
      * Post request endpoint for adding to a user's set of authorities

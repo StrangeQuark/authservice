@@ -18,7 +18,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * {@link Service} for manipulating {@link User} objects
