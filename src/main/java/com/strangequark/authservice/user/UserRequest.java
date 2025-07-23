@@ -7,9 +7,14 @@ import java.util.Set;
  */
 public class UserRequest {
     /**
-     * Username or email of the user
+     * Username of the user
      */
-    private String credentials;
+    private String username;
+
+    /**
+     * Email of the user
+     */
+    private String email;
 
     /**
      * Password of authenticating user
@@ -33,60 +38,31 @@ public class UserRequest {
     }
 
     /**
-     * Constructs a new {@code UserRequest} with the given dependencies.
-     *
-     * @param credentials Email address or username for the user request
+     * Get username for {@link UserRequest} object
      */
-    public UserRequest(String credentials) {
-        this.credentials = credentials;
+    public String getUsername() {
+        return username;
     }
 
     /**
-     * Constructs a new {@code UserRequest} with the given dependencies.
-     *
-     * @param credentials Email address or username for the user request
-     * @param password Password for the user request
+     * Set username for {@link UserRequest} object
      */
-    public UserRequest(String credentials, String password) {
-        this(credentials);
-        this.password = password;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     /**
-     * Constructs a new {@code UserRequest} with the given dependencies.
-     *
-     * @param credentials Email address or username for the user request
-     * @param password Password for the user request
-     * @param newPassword New password for update-password user request
+     * Get email for {@link UserRequest} object
      */
-    public UserRequest(String credentials, String password, String newPassword) {
-        this(credentials, password);
-        this.newPassword = newPassword;
+    public String getEmail() {
+        return email;
     }
 
     /**
-     * Constructs a new {@code UserRequest} with the given dependencies.
-     *
-     * @param credentials Email address or username for the user request
-     * @param authorizations {@link Set} of authorizations for update-authorizations user request
+     * Set email for {@link UserRequest} object
      */
-    public UserRequest(String credentials, Set<String> authorizations) {
-        this(credentials);
-        this.authorizations = authorizations;
-    }
-
-    /**
-     * Get credentials (Email or username) for {@link UserRequest} object
-     */
-    public String getCredentials() {
-        return credentials;
-    }
-
-    /**
-     * Set credentials (Email or username) for {@link UserRequest} object
-     */
-    public void setCredentials(String credentials) {
-        this.credentials = credentials;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     /**
