@@ -127,7 +127,7 @@ public class UserService {
                     });
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(request.getCredentials())
+            User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> {
                         LOGGER.error("Requested user not found");
                         return new UsernameNotFoundException("User not found");
@@ -180,7 +180,7 @@ public class UserService {
                     });
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(request.getCredentials())
+            User user = userRepository.findByUsername(request.getUsername())
                     .orElseThrow(() -> {
                         LOGGER.error("Requested user not found");
                         return new UsernameNotFoundException("User not found");
@@ -231,8 +231,8 @@ public class UserService {
         LOGGER.info("Attempting to verify user and send password reset email");
 
         // Try to find the user by username first, and if not found, by email
-        Optional<User> userOptional = userRepository.findByUsername(request.getCredentials())
-                .or(() -> userRepository.findByEmail(request.getCredentials()));
+        Optional<User> userOptional = userRepository.findByUsername(request.getUsername())
+                .or(() -> userRepository.findByEmail(request.getEmail()));
 
         if (userOptional.isPresent()) {
             LOGGER.info("User found, attempting to send email");
@@ -263,7 +263,7 @@ public class UserService {
         LOGGER.info("Attempting to enable user");
 
         // Check if the User exists
-        Optional<User> userOptional = userRepository.findByEmail(userRequest.getCredentials());
+        Optional<User> userOptional = userRepository.findByEmail(userRequest.getEmail());
 
         if (userOptional.isPresent()) {
             userOptional.get().setEnabled(true);
@@ -347,7 +347,7 @@ public class UserService {
                     });
 
             //Update the user's email
-            user.setEmail(userRequest.getCredentials());
+            user.setEmail(userRequest.getEmail());
             userRepository.save(user);
 
             LOGGER.info("Email was successfully updated for user");
@@ -389,7 +389,7 @@ public class UserService {
                     });
 
             //Update the user's username
-            user.setUsername(userRequest.getCredentials());
+            user.setUsername(userRequest.getUsername());
 
             //Create a JWT token to authenticate the user
             String refreshToken = jwtService.generateToken(user, true);

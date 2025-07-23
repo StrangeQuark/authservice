@@ -17,7 +17,10 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void updatePasswordTest() {
-        UserRequest userRequest = new UserRequest(testUser.getUsername(), "password", "newPassword");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
+        userRequest.setNewPassword("newPassword");
 
         ResponseEntity<?> response =  userService.updatePassword(userRequest);
 
@@ -34,7 +37,11 @@ public class UserServiceTest extends BaseServiceTest {
         authorizations.add("Auth 1");
         authorizations.add("test 2");
 
-        ResponseEntity<?> response =  userService.addAuthorizationsToUser(new UserRequest(testUser.getUsername(), authorizations));
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setAuthorizations(authorizations);
+
+        ResponseEntity<?> response =  userService.addAuthorizationsToUser(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Authorizations were successfully added", ((UserResponse) response.getBody()).getMessage());
@@ -45,7 +52,11 @@ public class UserServiceTest extends BaseServiceTest {
         Set<String> authorizationsToRemove = new HashSet<>();
         authorizationsToRemove.add("testAuthorization1");
 
-        ResponseEntity<?> response =  userService.removeAuthorizations(new UserRequest(testUser.getUsername(), authorizationsToRemove));
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setAuthorizations(authorizationsToRemove);
+
+        ResponseEntity<?> response =  userService.removeAuthorizations(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Authorizations were successfully removed", ((UserResponse) response.getBody()).getMessage());
@@ -53,9 +64,10 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void sendPasswordResetEmailTest() {
-        UserRequest request = new UserRequest(testUser.getEmail());
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail(testUser.getEmail());
 
-        ResponseEntity<?> response =  userService.sendPasswordResetEmail(request);
+        ResponseEntity<?> response =  userService.sendPasswordResetEmail(userRequest);
 
         Assertions.assertEquals(500, response.getStatusCode().value());
         Assertions.assertEquals("Unable to send password reset email", ((ErrorResponse) response.getBody()).getErrorMessage());
@@ -66,7 +78,8 @@ public class UserServiceTest extends BaseServiceTest {
         User disabledTestUser = new User("disabledTestUser", "disabledTest@test.com", Role.USER, false, new HashSet<>(), passwordEncoder.encode("password"));
         userRepository.save(disabledTestUser);
 
-        UserRequest userRequest = new UserRequest(disabledTestUser.getEmail());
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail(disabledTestUser.getEmail());
 
         ResponseEntity<?> response =  userService.enableUser(userRequest);
 
@@ -76,7 +89,9 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void deleteUserTest() {
-        UserRequest userRequest = new UserRequest(testUser.getUsername(), "password");
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
 
         ResponseEntity<?> response =  userService.deleteUser(userRequest);
 
@@ -88,7 +103,10 @@ public class UserServiceTest extends BaseServiceTest {
     @Test
     void updateEmailTest() {
         String newEmail = "new@test.com";
-        UserRequest userRequest = new UserRequest(newEmail, "password");
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail(newEmail);
+        userRequest.setPassword("password");
 
         ResponseEntity<?> response =  userService.updateEmail(userRequest);
 
@@ -100,7 +118,10 @@ public class UserServiceTest extends BaseServiceTest {
     @Test
     void updateUsernameTest() {
         String newUsername = "newUsername";
-        UserRequest userRequest = new UserRequest(newUsername, "password");
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(newUsername);
+        userRequest.setPassword("password");
 
         ResponseEntity<?> response =  userService.updateUsername(userRequest);
 
