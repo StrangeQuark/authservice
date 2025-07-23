@@ -110,34 +110,6 @@ public class UserService {
         }
     }
 
-//    Commented because only admins should be able to add authorizations to users - uncomment to allow users to add auths to themselves
-//    /**
-//     * Business logic adding authorities to a user
-//     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
-//     */
-//    public ResponseEntity<?> addAuthorizations(Set<String> authorizations) {
-//        try {
-//            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-//                    .getHeader("Authorization").substring(7);
-//
-//            //Get the user, throw an exception if the username is not found
-//            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-//                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//            //Append the authorizations and save
-//            user.appendAuthorizations(authorizations);
-//            userRepository.save(user);
-//
-//            //Return a 200 response with a success message
-//            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
-//
-//        } catch (Exception ex) {
-//            return ResponseEntity.status(401).body(
-//                    new ErrorResponse("There was an error in the request, please contact the system administrator")
-//            );
-//        }
-//    }
-
     /**
      * Business logic adding authorities to a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
@@ -163,9 +135,16 @@ public class UserService {
                         return new UsernameNotFoundException("User not found");
                     });
 
-            if(requestingUser.getRole() != Role.ADMIN || requestingUser.getRole() != Role.SUPER) {
-                LOGGER.error("Requesting user is unauthorized to make that request, needs to be ADMIN or SUPER role");
-                return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
+            // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
+            if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER) {
+                LOGGER.error("Only SUPER users can assign roles to SUPER users");
+                return ResponseEntity.status(403).body(new ErrorResponse("Only SUPER users can assign roles to SUPER users"));
+            }
+
+            // Only SUPER and ADMIN users can assign roles
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN) {
+                LOGGER.error("Only SUPER or ADMIN users can assign roles");
+                return ResponseEntity.status(403).body(new ErrorResponse("Only SUPER or ADMIN users can assign roles"));
             }
 
             //Append the authorizations and save
@@ -188,7 +167,7 @@ public class UserService {
      * Business logic for removing authorities from a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> removeAuthorizations(Set<String> authorizations) {
+    public ResponseEntity<?> removeAuthorizations(UserRequest request) {
         LOGGER.info("Attempting to remove authorizations from self");
 
         try {
@@ -203,23 +182,34 @@ public class UserService {
                     });
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+            User user = userRepository.findByUsername(request.getCredentials())
                     .orElseThrow(() -> {
-                        LOGGER.error("User not found for JWT: " + authToken);
+                        LOGGER.error("Requested user not found");
                         return new UsernameNotFoundException("User not found");
                     });
 
-            if(requestingUser.getRole() != Role.ADMIN || requestingUser.getRole() != Role.SUPER || !requestingUser.getId().equals(user.getId())) {
-                if(user.getRole() == Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
-                    LOGGER.error("ADMIN users cannot remove roles of other ADMINS");
-                    return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
+            // If the target user is a SUPER user, ensure the requesting user is the target user
+            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId())) {
+                LOGGER.error("Roles on SUPER users can only be self removed");
+                return ResponseEntity.status(403).body(new ErrorResponse("Roles on SUPER users can only be self removed"));
+            }
+
+            // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
+            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER) {
+                if(!requestingUser.getId().equals(user.getId())) {
+                    LOGGER.error("Roles on ADMIN users can only be self removed or by a SUPER user");
+                    return ResponseEntity.status(403).body(new ErrorResponse("Roles on ADMIN users can only be self removed or by a SUPER user"));
                 }
-                LOGGER.error("Requesting user is unauthorized to make that request, needs to be self or ADMIN role");
-                return ResponseEntity.status(403).body(new ErrorResponse("Unauthorized to make that request"));
+            }
+
+            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
+                LOGGER.error("Roles can only be removed by self, ADMIN, or SUPER users");
+                return ResponseEntity.status(403).body(new ErrorResponse("Roles can only be removed by self, ADMIN, or SUPER users"));
             }
 
             //Remove the authorizations and save
-            user.removeAuthorizations(authorizations);
+            user.removeAuthorizations(request.getAuthorizations());
             userRepository.save(user);
 
             LOGGER.info("Authorizations were successfully removed");
