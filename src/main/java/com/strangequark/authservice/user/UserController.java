@@ -3,8 +3,6 @@ package com.strangequark.authservice.user;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 /**
  * {@link RestController} for manipulating {@link User} objects
  */
@@ -72,8 +70,8 @@ public class UserController {
      * @return {@link ResponseEntity}
      */
     @PostMapping("/enable-user")
-    public ResponseEntity<?> enableUser(@RequestBody Map<String, String> requestBody) {
-        return userService.enableUser(requestBody);
+    public ResponseEntity<?> enableUser(@RequestBody UserRequest userRequest) {
+        return userService.enableUser(userRequest);
     }
 
     /**

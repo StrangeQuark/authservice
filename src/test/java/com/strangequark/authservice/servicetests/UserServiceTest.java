@@ -7,9 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class UserServiceTest extends BaseServiceTest {
@@ -68,10 +66,9 @@ public class UserServiceTest extends BaseServiceTest {
         User disabledTestUser = new User("disabledTestUser", "disabledTest@test.com", Role.USER, false, new HashSet<>(), passwordEncoder.encode("password"));
         userRepository.save(disabledTestUser);
 
-        Map<String, String> request = new HashMap<>();
-        request.put("email", "disabledTest@test.com");
+        UserRequest userRequest = new UserRequest(disabledTestUser.getEmail());
 
-        ResponseEntity<?> response =  userService.enableUser(request);
+        ResponseEntity<?> response =  userService.enableUser(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("User is enabled", ((UserResponse) response.getBody()).getMessage());

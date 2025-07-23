@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -260,11 +259,11 @@ public class UserService {
      * Business logic for enabling a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> enableUser(Map<String, String> requestBody) {
+    public ResponseEntity<?> enableUser(UserRequest userRequest) {
         LOGGER.info("Attempting to enable user");
 
         // Check if the User exists
-        Optional<User> userOptional = userRepository.findByEmail(requestBody.get("email"));
+        Optional<User> userOptional = userRepository.findByEmail(userRequest.getCredentials());
 
         if (userOptional.isPresent()) {
             userOptional.get().setEnabled(true);
