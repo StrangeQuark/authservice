@@ -63,8 +63,8 @@ public class UserController {
      * @return {@link ResponseEntity}
      */
     @PostMapping("/remove-authorizations")
-    public ResponseEntity<?> removeAuthorizations(@RequestBody Set<String> authorizations) {
-        return userService.removeAuthorizations(authorizations);
+    public ResponseEntity<?> removeAuthorizations(@RequestBody UserRequest request) {
+        return userService.removeAuthorizations(request);
     }
 
     // Integration function start: Email

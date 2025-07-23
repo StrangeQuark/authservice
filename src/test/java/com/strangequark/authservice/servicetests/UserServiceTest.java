@@ -44,10 +44,10 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void removeAuthorizationsTest() {
-        Set<String> authorzationsToRemove = new HashSet<>();
-        authorzationsToRemove.add("testAuthorization1");
+        Set<String> authorizationsToRemove = new HashSet<>();
+        authorizationsToRemove.add("testAuthorization1");
 
-        ResponseEntity<?> response =  userService.removeAuthorizations(authorzationsToRemove);
+        ResponseEntity<?> response =  userService.removeAuthorizations(new UserRequest(testUser.getUsername(), authorizationsToRemove));
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Authorizations were successfully removed", ((UserResponse) response.getBody()).getMessage());
