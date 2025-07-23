@@ -2,10 +2,7 @@ package com.strangequark.authservice.bootstrap;
 
 import com.strangequark.authservice.auth.RegistrationRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth/internal/bootstrap")
@@ -18,7 +15,7 @@ public class BootstrapController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> bootstrap(@RequestHeader("X-BOOTSTRAP-SECRET") String headerSecret, RegistrationRequest registrationRequest) {
+    public ResponseEntity<?> bootstrap(@RequestHeader("X-BOOTSTRAP-SECRET") String headerSecret, @RequestBody RegistrationRequest registrationRequest) {
         return bootstrapService.bootstrap(headerSecret, registrationRequest);
     }
 }

@@ -47,7 +47,7 @@ public class BootstrapService {
 
         //Check if the username has already been registered
         if(userRepository.findByUsername(registrationRequest.getUsername()).isPresent()) {
-            LOGGER.error("Username already registered with that bootstrap username");
+            LOGGER.error("Username already registered");
             return ResponseEntity.status(409).body(
                     new ErrorResponse("Username already registered", 410)
             );
@@ -55,13 +55,18 @@ public class BootstrapService {
 
         //Check if the email has already been registered
         if(userRepository.findByEmail(registrationRequest.getEmail()).isPresent()) {
-            LOGGER.error("Email address already registered with that bootstrap  email address");
+            LOGGER.error("Email address already registered");
             return ResponseEntity.status(409).body(
-                    new ErrorResponse("Email already registered", 401)
+                    new ErrorResponse("Email address already registered", 401)
             );
         }
 
         LOGGER.info("Attempting to build bootstrap user object");
+
+        LOGGER.info("USER INFO");
+        LOGGER.info(registrationRequest.getUsername());
+        LOGGER.info(registrationRequest.getEmail());
+        LOGGER.info(registrationRequest.getPassword());
 
         //Build the user object to be saved to the database
         User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.SUPER,
