@@ -64,4 +64,9 @@ public class UserRepositoryTest {
 
         Assertions.assertTrue(user.isPresent());
     }
+
+    @Test
+    void existsByRoleTest() {
+        Assertions.assertTrue(userRepository.existsByRole(Role.USER));
+    }
 }

@@ -227,8 +227,7 @@ public class UserService {
             userRepository.save(userOptional.get());
 
             LOGGER.info("User has been enabled");
-
-            return ResponseEntity.ok(new UserResponse("User is enabled"));
+            return ResponseEntity.ok(new UserResponse("User has been enabled"));
         }
 
         // Handle the case where neither username nor email exists
@@ -280,7 +279,7 @@ public class UserService {
 
             //Return a 200 response with a success message
             LOGGER.info("User has been disabled");
-            return ResponseEntity.ok(new UserResponse("User is disabled"));
+            return ResponseEntity.ok(new UserResponse("User has been disabled"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
@@ -331,8 +330,8 @@ public class UserService {
             userRepository.delete(user);
 
             //Return a 200 response with a success message
-            LOGGER.info("User was successfully deleted");
-            return ResponseEntity.ok(new UserResponse("User was successfully deleted"));
+            LOGGER.info("User successfully deleted");
+            return ResponseEntity.ok(new UserResponse("User successfully deleted"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
