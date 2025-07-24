@@ -167,7 +167,7 @@ public class UserService {
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> removeAuthorizations(UserRequest userRequest) {
-        LOGGER.info("Attempting to remove authorizations from self");
+        LOGGER.info("Attempting to remove authorizations from user");
 
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
@@ -281,6 +281,56 @@ public class UserService {
 
         // Handle the case where neither username nor email exists
         return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
+    }
+
+
+    /**
+     * Business logic for disabling a user
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> disableUser(UserRequest userRequest) {
+        LOGGER.info("Attempting to disable user");
+
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting user not found"));
+
+            //Get the target user, throw an exception if the username or email are not found
+            User user = userRepository.findByUsername(userRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(userRequest.getEmail()))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            // Throw error if the target user is a SUPER user
+            if(user.getRole() == Role.SUPER) {
+                throw new RuntimeException("Super users cannot be disabled");
+            }
+
+            // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
+            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER) {
+                if(!requestingUser.getId().equals(user.getId())) {
+                    throw new RuntimeException("ADMIN users can only be self disabled or by a SUPER user");
+                }
+            }
+
+            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
+                throw new RuntimeException("Roles can only be removed by self, ADMIN, or SUPER users");
+            }
+
+            // Disable the user
+            user.setEnabled(false);
+            userRepository.save(user);
+
+            LOGGER.info("User has been disabled");
+            return ResponseEntity.ok(new UserResponse("User is disabled"));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(403).body(new ErrorResponse(ex.getMessage()));
+        }
     }
 
     /**
