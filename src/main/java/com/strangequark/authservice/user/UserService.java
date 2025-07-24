@@ -273,9 +273,9 @@ public class UserService {
                 if(!requestingUser.getId().equals(user.getId()))
                     throw new RuntimeException("ADMIN users can only be self disabled or by a SUPER user");
 
-            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
+            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to disable each other
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
-                throw new RuntimeException("Roles can only be removed by self, ADMIN, or SUPER users");
+                throw new RuntimeException("Users can only be disabled by self, ADMIN, or SUPER users");
 
             // Disable the user
             user.setEnabled(false);
