@@ -229,7 +229,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n}",
+					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n    // \"username\": \"testUser\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -248,6 +248,47 @@
 						"auth",
 						"user",
 						"enable-user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Disable user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n    // \"username\": \"testUser\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/api/auth/user/disable-user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"user",
+						"disable-user"
 					]
 				}
 			},
@@ -335,7 +376,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"authorizations\": [\r\n        \"Auth 2\",\r\n        \"Auth 3\",\r\n        \"t\"\r\n    ]\r\n}",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    // \"email\": \"test@t.com\",\r\n    \"authorizations\": [\r\n        \"Auth 2\",\r\n        \"Auth 3\",\r\n        \"t\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -388,7 +429,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"authorizations\": [\r\n        \"Auth 2\"\r\n    ]\r\n}",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    // \"email\": \"test@t.com\",\r\n    \"authorizations\": [\r\n        \"Auth 2\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -441,7 +482,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"testUser\",\r\n    \"password\": \"password123!\"\r\n}",
+					"raw": "{\r\n    \"username\": \"testUser\",\r\n    // \"email\": \"test@t.com\",\r\n    \"password\": \"password123!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -594,7 +635,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n}",
+					"raw": "{\r\n    \"email\": \"test@t.com\"\r\n    // \"username\": \"testUser\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
