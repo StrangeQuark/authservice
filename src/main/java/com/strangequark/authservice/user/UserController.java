@@ -75,6 +75,16 @@ public class UserController {
     }
 
     /**
+     * Post request endpoint for disabling a user
+     * @param {@link Map} containing the email address of the user to disable
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/disable-user")
+    public ResponseEntity<?> disableUser(@RequestBody UserRequest userRequest) {
+        return userService.disableUser(userRequest);
+    }
+
+    /**
      * Post request endpoint for deleting a user
      * @param {@link UserRequest} containing the user's credentials
      * @return {@link ResponseEntity}
