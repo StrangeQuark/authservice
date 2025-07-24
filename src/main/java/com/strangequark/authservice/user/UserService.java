@@ -87,10 +87,10 @@ public class UserService {
 
             //Return a 200 response with a success message
             LOGGER.info("Password successfully updated");
-            return ResponseEntity.ok(new UserResponse("Password was successfully updated"));
+            return ResponseEntity.ok(new UserResponse("Password successfully updated"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -128,10 +128,10 @@ public class UserService {
 
             //Return a 200 response with a success message
             LOGGER.info("Authorization successfully added");
-            return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
+            return ResponseEntity.ok(new UserResponse("Authorizations successfully added"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -173,11 +173,11 @@ public class UserService {
             userRepository.save(user);
 
             //Return a 200 response with a success message
-            LOGGER.info("Authorizations were successfully removed");
-            return ResponseEntity.ok(new UserResponse("Authorizations were successfully removed"));
+            LOGGER.info("Authorizations successfully removed");
+            return ResponseEntity.ok(new UserResponse("Authorizations successfully removed"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -231,9 +231,8 @@ public class UserService {
             return ResponseEntity.ok(new UserResponse("User is enabled"));
         }
 
-        LOGGER.error("User not found for those credentials when attempting to enable");
-
         // Handle the case where neither username nor email exists
+        LOGGER.error("User not found for those credentials when attempting to enable");
         return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
     }
 
@@ -284,7 +283,7 @@ public class UserService {
             return ResponseEntity.ok(new UserResponse("User is disabled"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(403).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -336,7 +335,7 @@ public class UserService {
             return ResponseEntity.ok(new UserResponse("User was successfully deleted"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -371,7 +370,7 @@ public class UserService {
             return ResponseEntity.ok(new UserResponse("Email successfully updated"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -408,7 +407,7 @@ public class UserService {
             userRepository.save(user);
 
             //Return a 200 response with a success message
-            LOGGER.info("Succesfully updated username for user");
+            LOGGER.info("Successfully updated username");
             return ResponseEntity.ok(new UpdateUsernameResponse(refreshToken, jwtService.generateToken(user, false)));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
@@ -421,9 +420,9 @@ public class UserService {
      * @return {@link ResponseEntity} with user's ID if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> getUserId(String username) {
-        try {
-            LOGGER.info("Attempting to get user ID");
+        LOGGER.info("Attempting to get user ID");
 
+        try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("No user exists with that username"));
 
