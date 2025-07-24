@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,49 +73,46 @@ public class AuthenticationService {
     public ResponseEntity<?> register(RegistrationRequest registrationRequest) {
         LOGGER.info("Attempting to register user");
 
-        //Check if the username has already been registered
-        if(userRepository.findByUsername(registrationRequest.getUsername()).isPresent()) {
-            LOGGER.error("Username already registered with that username");
-            return ResponseEntity.status(409).body(
-                    new ErrorResponse("Username already registered", 410)
-            );
-        }
-
-        //Check if the email has already been registered
-        if(userRepository.findByEmail(registrationRequest.getEmail()).isPresent()) {
-            LOGGER.error("Email address already registered with that email address");
-            return ResponseEntity.status(409).body(
-                    new ErrorResponse("Email already registered", 401)
-            );
-        }
-
-        LOGGER.info("Attempting to build user object");
-
-        //Build the user object to be saved to the database
-        User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
-                false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
-
-        //Send an email so the user can enable their account   -   Integration function start: Email
-        LOGGER.info("Attempting to send registration email");
         try {
-            ResponseEntity<?> response = EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
-            if (response.getStatusCode().value() != 200) {
-                LOGGER.error("Error when sending registration email: " + response.getBody());
-                return ResponseEntity.status(401).body(new ErrorResponse("Unable to send email: " + response.getBody()));
-            }
-        } catch (ResourceAccessException resourceAccessException) {
-            //If we are unable to reach the email service, proceed with user creation and set user as enabled
-            LOGGER.error("Unable to reach email service: " + resourceAccessException.getMessage());
-            LOGGER.info("Continuing to register user, setting user to enabled");// Integration function end: Email
-            user.setEnabled(true);
-        }// Integration line: Email
+            //Check if the username has already been registered
+            if (userRepository.findByUsername(registrationRequest.getUsername()).isPresent())
+                throw new RuntimeException("Username already registered");
 
-        //Save the user to the database
-        LOGGER.info("Saving user to database");
-        userRepository.save(user);
+            //Check if the email has already been registered
+            if (userRepository.findByEmail(registrationRequest.getEmail()).isPresent())
+                throw new RuntimeException("Email already registered");
 
-        LOGGER.info("User successfully created");
-        return ResponseEntity.ok(new AuthenticationResponse());
+            LOGGER.info("Attempting to build user object");
+
+            //Build the user object to be saved to the database
+            User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
+                    false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
+
+            //Send an email so the user can enable their account   -   Integration function start: Email
+            LOGGER.info("Attempting to send registration email");
+            try {
+                ResponseEntity<?> response = EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+
+                if (response.getStatusCode().value() != 200)
+                    throw new RuntimeException("Error when sending registration email: " + response.getBody());
+            } catch (ResourceAccessException resourceAccessException) {
+                //If we are unable to reach the email service, proceed with user creation and set user as enabled
+                LOGGER.error("Unable to reach email service: " + resourceAccessException.getMessage());
+                LOGGER.info("Continuing to register user, setting user to enabled");// Integration function end: Email
+                user.setEnabled(true);
+            }// Integration line: Email
+
+            //Save the user to the database
+            LOGGER.info("Saving user to database");
+            userRepository.save(user);
+
+            //Return a 200 response with a JWT token
+            LOGGER.info("User successfully created");
+            return ResponseEntity.ok(new AuthenticationResponse());
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
     }
 
     /**
@@ -126,9 +121,9 @@ public class AuthenticationService {
      * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> authenticate(AuthenticationRequest authenticationRequest) {
-        try {
-            LOGGER.info("Attempting to authenticate request");
+        LOGGER.info("Attempting to authenticate request");
 
+        try {
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                             authenticationRequest.getUsername(),
@@ -153,20 +148,9 @@ public class AuthenticationService {
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
             return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
-        } catch (DisabledException disabledException) {
-            LOGGER.error("Account is disabled");
-
-            //Throw a 409 (Resource State conflict) error if invalid credentials are given
-            return ResponseEntity.status(409).body(
-                    new ErrorResponse(disabledException.getMessage())
-            );
-        } catch (BadCredentialsException badCredentialsException) {
-            LOGGER.error("Invalid credentials");
-
-            //Throw a 401 (Unauthorized) error if invalid credentials are given
-            return ResponseEntity.status(401).body(
-                    new ErrorResponse(badCredentialsException.getMessage())
-            );
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 }

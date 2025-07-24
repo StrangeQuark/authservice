@@ -50,27 +50,19 @@ public class AccessService {
      * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> serveAccessToken() {
+        LOGGER.info("Attempting to serve access token");
+
         try {
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
-            LOGGER.info("Attempt to serve accessToken for jwt: " + authToken);
-
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, true))
-                    .orElseThrow(() -> {
-                        LOGGER.error("User was not found for jwt: " + authToken);
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Verify the refresh token against the User's refresh token
-            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(authToken)) {
-                LOGGER.error("The refresh token is invalid: " + authToken);
-
-                return ResponseEntity.status(401).body(
-                        new ErrorResponse("Refresh token is invalid")
-                );
-            }
+            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(authToken))
+                        throw new RuntimeException("Refresh token is invalid");
 
             //Create a JWT token to authenticate the user
             String accessToken = jwtService.generateToken(user, false);
@@ -78,12 +70,9 @@ public class AccessService {
             //Return a 200 response with the jwtToken
             LOGGER.info("Access token successfully served");
             return ResponseEntity.ok(new AuthenticationResponse(accessToken));
-
-        } catch (NullPointerException exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.status(500).body(
-                    new ErrorResponse("NPE - trouble getting the request")
-            );
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 }

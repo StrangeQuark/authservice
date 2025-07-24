@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,31 +79,18 @@ public class UserService {
 
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Unable to find user from JWT: " + authToken);
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Set the user's new password and save
             user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
             userRepository.save(user);
 
-            LOGGER.info("Password successfully updated");
-
             //Return a 200 response with a success message
+            LOGGER.info("Password successfully updated");
             return ResponseEntity.ok(new UserResponse("Password was successfully updated"));
-
-        } catch (NullPointerException exception) {
-            LOGGER.error(exception.getMessage());
-
-            return ResponseEntity.status(500).body(
-                    new ErrorResponse("NPE - trouble getting the request")
-            );
-        } catch (AuthenticationException authenticationException) {
-            //Throw a 401 (Unauthorized) error if invalid credentials are given
-            return ResponseEntity.status(401).body(
-                    new ErrorResponse("Invalid credentials")
-            );
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -121,44 +107,31 @@ public class UserService {
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Requesting user was not found for JWT: " + authToken);
-                        return new UsernameNotFoundException("Requesting user not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting user not found"));
 
             //Get the target user, throw an exception if the username or email are not found
             User user = userRepository.findByUsername(userRequest.getUsername())
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Target user not found");
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
-            if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER) {
-                LOGGER.error("Only SUPER users can assign roles to SUPER users");
-                return ResponseEntity.status(403).body(new ErrorResponse("Only SUPER users can assign roles to SUPER users"));
-            }
+            if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can assign roles to SUPER users");
 
             // Only SUPER and ADMIN users can assign roles
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN) {
-                LOGGER.error("Only SUPER or ADMIN users can assign roles");
-                return ResponseEntity.status(403).body(new ErrorResponse("Only SUPER or ADMIN users can assign roles"));
-            }
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN)
+                throw new RuntimeException("Only SUPER or ADMIN users can assign roles");
 
             //Append the authorizations and save
             user.appendAuthorizations(userRequest.getAuthorizations());
             userRepository.save(user);
 
-            LOGGER.info("Authorization successfully added");
-
             //Return a 200 response with a success message
+            LOGGER.info("Authorization successfully added");
             return ResponseEntity.ok(new UserResponse("Authorizations were successfully added"));
-        } catch (NullPointerException exception) {
-            LOGGER.error(exception.getMessage());
-            return ResponseEntity.status(500).body(
-                    new ErrorResponse("NPE - trouble getting the request")
-            );
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -175,53 +148,36 @@ public class UserService {
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Requesting user was not found for JWT: " + authToken);
-                        return new UsernameNotFoundException("Requesting user not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting user not found"));
 
             //Get the target user, throw an exception if the username or email are not found
             User user = userRepository.findByUsername(userRequest.getUsername())
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Target user not found");
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             // If the target user is a SUPER user, ensure the requesting user is the target user
-            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId())) {
-                LOGGER.error("Roles on SUPER users can only be self removed");
-                return ResponseEntity.status(403).body(new ErrorResponse("Roles on SUPER users can only be self removed"));
-            }
+            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId()))
+                throw new RuntimeException("Roles on SUPER users can only be self removed");
 
             // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
-            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER) {
-                if(!requestingUser.getId().equals(user.getId())) {
-                    LOGGER.error("Roles on ADMIN users can only be self removed or by a SUPER user");
-                    return ResponseEntity.status(403).body(new ErrorResponse("Roles on ADMIN users can only be self removed or by a SUPER user"));
-                }
-            }
+            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER)
+                if(!requestingUser.getId().equals(user.getId()))
+                    throw new RuntimeException("Roles on ADMIN users can only be self removed or by a SUPER user");
 
             // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
-                LOGGER.error("Roles can only be removed by self, ADMIN, or SUPER users");
-                return ResponseEntity.status(403).body(new ErrorResponse("Roles can only be removed by self, ADMIN, or SUPER users"));
-            }
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
+                throw new RuntimeException("Roles can only be removed by self, ADMIN, or SUPER users");
 
             //Remove the authorizations and save
             user.removeAuthorizations(userRequest.getAuthorizations());
             userRepository.save(user);
 
-            LOGGER.info("Authorizations were successfully removed");
             //Return a 200 response with a success message
+            LOGGER.info("Authorizations were successfully removed");
             return ResponseEntity.ok(new UserResponse("Authorizations were successfully removed"));
-
-        } catch (NullPointerException exception) {
-            LOGGER.error(exception.getMessage());
-
-            return ResponseEntity.status(500).body(
-                    new ErrorResponse("NPE - trouble getting the request")
-            );
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -229,32 +185,30 @@ public class UserService {
      * Business logic for initiating the password reset email process
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> sendPasswordResetEmail(UserRequest request) {
+    public ResponseEntity<?> sendPasswordResetEmail(UserRequest userRequest) {
         LOGGER.info("Attempting to verify user and send password reset email");
 
-        // Try to find the user by username first, and if not found, by email
-        Optional<User> userOptional = userRepository.findByUsername(request.getUsername())
-                .or(() -> userRepository.findByEmail(request.getEmail()));
+        try {
+            //Get the target user, throw an exception if the username or email are not found
+            User user = userRepository.findByUsername(userRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(userRequest.getEmail()))
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
-        if (userOptional.isPresent()) {
-            LOGGER.info("User found, attempting to send email");
             try {
-                EmailUtility.sendAsyncEmail(userOptional.get().getEmail(), "Password reset", EmailType.PASSWORD_RESET);
+                EmailUtility.sendAsyncEmail(user.getEmail(), "Password reset", EmailType.PASSWORD_RESET);
             } catch (Exception ex) {
                 LOGGER.error("Unable to send password reset email to kafka");
                 LOGGER.error(ex.getMessage());
                 return ResponseEntity.status(500).body(new ErrorResponse("Unable to send password reset email"));
             }
 
-            LOGGER.info("User is present, password reset email has been sent");
-
-            return ResponseEntity.ok(new UserResponse("User is present, email is sent"));
+            //Return a 200 response with a success message
+            LOGGER.info("Password reset email has been sent");
+            return ResponseEntity.ok(new UserResponse("Email is sent"));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
-
-        LOGGER.error("User not found for those credentials");
-
-        // Handle the case where neither username nor email exists
-        return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
     } // Integration function end: Email
 
     /**
@@ -302,7 +256,7 @@ public class UserService {
             //Get the target user, throw an exception if the username or email are not found
             User user = userRepository.findByUsername(userRequest.getUsername())
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             // Throw error if the target user is a SUPER user
             if(user.getRole() == Role.SUPER) {
@@ -325,6 +279,7 @@ public class UserService {
             user.setEnabled(false);
             userRepository.save(user);
 
+            //Return a 200 response with a success message
             LOGGER.info("User has been disabled");
             return ResponseEntity.ok(new UserResponse("User is disabled"));
         } catch (Exception ex) {
@@ -353,52 +308,35 @@ public class UserService {
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Requesting user was not found for JWT: " + authToken);
-                        return new UsernameNotFoundException("Requesting user not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting user not found"));
 
             //Get the target user, throw an exception if the username or email are not found
             User user = userRepository.findByUsername(userRequest.getUsername())
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Target user not found");
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             // If the target user is a SUPER user, ensure the requesting user is the target user
-            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId())) {
-                LOGGER.error("SUPER users can only be self-deleted");
-                return ResponseEntity.status(403).body(new ErrorResponse("SUPER users can only be self-deleted"));
-            }
+            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId()))
+                throw new RuntimeException("SUPER users can only be self-deleted");
 
             // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
-            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER) {
-                if(!requestingUser.getId().equals(user.getId())) {
-                    LOGGER.error("ADMIN users can only be self-deleted or by a SUPER user");
-                    return ResponseEntity.status(403).body(new ErrorResponse("ADMIN users can only be self-deleted or by a SUPER user"));
-                }
-            }
+            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER)
+                if(!requestingUser.getId().equals(user.getId()))
+                    throw new RuntimeException("ADMIN users can only be self-deleted or by a SUPER user");
 
             // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
-                LOGGER.error("Users can only be deleted by self, ADMIN, or SUPER users");
-                return ResponseEntity.status(403).body(new ErrorResponse("Users can only be deleted by self, ADMIN, or SUPER users"));
-            }
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
+                throw new RuntimeException("Users can only be deleted by self, ADMIN, or SUPER users");
 
             //Delete the user
             userRepository.delete(user);
 
-            LOGGER.info("User was successfully deleted");
-
             //Return a 200 response with a success message
-            return ResponseEntity.ok(new UserResponse("User was deleted"));
-        } catch (NullPointerException exception) {
-            LOGGER.error(exception.getMessage());
-
-            return ResponseEntity.status(500).body(
-                    new ErrorResponse("NPE - trouble getting the request")
-            );
+            LOGGER.info("User was successfully deleted");
+            return ResponseEntity.ok(new UserResponse("User was successfully deleted"));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -422,25 +360,18 @@ public class UserService {
 
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> {
-                        LOGGER.error("User not found with JWT: " + authToken);
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Update the user's email
             user.setEmail(userRequest.getEmail());
             userRepository.save(user);
 
-            LOGGER.info("Email was successfully updated for user");
-
             //Return a 200 response with a success message
-            return ResponseEntity.ok(new UserResponse("Email was updated"));
-        } catch (NullPointerException exception) {
-            LOGGER.error(exception.getMessage());
-
-            return ResponseEntity.status(500).body(
-                    new ErrorResponse("NPE - trouble getting the request")
-            );
+            LOGGER.info("Email successfully updated");
+            return ResponseEntity.ok(new UserResponse("Email successfully updated"));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -464,10 +395,7 @@ public class UserService {
 
             //Get the user, throw an exception if the username is not found
             User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
-                    .orElseThrow(() -> {
-                        LOGGER.error("Unable to find user with JWT: " + authToken);
-                        return new UsernameNotFoundException("User not found");
-                    });
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Update the user's username
             user.setUsername(userRequest.getUsername());
@@ -479,13 +407,12 @@ public class UserService {
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
 
-            LOGGER.info("Succesfully updated username for user");
-
             //Return a 200 response with a success message
+            LOGGER.info("Succesfully updated username for user");
             return ResponseEntity.ok(new UpdateUsernameResponse(refreshToken, jwtService.generateToken(user, false)));
         } catch (Exception ex) {
-            LOGGER.error("Error processing updateUsername request --- " + ex.getMessage());
-            return ResponseEntity.status(404).body(new ErrorResponse("There was an error processing your request"));
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));
         }
     }
 
@@ -500,6 +427,7 @@ public class UserService {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("No user exists with that username"));
 
+            //Return a 200 response with the user's ID
             LOGGER.info("User Id retrieval success");
             return ResponseEntity.ok(user.getId());
         } catch (Exception ex) {
