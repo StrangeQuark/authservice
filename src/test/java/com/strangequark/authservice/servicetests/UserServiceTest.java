@@ -89,6 +89,9 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void disableUserTest() {
+        //Init the Admin user as the request context holder
+        setupAdminUser();
+
         User enabledTestUser = new User("enabledTestUser", "enabledTest@test.com", Role.USER, true, new HashSet<>(), passwordEncoder.encode("password"));
         userRepository.save(enabledTestUser);
 
