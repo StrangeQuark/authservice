@@ -25,7 +25,7 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.updatePassword(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("Password was successfully updated", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("Password successfully updated", ((UserResponse) response.getBody()).getMessage());
     }
 
     @Test
@@ -44,7 +44,7 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.addAuthorizationsToUser(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("Authorizations were successfully added", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("Authorizations successfully added", ((UserResponse) response.getBody()).getMessage());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.removeAuthorizations(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("Authorizations were successfully removed", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("Authorizations successfully removed", ((UserResponse) response.getBody()).getMessage());
     }
 
     @Test
@@ -84,7 +84,21 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.enableUser(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("User is enabled", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("User has been enabled", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void disableUserTest() {
+        User enabledTestUser = new User("enabledTestUser", "enabledTest@test.com", Role.USER, true, new HashSet<>(), passwordEncoder.encode("password"));
+        userRepository.save(enabledTestUser);
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail(enabledTestUser.getEmail());
+
+        ResponseEntity<?> response =  userService.disableUser(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("User has been disabled", ((UserResponse) response.getBody()).getMessage());
     }
 
     @Test
@@ -96,7 +110,7 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.deleteUser(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("User was deleted", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("User successfully deleted", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 
@@ -111,7 +125,7 @@ public class UserServiceTest extends BaseServiceTest {
         ResponseEntity<?> response =  userService.updateEmail(userRequest);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals("Email was updated", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals("Email successfully updated", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertEquals(userRepository.findByUsername(testUser.getUsername()).get().getEmail(), newEmail);
     }
 
@@ -128,5 +142,13 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(newUsername).isPresent());
         Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
+    }
+
+    @Test
+    void getUserIdTest() {
+        ResponseEntity<?> response = userService.getUserId(testUser.getUsername());
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals(testUser.getId(), response.getBody());
     }
 }
