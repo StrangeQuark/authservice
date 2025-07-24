@@ -223,6 +223,11 @@ public class UserService {
                 .or(() -> userRepository.findByUsername(userRequest.getUsername()));
 
         if (userOptional.isPresent()) {
+            if(userOptional.get().isEnabled()) {
+                LOGGER.error("User is already enabled");
+                return ResponseEntity.status(400).body(new ErrorResponse("User is already enabled"));
+            }
+
             userOptional.get().setEnabled(true);
             userRepository.save(userOptional.get());
 
@@ -256,22 +261,21 @@ public class UserService {
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
+            if(!user.isEnabled())
+                throw new RuntimeException("User is already disabled");
+
             // Throw error if the target user is a SUPER user
-            if(user.getRole() == Role.SUPER) {
+            if(user.getRole() == Role.SUPER)
                 throw new RuntimeException("Super users cannot be disabled");
-            }
 
             // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
-            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER) {
-                if(!requestingUser.getId().equals(user.getId())) {
+            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER)
+                if(!requestingUser.getId().equals(user.getId()))
                     throw new RuntimeException("ADMIN users can only be self disabled or by a SUPER user");
-                }
-            }
 
             // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
                 throw new RuntimeException("Roles can only be removed by self, ADMIN, or SUPER users");
-            }
 
             // Disable the user
             user.setEnabled(false);
