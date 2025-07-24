@@ -112,7 +112,7 @@ public class UserService {
      * Business logic adding authorities to a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> addAuthorizationsToUser(UserRequest request) {
+    public ResponseEntity<?> addAuthorizationsToUser(UserRequest userRequest) {
         LOGGER.info("Attempting to add authorizations to user");
 
         try {
@@ -126,10 +126,11 @@ public class UserService {
                         return new UsernameNotFoundException("Requesting user not found");
                     });
 
-            //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(request.getUsername())
+            //Get the target user, throw an exception if the username or email are not found
+            User user = userRepository.findByUsername(userRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> {
-                        LOGGER.error("Requested user not found");
+                        LOGGER.error("Target user not found");
                         return new UsernameNotFoundException("User not found");
                     });
 
@@ -146,7 +147,7 @@ public class UserService {
             }
 
             //Append the authorizations and save
-            user.appendAuthorizations(request.getAuthorizations());
+            user.appendAuthorizations(userRequest.getAuthorizations());
             userRepository.save(user);
 
             LOGGER.info("Authorization successfully added");
@@ -165,7 +166,7 @@ public class UserService {
      * Business logic for removing authorities from a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
-    public ResponseEntity<?> removeAuthorizations(UserRequest request) {
+    public ResponseEntity<?> removeAuthorizations(UserRequest userRequest) {
         LOGGER.info("Attempting to remove authorizations from self");
 
         try {
@@ -179,10 +180,11 @@ public class UserService {
                         return new UsernameNotFoundException("Requesting user not found");
                     });
 
-            //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(request.getUsername())
+            //Get the target user, throw an exception if the username or email are not found
+            User user = userRepository.findByUsername(userRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> {
-                        LOGGER.error("Requested user not found");
+                        LOGGER.error("Target user not found");
                         return new UsernameNotFoundException("User not found");
                     });
 
@@ -207,7 +209,7 @@ public class UserService {
             }
 
             //Remove the authorizations and save
-            user.removeAuthorizations(request.getAuthorizations());
+            user.removeAuthorizations(userRequest.getAuthorizations());
             userRepository.save(user);
 
             LOGGER.info("Authorizations were successfully removed");
@@ -263,7 +265,8 @@ public class UserService {
         LOGGER.info("Attempting to enable user");
 
         // Check if the User exists
-        Optional<User> userOptional = userRepository.findByEmail(userRequest.getEmail());
+        Optional<User> userOptional = userRepository.findByEmail(userRequest.getEmail())
+                .or(() -> userRepository.findByUsername(userRequest.getUsername()));
 
         if (userOptional.isPresent()) {
             userOptional.get().setEnabled(true);
@@ -299,11 +302,39 @@ public class UserService {
             );
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+            User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
                     .orElseThrow(() -> {
-                        LOGGER.error("User was not found for JWT: " + authToken);
+                        LOGGER.error("Requesting user was not found for JWT: " + authToken);
+                        return new UsernameNotFoundException("Requesting user not found");
+                    });
+
+            //Get the target user, throw an exception if the username or email are not found
+            User user = userRepository.findByUsername(userRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(userRequest.getEmail()))
+                    .orElseThrow(() -> {
+                        LOGGER.error("Target user not found");
                         return new UsernameNotFoundException("User not found");
                     });
+
+            // If the target user is a SUPER user, ensure the requesting user is the target user
+            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId())) {
+                LOGGER.error("SUPER users can only be self-deleted");
+                return ResponseEntity.status(403).body(new ErrorResponse("SUPER users can only be self-deleted"));
+            }
+
+            // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
+            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER) {
+                if(!requestingUser.getId().equals(user.getId())) {
+                    LOGGER.error("ADMIN users can only be self-deleted or by a SUPER user");
+                    return ResponseEntity.status(403).body(new ErrorResponse("ADMIN users can only be self-deleted or by a SUPER user"));
+                }
+            }
+
+            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId())) {
+                LOGGER.error("Users can only be deleted by self, ADMIN, or SUPER users");
+                return ResponseEntity.status(403).body(new ErrorResponse("Users can only be deleted by self, ADMIN, or SUPER users"));
+            }
 
             //Delete the user
             userRepository.delete(user);
