@@ -1,5 +1,6 @@
 package com.strangequark.authservice.config;
 
+import com.strangequark.authservice.serviceaccount.ServiceAccount;
 import com.strangequark.authservice.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -97,6 +98,27 @@ public class JwtService {
                         (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
                 .setAudience(isRefreshToken ? null : user.getAuthorizations().toString())
+                .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * Generate a JWT token for service accounts without extra claims, expiring after {@link #ACCESS_TOKEN_EXPIRATION_TIME} or {@link #REFRESH_TOKEN_EXPIRATION_TIME}
+     * @param serviceAccount The service account object to extract the clientId
+     * @param isRefreshToken Flag to specify refresh or access token
+     * @return Generated JWT token
+     */
+    public String generateServiceAccountToken(ServiceAccount serviceAccount, boolean isRefreshToken) {
+        return Jwts
+                .builder()
+                .setClaims(null)
+                .setId(serviceAccount.getId().toString())
+                .setSubject(serviceAccount.getClientId())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() +
+                        (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
+                ))
+                .setAudience(isRefreshToken ? null : serviceAccount.getAuthorizations().toString())
                 .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
                 .compact();
     }
