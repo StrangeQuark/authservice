@@ -58,8 +58,7 @@ public class SecurityConfig {
         httpSecurity
                 .csrf().disable()//Disable CSRF
                 .authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/authenticate",
-                        "/api/auth/health/**", "/api/auth/user/send-password-reset-email", "/api/auth/user/enable-user",
-                        "/api/auth/user/get-user-id", "/api/auth/internal/bootstrap").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
+                        "/api/auth/health/**", "/api/auth/internal/bootstrap", "api/auth/service-account/authenticate").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
                 .anyRequest().authenticated()//All other requests need to be authenticated
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//Spring will create a new session for each request

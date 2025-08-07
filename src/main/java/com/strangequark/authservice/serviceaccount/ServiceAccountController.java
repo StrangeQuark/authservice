@@ -15,7 +15,7 @@ public class ServiceAccountController {
         this.serviceAccountService = serviceAccountService;
     }
 
-    @GetMapping
+    @GetMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody ServiceAccountRequest serviceAccountRequest) {
         return serviceAccountService.authenticate(serviceAccountRequest);
     }
