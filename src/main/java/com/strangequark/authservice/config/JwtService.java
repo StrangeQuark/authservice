@@ -118,7 +118,7 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() +
                         (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
-                .setAudience(isRefreshToken ? null : serviceAccount.getAuthorizations().toString())
+//                .setAudience(serviceAccount.getAuthorizations().toString())
                 .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
                 .compact();
     }
