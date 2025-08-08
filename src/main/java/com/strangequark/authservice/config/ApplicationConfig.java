@@ -1,5 +1,6 @@
 package com.strangequark.authservice.config;
 
+import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.user.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,12 +26,19 @@ public class ApplicationConfig {
     private final UserRepository userRepository;
 
     /**
+     * {@link ServiceAccountRepository} for fetching service accounts from the database
+     */
+    private final ServiceAccountRepository serviceAccountRepository;
+
+    /**
      * Constructs a new {@code ApplicationConfig} with the given dependencies.
      *
      * @param userRepository {@link UserRepository} for processing requests to the User database
+     * @param serviceAccountRepository {@link ServiceAccountRepository} for processing requests to the Service Account database
      */
-    public ApplicationConfig(UserRepository userRepository) {
+    public ApplicationConfig(UserRepository userRepository, ServiceAccountRepository serviceAccountRepository) {
         this.userRepository = userRepository;
+        this.serviceAccountRepository = serviceAccountRepository;
     }
 
     /**
@@ -39,9 +48,11 @@ public class ApplicationConfig {
      */
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> userRepository.findByUsername(username).map(user -> (UserDetails) user)
+                    .or(() -> serviceAccountRepository.findByClientId(username).map(sa -> (UserDetails) sa))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
+
 
     /**
      * {@link Bean} data access object responsible for fetching
