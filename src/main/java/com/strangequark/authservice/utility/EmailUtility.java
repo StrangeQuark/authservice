@@ -2,12 +2,18 @@
 
 package com.strangequark.authservice.utility;
 
+import com.strangequark.authservice.auth.AuthenticationResponse;
+import com.strangequark.authservice.serviceaccount.ServiceAccountRequest;
+import com.strangequark.authservice.serviceaccount.ServiceAccountService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Properties;
@@ -15,6 +21,7 @@ import java.util.Properties;
 /**
  * Utility for sending API requests to the EmailService
  */
+@Service
 public class EmailUtility {
     /**
      * {@link Logger} for writing {@link EmailUtility} application logs
@@ -27,17 +34,53 @@ public class EmailUtility {
     private static String SENDER = "donotreply@authservice.com";
 
     /**
+     * Secret for Auth service account
+     */
+    @Value("${SERVICE_SECRET_AUTH}")
+    private String SERVICE_SECRET_AUTH;
+
+    /**
+     * For authenticating Auth service account
+     */
+    @Autowired
+    private ServiceAccountService serviceAccountService;
+
+    public String authenticateServiceAccount() {
+        try {
+            LOGGER.info("Attempting to authenticate service account");
+
+            ServiceAccountRequest request = new ServiceAccountRequest("auth", SERVICE_SECRET_AUTH);
+
+            AuthenticationResponse response = (AuthenticationResponse) serviceAccountService.authenticate(request).getBody();
+
+            String token = response.getJwtToken();
+
+            if(token == null)
+                throw new RuntimeException("jwtToken not found in authentication response");
+
+            LOGGER.info("Service account authentication success");
+            return token;
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Business logic sending an API request to the EmailService
      * @param recipient
      * @param subject
      * @param emailType
      */
-    public static ResponseEntity<?> sendEmail(String recipient, String subject, EmailType emailType) {
+    public ResponseEntity<?> sendEmail(String recipient, String subject, EmailType emailType) {
         LOGGER.info("Attempting to send email API request");
+
+        String accessToken = authenticateServiceAccount();
 
         //Set the headers
         LOGGER.info("Setting email API request headers");
         HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         //Create the request body

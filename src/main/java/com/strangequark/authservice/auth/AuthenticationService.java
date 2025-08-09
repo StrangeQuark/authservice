@@ -9,6 +9,7 @@ import com.strangequark.authservice.utility.EmailType; // Integration line: Emai
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,6 +49,12 @@ public class AuthenticationService {
      * {@link AuthenticationManager} for authenticating JWT tokens
      */
     private final AuthenticationManager authenticationManager;
+
+    /** Integration function start: Email
+     * {@link EmailUtility} for sending requests to email service
+     */
+    @Autowired
+    EmailUtility emailUtility; // Integration function end: Email
 
     /**
      * Constructs a new {@code AuthenticationService} with the given dependencies.
@@ -91,7 +98,7 @@ public class AuthenticationService {
             //Send an email so the user can enable their account   -   Integration function start: Email
             LOGGER.info("Attempting to send registration email");
             try {
-                ResponseEntity<?> response = EmailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+                ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
 
                 if (response.getStatusCode().value() != 200)
                     throw new RuntimeException("Error when sending registration email: " + response.getBody());
