@@ -70,7 +70,7 @@ public class EncryptionUtility {
         try {
             SecretKey key = new SecretKeySpec(ENCRYPTION_KEY.getBytes(), ALGORITHM);
 
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, key);
 
             return new String(cipher.doFinal(Base64.getDecoder().decode(data)));

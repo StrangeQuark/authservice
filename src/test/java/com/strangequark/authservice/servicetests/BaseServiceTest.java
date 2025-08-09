@@ -5,11 +5,9 @@ import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +22,12 @@ import java.util.HashSet;
 @ActiveProfiles("test")
 public abstract class BaseServiceTest {
 
+    static {
+        System.setProperty("ENCRYPTION_KEY", "AA1A2A8C0E4F76FB3C13F66225AAAC42");
+        System.setProperty("SERVICE_SECRET_AUTH", "testClientPassword");
+        System.setProperty("SERVICE_ACCOUNTS", "auth");
+    }
+
     @Autowired
     public UserRepository userRepository;
     @Autowired
@@ -33,14 +37,6 @@ public abstract class BaseServiceTest {
     public User testUser;
     public User testAdmin;
     private String accessToken;
-
-    @Value("${ENCRYPTION_KEY}")
-    String encryptionKey;
-
-    @BeforeAll
-    void setupEncryptionKey() {
-        System.setProperty("ENCRYPTION_KEY", encryptionKey);
-    }
 
     @BeforeEach
     void setup() {
