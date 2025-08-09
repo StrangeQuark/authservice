@@ -5,22 +5,15 @@ import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashSet;
 import java.util.Optional;
 
-@DataJpaTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
-public class UserRepositoryTest {
+public class UserRepositoryTest extends BaseRepositoryTest {
 
     @TestConfiguration
     static class PasswordEncoderTestConfiguration {
@@ -31,19 +24,7 @@ public class UserRepositoryTest {
     }
 
     @Autowired
-    private TestEntityManager testEntityManager;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Value("${ENCRYPTION_KEY}")
-    String encryptionKey;
-
-    @BeforeAll
-    void setupEncryptionKey() {
-        System.setProperty("ENCRYPTION_KEY", encryptionKey);
-    }
 
     @BeforeEach
     void setup() {
