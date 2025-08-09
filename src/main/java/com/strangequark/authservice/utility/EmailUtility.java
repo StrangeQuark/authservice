@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Properties;
@@ -20,7 +21,7 @@ import java.util.Properties;
 /**
  * Utility for sending API requests to the EmailService
  */
-@Ser
+@Service
 public class EmailUtility {
     /**
      * {@link Logger} for writing {@link EmailUtility} application logs
