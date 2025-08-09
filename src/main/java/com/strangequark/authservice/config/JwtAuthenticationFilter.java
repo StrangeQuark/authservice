@@ -55,6 +55,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
+     * Check the request path, if whitelisted, don't perform filter
+     * @param request The request being sent to the server - Cannot be null
+     * @return Boolean whether the path matches or not, if true, skip filter
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.matches("^/api/auth/register$") ||
+                path.matches("^/api/auth/authenticate$") ||
+                path.matches("^/api/auth/health$") ||
+                path.matches("^/api/auth/internal/bootstrap$") ||
+                path.matches("^/api/auth/service-account/authenticate$");
+    }
+
+    /**
      * Perform the following operations in sequential order:
      *      -Check if the authorization header is null or does not start with "Bearer ", if true then go to the
      *      next filter and return
