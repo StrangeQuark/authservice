@@ -20,6 +20,7 @@ import java.util.Properties;
 /**
  * Utility for sending API requests to the EmailService
  */
+@Ser
 public class EmailUtility {
     /**
      * {@link Logger} for writing {@link EmailUtility} application logs
