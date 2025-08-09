@@ -34,4 +34,18 @@ public class AuthenticationResponse {
         this();
         this.jwtToken = jwtToken;
     }
+
+    /**
+     * Getter for timestamp
+     */
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    /**
+     * Getter for JWT token
+     */
+    public String getJwtToken() {
+        return jwtToken;
+    }
 }
