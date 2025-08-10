@@ -157,7 +157,7 @@ public class AuthenticationService {
             return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
-            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(401).body(new ErrorResponse(ex.getMessage()));
         }
     }
 }
