@@ -400,7 +400,7 @@ public class UserService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Update the user's username
-            user.setUsername(userRequest.getUsername());
+            user.setUsername(userRequest.getNewUsername());
 
             //Create a JWT token to authenticate the user
             String refreshToken = jwtService.generateToken(user, true);

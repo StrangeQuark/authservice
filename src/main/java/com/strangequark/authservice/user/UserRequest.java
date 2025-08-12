@@ -22,6 +22,11 @@ public class UserRequest {
     private String password;
 
     /**
+     * New username for update request
+     */
+    private String newUsername;
+
+    /**
      * New password for update request
      */
     private String newPassword;
@@ -77,6 +82,20 @@ public class UserRequest {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * Get newUsername for {@link UserRequest} object
+     */
+    public String getNewUsername() {
+        return newUsername;
+    }
+
+    /**
+     * Set newUsername for {@link UserRequest} object
+     */
+    public void setNewUsername(String newUsername) {
+        this.newUsername = newUsername;
     }
 
     /**
