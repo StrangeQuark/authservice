@@ -365,7 +365,7 @@ public class UserService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Update the user's email
-            user.setEmail(userRequest.getEmail());
+            user.setEmail(userRequest.getNewEmail());
             userRepository.save(user);
 
             //Return a 200 response with a success message
