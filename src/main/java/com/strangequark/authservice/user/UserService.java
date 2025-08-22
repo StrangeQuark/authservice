@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -437,4 +439,31 @@ public class UserService {
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
+
+    /**
+     * Business logic for searching for a user based on username or email address
+     * @return {@link ResponseEntity} with user's ID if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> searchUsers(String query) {
+        LOGGER.info("Attempting to query users");
+
+        try {
+            List<User> matches = new ArrayList<>();
+            matches.addAll(userRepository.findByUsernameContainingIgnoreCase(query));
+            matches.addAll(userRepository.findByEmailContainingIgnoreCase(query));
+
+            if (matches.isEmpty()) {
+                throw new RuntimeException("No user exists with that username or email");
+            }
+
+            LOGGER.info("User search success");
+            return ResponseEntity.ok(
+                    matches.stream().map(User::getId).toList()
+            );
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
 }

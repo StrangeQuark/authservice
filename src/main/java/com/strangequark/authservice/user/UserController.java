@@ -116,11 +116,21 @@ public class UserController {
 
     /**
      * Get request endpoint for retrieving a user's ID from their username
-     * @param {@link UserRequest} containing the user's credentials
+     * @param username containing the user's credentials
      * @return {@link ResponseEntity}
      */
     @GetMapping("/get-user-id")
     public ResponseEntity<?> getUserId(@RequestParam String username) {
         return userService.getUserId(username);
+    }
+
+    /**
+     * Get request endpoint for searching for users based on username or email address
+     * @param query containing the user's username or email address
+     * @return {@link ResponseEntity}
+     */
+    @GetMapping("/search-users")
+    public ResponseEntity<?> searchUsers(@RequestParam String query) {
+        return userService.searchUsers(query);
     }
 }
