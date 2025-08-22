@@ -2,6 +2,7 @@ package com.strangequark.authservice.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,6 +21,18 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @param email The email to be retrieved
      */
     Optional<User> findByEmail(String email);
+
+    /**
+     * Find a user in the database by their username with a substring
+     * @param username The username to be retrieved
+     */
+    List<User> findByUsernameContainingIgnoreCase(String username);
+
+    /**
+     * Find a user in the database by their email with a substring
+     * @param email The email to be retrieved
+     */
+    List<User> findByEmailContainingIgnoreCase(String email);
 
     /**
      * Determine if at least 1 user exists with a given role
