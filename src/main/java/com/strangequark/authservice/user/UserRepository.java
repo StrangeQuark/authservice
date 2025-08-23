@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * An interface to manage the users' information in the database via Spring's JPA
@@ -39,4 +40,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @param role {@link Role}
      */
     boolean existsByRole(Role role);
+
+    /**
+     * Return a list of user objects when passed a list of user IDs
+     * @param ids to be retrieved
+     */
+    List<User> findByIdIn(List<UUID> ids);
 }

@@ -18,6 +18,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * {@link Service} for manipulating {@link User} objects
@@ -466,4 +467,25 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<?> getUserDetailsByIds(List<UUID> ids) {
+        LOGGER.info("Attempting to get list of user details by ids");
+
+        try {
+            List<User> users = userRepository.findByIdIn(ids);
+
+            List<UserRequest> response = users.stream()
+                    .map(user -> {
+                        UserRequest r = new UserRequest();
+                        r.setUsername(user.getUsername());
+                        r.setEmail(user.getEmail());
+                        return r;
+                    }).toList();
+
+            LOGGER.info("List of user details successfully compiled");
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
 }

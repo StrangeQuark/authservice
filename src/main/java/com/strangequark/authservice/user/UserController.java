@@ -3,6 +3,9 @@ package com.strangequark.authservice.user;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * {@link RestController} for manipulating {@link User} objects
  */
@@ -132,5 +135,15 @@ public class UserController {
     @GetMapping("/search-users")
     public ResponseEntity<?> searchUsers(@RequestParam String query) {
         return userService.searchUsers(query);
+    }
+
+    /**
+     * Get request endpoint for retrieving a list of user details by passing user ids
+     * @param ids list of the user ids to fetch
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/get-user-details-by-ids")
+    public ResponseEntity<?> getUserDetailsByIds(@RequestBody List<UUID> ids) {
+        return userService.getUserDetailsByIds(ids);
     }
 }
