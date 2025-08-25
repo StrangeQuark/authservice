@@ -473,9 +473,10 @@ public class UserService {
         try {
             List<User> users = userRepository.findByIdIn(ids);
 
-            List<UserRequest> response = users.stream()
+            List<UserResponse> response = users.stream()
                     .map(user -> {
-                        UserRequest r = new UserRequest();
+                        UserResponse r = new UserResponse();
+                        r.setUserId(user.getId());
                         r.setUsername(user.getUsername());
                         r.setEmail(user.getEmail());
                         return r;

@@ -3,7 +3,7 @@ package com.strangequark.authservice.user;
 import java.util.Set;
 
 /**
- * Request object for updating the user's password
+ * Request object for updating the user's details
  */
 public class UserRequest {
     /**

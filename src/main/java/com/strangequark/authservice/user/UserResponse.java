@@ -3,6 +3,7 @@ package com.strangequark.authservice.user;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Response object for user requests
@@ -19,6 +20,21 @@ public class UserResponse {
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private String message;
+
+    /**
+     * ID of the user
+     */
+    private UUID userId;
+
+    /**
+     * Username of the user
+     */
+    private String username;
+
+    /**
+     * Email of the user
+     */
+    private String email;
 
     /**
      * Default constructor, set the timestamp
@@ -54,5 +70,47 @@ public class UserResponse {
      */
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    /**
+     * Get user ID
+     */
+    public UUID getUserId() {
+        return userId;
+    }
+
+    /**
+     * Set user ID
+     */
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    /**
+     * Get username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * Set username
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * Get email
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * Set email
+     */
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
