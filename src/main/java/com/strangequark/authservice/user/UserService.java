@@ -445,29 +445,26 @@ public class UserService {
      * Business logic for searching for a user based on username or email address
      * @return {@link ResponseEntity} with user's ID if successful, otherwise return with an {@link ErrorResponse}
      */
-//    public ResponseEntity<?> searchUsers(String query) {
-//        LOGGER.info("Attempting to query users");
-//
-//        try {
-//            List<User> matches = new ArrayList<>();
-//
-//            LOGGER.info("User search success");
-//            return ResponseEntity.ok(
-//                    matches.stream().map(
-//                            user -> {
-//                                UserResponse r = new UserResponse();
-//                                r.setUserId(user.getId());
-//                                r.setUsername(user.getUsername());
-//                                r.setEmail(user.getEmail());
-//                                return r;
-//                            }
-//                    ).toList()
-//            );
-//        } catch (Exception ex) {
-//            LOGGER.error(ex.getMessage());
-//            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
-//        }
-//    }
+    public ResponseEntity<?> searchUsers(String query) {
+        LOGGER.info("Attempting to query users");
+
+        try {
+            User user = userRepository.findByUsername(query)
+                    .or(() -> userRepository.findByEmail(query))
+                    .orElseThrow(() -> new RuntimeException("No user exists with that username or email address"));
+
+            UserResponse response = new UserResponse();
+            response.setUserId(user.getId());
+            response.setUsername(user.getUsername());
+            response.setEmail(user.getEmail());
+
+            LOGGER.info("User search success");
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
 
     public ResponseEntity<?> getUserDetailsByIds(List<UUID> ids) {
         LOGGER.info("Attempting to get list of user details by ids");
