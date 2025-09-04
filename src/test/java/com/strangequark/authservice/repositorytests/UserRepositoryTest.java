@@ -10,8 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 
 public class UserRepositoryTest extends BaseRepositoryTest {
 
@@ -26,9 +25,11 @@ public class UserRepositoryTest extends BaseRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
+    private User testUser;
+
     @BeforeEach
     void setup() {
-        User testUser = new User("testUser", "test@test.com", Role.USER, true, new HashSet<>(), passwordEncoder.encode("password"));
+        testUser = new User("testUser", "test@test.com", Role.USER, true, new HashSet<>(), passwordEncoder.encode("password"));
         testEntityManager.persistAndFlush(testUser);
     }
 
@@ -49,5 +50,17 @@ public class UserRepositoryTest extends BaseRepositoryTest {
     @Test
     void existsByRoleTest() {
         Assertions.assertTrue(userRepository.existsByRole(Role.USER));
+    }
+
+    @Test
+    void findByIdInTest() {
+        List<UUID> uuidList = new ArrayList<>();
+        uuidList.add(testUser.getId());
+        uuidList.add(UUID.randomUUID());
+
+        List<User> users = userRepository.findByIdIn(uuidList);
+
+        Assertions.assertEquals(1, users.size());
+        Assertions.assertTrue(users.contains(testUser));
     }
 }

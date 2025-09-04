@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class UserServiceTest extends BaseServiceTest {
 
@@ -122,14 +121,16 @@ public class UserServiceTest extends BaseServiceTest {
         String newEmail = "new@test.com";
 
         UserRequest userRequest = new UserRequest();
-        userRequest.setEmail(newEmail);
+        userRequest.setNewEmail(newEmail);
         userRequest.setPassword("password");
 
         ResponseEntity<?> response =  userService.updateEmail(userRequest);
 
+        User user = userRepository.findByUsername(testUser.getUsername()).get();
+
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Email successfully updated", ((UserResponse) response.getBody()).getMessage());
-        Assertions.assertEquals(userRepository.findByUsername(testUser.getUsername()).get().getEmail(), newEmail);
+        Assertions.assertEquals(newEmail, userRepository.findByUsername(testUser.getUsername()).get().getEmail());
     }
 
     @Test
@@ -137,7 +138,7 @@ public class UserServiceTest extends BaseServiceTest {
         String newUsername = "newUsername";
 
         UserRequest userRequest = new UserRequest();
-        userRequest.setUsername(newUsername);
+        userRequest.setNewUsername(newUsername);
         userRequest.setPassword("password");
 
         ResponseEntity<?> response =  userService.updateUsername(userRequest);
@@ -153,5 +154,32 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals(testUser.getId(), response.getBody());
+    }
+
+    @Test
+    void searchUsersTest() {
+        ResponseEntity<?> response = userService.searchUsers(testUser.getUsername());
+
+        UserResponse userResponse = (UserResponse) response.getBody();
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals(testUser.getId(), userResponse.getUserId());
+        Assertions.assertEquals(testUser.getUsername(), userResponse.getUsername());
+        Assertions.assertEquals(testUser.getEmail(), userResponse.getEmail());
+    }
+
+    @Test
+    void getUserDetailsByIdsTest() {
+        List<UUID> ids = new ArrayList<>();
+
+        ids.add(testUser.getId());
+        ids.add(UUID.randomUUID());
+
+        ResponseEntity<?> response = userService.getUserDetailsByIds(ids);
+        List<UserResponse> userResponseList = (List<UserResponse>) response.getBody();
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals(1, userResponseList.size());
+        Assertions.assertEquals(testUser.getUsername(), userResponseList.getFirst().getUsername());
     }
 }
