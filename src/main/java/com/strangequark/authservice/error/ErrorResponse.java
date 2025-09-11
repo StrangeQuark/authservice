@@ -21,12 +21,6 @@ public class ErrorResponse {
     private String errorMessage;
 
     /**
-     * Code for the error
-     */
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
-    private int errorCode;
-
-    /**
      * Default constructor, set the timestamp
      */
     public ErrorResponse() {
@@ -39,22 +33,6 @@ public class ErrorResponse {
     public ErrorResponse(String errorMessage) {
         this();
         this.errorMessage = errorMessage;
-    }
-
-    /**
-     * Constructor if only errorCode is passed
-     */
-    public ErrorResponse(int errorCode) {
-        this();
-        this.errorCode = errorCode;
-    }
-
-    /**
-     * Constructor if both errorMessage and errorCode are passed
-     */
-    public ErrorResponse(String errorMessage, int errorCode) {
-        this(errorMessage);
-        this.errorCode = errorCode;
     }
 
     /**
