@@ -148,7 +148,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             //Create JSON for response body
             ObjectWriter objectWriter = new ObjectMapper().registerModule(new JavaTimeModule()).writer().withDefaultPrettyPrinter();
-            String responseBody = objectWriter.writeValueAsString(new ErrorResponse("Your JWT refresh token has expired", 4001));
+            String responseBody = objectWriter.writeValueAsString(new ErrorResponse("Your JWT refresh token has expired"));
 
             //Unauthorized status code
             response.setStatus(401);
