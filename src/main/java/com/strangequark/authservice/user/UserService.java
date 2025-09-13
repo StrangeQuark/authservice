@@ -211,8 +211,8 @@ public class UserService {
             LOGGER.error(ex.getMessage());
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
-    } // Integration function end: Email
-
+    }
+    // Integration function end: Email
     /**
      * Business logic for enabling a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
