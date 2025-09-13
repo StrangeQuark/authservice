@@ -23,8 +23,8 @@ pipeline {
                     echo "Environment variables written to .env"
                 }
             }
-        }// Integration function end: Vault
-
+        }
+        // Integration function end: Vault
         stage("Deploy & Health Check") {
             steps {
                 script {

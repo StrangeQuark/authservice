@@ -55,8 +55,8 @@ public class AuthenticationService {
      * {@link EmailUtility} for sending requests to email service
      */
     @Autowired
-    EmailUtility emailUtility; // Integration function end: Email
-
+    EmailUtility emailUtility;
+    // Integration function end: Email
     /**
      * Constructs a new {@code AuthenticationService} with the given dependencies.
      *

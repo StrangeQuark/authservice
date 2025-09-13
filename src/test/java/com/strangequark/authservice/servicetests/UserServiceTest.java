@@ -61,8 +61,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals("Authorizations successfully removed", ((UserResponse) response.getBody()).getMessage());
     }
 
-    // Integration function start: Email
-    @Test
+    @Test // Integration function start: Email
     void sendPasswordResetEmailTest() {
         UserRequest userRequest = new UserRequest();
         userRequest.setEmail(testUser.getEmail());
@@ -71,8 +70,8 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(500, response.getStatusCode().value());
         Assertions.assertEquals("Unable to send password reset email", ((ErrorResponse) response.getBody()).getErrorMessage());
-    }// Integration function end: Email
-
+    }
+    // Integration function end: Email
     @Test
     void enableUserTest() {
         User disabledTestUser = new User("disabledTestUser", "disabledTest@test.com", Role.USER, false, new HashSet<>(), passwordEncoder.encode("password"));
