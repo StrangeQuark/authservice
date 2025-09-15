@@ -2,6 +2,7 @@
 
 package com.strangequark.authservice.utility;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -20,22 +21,27 @@ public class FileUtility {
 
     /**
      * Business logic sending an API request to the FileService
-     * @param id User ID to be deleted
+     * @param username User to be deleted
      */
-    public ResponseEntity<?> deleteUserByIdFromAllCollections(String id, String authToken) {
+    public ResponseEntity<?> deleteUserFromAllCollections(String username, String authToken) {
         LOGGER.info("Attempting to send file API request");
 
         //Set the headers
         LOGGER.info("Setting file API request headers");
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
-        headers.setContentType(MediaType.TEXT_PLAIN);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        //Create the request body
+        LOGGER.info("Creating file API request body");
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("username", username);
 
         //Compile the HttpEntity
-        HttpEntity<String> requestEntity = new HttpEntity<>(id, headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         //Define the endpoint URL
-        String url = "http://file-service:6010/api/file/delete-user-by-id-from-all-collections";
+        String url = "http://file-service:6010/api/file/delete-user-from-all-collections";
 
         LOGGER.info("File API request creation complete, attempting to send request");
         return new RestTemplate().exchange(
