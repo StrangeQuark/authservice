@@ -4,14 +4,18 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
+import com.strangequark.authservice.utility.FileUtility;
+import com.strangequark.authservice.utility.VaultUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -46,6 +50,18 @@ public class UserService {
      */
     private final AuthenticationManager authenticationManager;
 
+    /** Integration function start: File
+     * {@link FileUtility} for sending requests to file service
+     */
+    @Autowired
+    FileUtility fileUtility;
+    // Integration function end: File
+    /** Integration function start: Vault
+     * {@link VaultUtility} for sending requests to vault service
+     */
+    @Autowired
+    VaultUtility vaultUtility;
+    // Integration function end: Vault
     /**
      * Constructs a new {@code UserService} with the given dependencies.
      *
@@ -331,6 +347,31 @@ public class UserService {
             // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
                 throw new RuntimeException("Users can only be deleted by self, ADMIN, or SUPER users");
+
+            // Integration function start: File
+            LOGGER.info("Attempting to delete user from all File collections");
+            try {
+                ResponseEntity<?> response = fileUtility.deleteUserByIdFromAllCollections(user.getId().toString(), authToken);
+
+                if (response.getStatusCode().value() != 200)
+                    throw new RuntimeException("Error when deleting user from fileservice:\n\n" + response.getBody());
+            } catch (ResourceAccessException resourceAccessException) {
+                //If we are unable to reach the file service, proceed with user deletion
+                LOGGER.error("Unable to reach file service: " + resourceAccessException.getMessage());
+                LOGGER.info("Continuing to delete user");
+            }// Integration function end: File
+            // Integration function start: Vault
+            LOGGER.info("Attempting to delete user from all Vault services");
+            try {
+                ResponseEntity<?> response = vaultUtility.deleteUserByIdFromAllServices(user.getId().toString(), authToken);
+
+                if (response.getStatusCode().value() != 200)
+                    throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + response.getBody());
+            } catch (ResourceAccessException resourceAccessException) {
+                //If we are unable to reach the vault service, proceed with user deletion
+                LOGGER.error("Unable to reach vault service: " + resourceAccessException.getMessage());
+                LOGGER.info("Continuing to delete user");
+            }// Integration function end: Vault
 
             //Delete the user
             userRepository.delete(user);
