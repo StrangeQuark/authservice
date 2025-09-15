@@ -41,7 +41,7 @@ public class VaultUtility {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         //Define the endpoint URL
-        String url = "http://vault-service:6020/api/vault/delete-id-from-all-services";
+        String url = "http://vault-service:6020/api/vault/delete-user-from-all-services";
 
         LOGGER.info("Vault API request creation complete, attempting to send request");
         return new RestTemplate().exchange(
