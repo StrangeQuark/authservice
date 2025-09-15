@@ -351,26 +351,26 @@ public class UserService {
             // Integration function start: File
             LOGGER.info("Attempting to delete user from all File collections");
             try {
-                ResponseEntity<?> response = fileUtility.deleteUserByIdFromAllCollections(user.getId().toString(), authToken);
+                ResponseEntity<?> response = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
 
                 if (response.getStatusCode().value() != 200)
                     throw new RuntimeException("Error when deleting user from fileservice:\n\n" + response.getBody());
             } catch (ResourceAccessException resourceAccessException) {
                 //If we are unable to reach the file service, proceed with user deletion
                 LOGGER.error("Unable to reach file service: " + resourceAccessException.getMessage());
-                LOGGER.info("Continuing to delete user");
+                LOGGER.info("Skip file deletion - continuing to delete user");
             }// Integration function end: File
             // Integration function start: Vault
             LOGGER.info("Attempting to delete user from all Vault services");
             try {
-                ResponseEntity<?> response = vaultUtility.deleteUserByIdFromAllServices(user.getId().toString(), authToken);
+                ResponseEntity<?> response = vaultUtility.deleteUserFromAllServices(user.getUsername(), authToken);
 
                 if (response.getStatusCode().value() != 200)
                     throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + response.getBody());
             } catch (ResourceAccessException resourceAccessException) {
                 //If we are unable to reach the vault service, proceed with user deletion
                 LOGGER.error("Unable to reach vault service: " + resourceAccessException.getMessage());
-                LOGGER.info("Continuing to delete user");
+                LOGGER.info("Skip vault deletion - continuing to delete user");
             }// Integration function end: Vault
 
             //Delete the user
