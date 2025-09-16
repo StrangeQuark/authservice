@@ -75,11 +75,12 @@ public class AuthenticationService {
 
     /**
      * Business logic for registering a new user
-     * @param registrationRequest
-     * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
+     * @param registrationRequest Request body containing registration details
+     * @return {@link ResponseEntity} with a {@link RegistrationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> register(RegistrationRequest registrationRequest) {
         LOGGER.info("Attempting to register user");
+        String responseMessage = "";
 
         try {
             //Check if the username has already been registered
@@ -101,13 +102,18 @@ public class AuthenticationService {
             try {
                 ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
 
-                if (response.getStatusCode().value() != 200)
-                    throw new RuntimeException("Error when sending registration email: " + response.getBody());
+                if (response.getStatusCode().value() != 200) {
+                    LOGGER.error("Error when calling email service: " + response.getBody());
+                    LOGGER.info("Continuing user registration, setting user to enabled");
+                    user.setEnabled(true);
+                    responseMessage = "Registered without email";
+                }
             } catch (ResourceAccessException resourceAccessException) {
                 //If we are unable to reach the email service, proceed with user creation and set user as enabled
                 LOGGER.error("Unable to reach email service: " + resourceAccessException.getMessage());
                 LOGGER.info("Continuing to register user, setting user to enabled");// Integration function end: Email
                 user.setEnabled(true);
+                responseMessage = "Registered without email";
             }// Integration line: Email
 
             //Save the user to the database
@@ -116,7 +122,7 @@ public class AuthenticationService {
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
-            return ResponseEntity.ok(new AuthenticationResponse());
+            return ResponseEntity.ok(new RegistrationResponse(responseMessage));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
