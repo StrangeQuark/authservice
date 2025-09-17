@@ -4,8 +4,8 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
-import com.strangequark.authservice.utility.FileUtility;
-import com.strangequark.authservice.utility.VaultUtility;
+import com.strangequark.authservice.utility.FileUtility; // Integration line: File
+import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
