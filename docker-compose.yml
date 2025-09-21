@@ -30,6 +30,7 @@ services:
       - SERVICE_SECRET_EMAIL=${SERVICE_SECRET_EMAIL}
       - SERVICE_SECRET_FILE=${SERVICE_SECRET_FILE}
       - SERVICE_SECRET_VAULT=${SERVICE_SECRET_VAULT}
+      - SERVICE_SECRET_TEST=${SERVICE_SECRET_TEST}
   auth-db:
     image: 'postgres:13.1-alpine'
     container_name: auth-db
