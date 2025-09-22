@@ -134,11 +134,11 @@ public class UserService {
 
             // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
             if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
-                throw new RuntimeException("Only SUPER users can assign roles to SUPER users");
+                throw new RuntimeException("Only SUPER users can add authorizations to SUPER users");
 
             // Only SUPER and ADMIN users can assign roles
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN)
-                throw new RuntimeException("Only SUPER or ADMIN users can assign roles");
+                throw new RuntimeException("Only SUPER or ADMIN users can add authorizations to users");
 
             //Append the authorizations and save
             user.appendAuthorizations(userRequest.getAuthorizations());
@@ -458,6 +458,47 @@ public class UserService {
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
             return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
+    /**
+     * Business logic for updating a user's role
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> updateRole(UserRequest userRequest) {
+        LOGGER.info("Attempting to update user's role");
+
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting user not found"));
+
+            //Get the target user, throw an exception if the username or email are not found
+            User user = userRepository.findByUsername(userRequest.getUsername())
+                    .or(() -> userRepository.findByEmail(userRequest.getEmail()))
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
+
+            // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
+            if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can update roles of SUPER users");
+
+            // Only SUPER and ADMIN users can assign roles
+            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN)
+                throw new RuntimeException("Only SUPER or ADMIN users can update roles");
+
+            //Append the authorizations and save
+            user.setRole(userRequest.getNewRole());
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            LOGGER.info("User role successfully updated");
+            return ResponseEntity.ok(new UserResponse("User role successfully updated"));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
 

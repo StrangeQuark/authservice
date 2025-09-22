@@ -37,6 +37,11 @@ public class UserRequest {
     private String newPassword;
 
     /**
+     * New user role for update request
+     */
+    private Role newRole;
+
+    /**
      * Authorizations for update request
      */
     private Set<String> authorizations;
@@ -129,6 +134,20 @@ public class UserRequest {
      */
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
+    }
+
+    /**
+     * Get newRole for {@link UserRequest} object
+     */
+    public Role getNewRole() {
+        return newRole;
+    }
+
+    /**
+     * Set newRole for {@link UserRequest} object
+     */
+    public void setNewRole(Role newRole) {
+        this.newRole = newRole;
     }
 
     /**

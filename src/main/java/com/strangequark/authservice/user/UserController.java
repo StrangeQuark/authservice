@@ -117,6 +117,16 @@ public class UserController {
     }
 
     /**
+     * Post request endpoint for updating a user's role
+     * @param {@link UserRequest} containing the user's credentials and new role
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/update-role")
+    public ResponseEntity<?> updateRole(@RequestBody UserRequest userRequest) {
+        return userService.updateRole(userRequest);
+    }
+
+    /**
      * Get request endpoint for retrieving a user's ID from their username
      * @param username containing the user's credentials
      * @return {@link ResponseEntity}

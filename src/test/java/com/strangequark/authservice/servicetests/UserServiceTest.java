@@ -149,6 +149,24 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void updateRoleTest() {
+        Role newRole = Role.SUPER;
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setNewRole(newRole);
+
+        // Switch to Admin User
+        setupAdminUser();
+
+        ResponseEntity<?> response =  userService.updateRole(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
+        Assertions.assertEquals(Role.SUPER, userRepository.findByUsername(testUser.getUsername()).get().getRole());
+    }
+
+    @Test
     void getUserIdTest() {
         ResponseEntity<?> response = userService.getUserId(testUser.getUsername());
 
