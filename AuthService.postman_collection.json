@@ -740,7 +740,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"newRole\": \"SUPER\"\r\n    \"username\": \"testUser\"\n    // \"email\": \"t@test.com\"\r\n}",
+              "raw": "{\r\n    \"newRole\": \"SUPER\",\r\n    \"username\": \"testUser\"\n    // \"email\": \"t@test.com\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
