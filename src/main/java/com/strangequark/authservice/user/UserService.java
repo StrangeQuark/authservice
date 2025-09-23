@@ -393,6 +393,10 @@ public class UserService {
         LOGGER.info("Attempting to update user's email address");
 
         try {
+            //Check if the email has already been registered
+            if (userRepository.findByEmail(userRequest.getNewEmail()).isPresent())
+                throw new RuntimeException("Email already registered");
+
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
@@ -428,6 +432,10 @@ public class UserService {
         LOGGER.info("Attempting to update username for user");
 
         try {
+            // Check if the username has already been registered
+            if (userRepository.findByUsername(userRequest.getNewUsername()).isPresent())
+                throw new RuntimeException("Username already registered");
+
             String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
                     .getHeader("Authorization").substring(7);
 
