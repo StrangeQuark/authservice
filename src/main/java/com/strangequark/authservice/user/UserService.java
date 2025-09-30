@@ -344,7 +344,7 @@ public class UserService {
                 if(!requestingUser.getId().equals(user.getId()))
                     throw new RuntimeException("ADMIN users can only be self-deleted or by a SUPER user");
 
-            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
+            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to delete each other
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
                 throw new RuntimeException("Users can only be deleted by self, ADMIN, or SUPER users");
 
