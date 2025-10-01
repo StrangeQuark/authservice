@@ -2,6 +2,8 @@ package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.serviceaccount.ServiceAccount; // Integration line: Email
+import com.strangequark.authservice.serviceaccount.ServiceAccountRepository; // Integration line: Email
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import com.strangequark.authservice.utility.FileUtility; // Integration line: File
@@ -34,6 +36,12 @@ public class UserService {
      * {@link UserRepository} for fetching {@link User} from the database
      */
     private final UserRepository userRepository;
+    // Integration function start: Email
+    /**
+     * {@link ServiceAccountRepository} for fetching {@link ServiceAccount} from the database
+     */
+    @Autowired
+    private ServiceAccountRepository serviceAccountRepository; // Integration funciton end: Email
 
     /**
      * {@link JwtService} for extracting the username from the request token
@@ -229,6 +237,40 @@ public class UserService {
             //Return a 200 response with a success message
             LOGGER.info("Password reset email has been sent");
             return ResponseEntity.ok(new UserResponse("Email is sent"));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
+    /**
+     * Business logic for resetting a user's password
+     * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
+     */
+    public ResponseEntity<?> resetPassword(UserRequest userRequest) {
+        LOGGER.info("Attempting to reset user's password");
+
+        try {
+            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
+                    .getHeader("Authorization").substring(7);
+
+            //Get the user, throw an exception if the username is not found
+            ServiceAccount requestingServiceAccount = serviceAccountRepository.findByClientId(jwtService.extractUsername(authToken, false))
+                    .orElseThrow(() -> new UsernameNotFoundException("Requesting service account not found"));
+
+            if(!requestingServiceAccount.getClientId().equals("email"))
+                throw new RuntimeException("Only the EMAIL service account can send reset password requests");
+
+            //Get the target user, throw an exception if the email is not found
+            User user = userRepository.findByEmail(userRequest.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
+
+            user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
+            userRepository.save(user);
+
+            //Return a 200 response with a success message
+            LOGGER.info("Password reset success");
+            return ResponseEntity.ok(new UserResponse("Password reset success"));
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
