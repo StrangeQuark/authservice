@@ -1,6 +1,7 @@
 package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.config.JwtService;
+import com.strangequark.authservice.serviceaccount.ServiceAccountRepository; // Integration line: Email
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
@@ -25,7 +26,8 @@ public abstract class BaseServiceTest {
     static {
         System.setProperty("ENCRYPTION_KEY", "AA1A2A8C0E4F76FB3C13F66225AAAC42");
         System.setProperty("SERVICE_SECRET_AUTH", "testClientPassword");
-        System.setProperty("SERVICE_ACCOUNTS", "auth");
+        System.setProperty("SERVICE_SECRET_EMAIL", "testEmailPassword");
+        System.setProperty("SERVICE_ACCOUNTS", "auth,email");
     }
 
     @Autowired
@@ -37,6 +39,8 @@ public abstract class BaseServiceTest {
     public User testUser;
     public User testAdmin;
     private String accessToken;
+    @Autowired // Integration line: Email
+    private ServiceAccountRepository serviceAccountRepository; // Integration line: Email
 
     @BeforeEach
     void setup() {
@@ -78,4 +82,13 @@ public abstract class BaseServiceTest {
         request.addHeader("Authorization", "Bearer " + accessToken);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
+    // Integration function start: Email
+    void setupEmailServiceAccount() {
+        accessToken = jwtService.generateServiceAccountToken(serviceAccountRepository.findByClientId("email").get(), false);
+
+        //Set the accessToken to the Authorization header in the requestContextHolder
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer " + accessToken);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    } // Integration function end: Email
 }

@@ -71,6 +71,20 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(500, response.getStatusCode().value());
         Assertions.assertEquals("Unable to send password reset email", ((ErrorResponse) response.getBody()).getErrorMessage());
     }
+
+    @Test
+    void resetPasswordTest() {
+        setupEmailServiceAccount();
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail(testUser.getEmail());
+        userRequest.setNewPassword("newPassword");
+
+        ResponseEntity<?> response =  userService.resetPassword(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("Password reset success", ((UserResponse) response.getBody()).getMessage());
+    }
     // Integration function end: Email
     @Test
     void enableUserTest() {
