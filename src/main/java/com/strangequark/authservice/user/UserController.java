@@ -65,6 +65,16 @@ public class UserController {
     public ResponseEntity<?> sendPasswordResetEmail(@RequestBody UserRequest request) {
         return userService.sendPasswordResetEmail(request);
     }
+
+    /**
+     * Post request endpoint for initiating password resets
+     * @param {@link UserRequest} containing user credentials
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody UserRequest request) {
+        return userService.resetPassword(request);
+    }
     // Integration function end: Email
     /**
      * Post request endpoint for enabling a user
