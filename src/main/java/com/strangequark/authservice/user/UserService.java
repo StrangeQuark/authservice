@@ -62,6 +62,12 @@ public class UserService {
     @Autowired
     VaultUtility vaultUtility;
     // Integration function end: Vault
+    /** Integration function start: Email
+     * {@link EmailUtility} for sending requests to email service
+     */
+    @Autowired
+    EmailUtility emailUtility;
+    // Integration function end: Email
     /**
      * Constructs a new {@code UserService} with the given dependencies.
      *
@@ -213,7 +219,7 @@ public class UserService {
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             try {
-                EmailUtility.sendAsyncEmail(user.getEmail(), "Password reset", EmailType.PASSWORD_RESET);
+                emailUtility.sendAsyncEmail(user.getEmail(), "Password reset", EmailType.PASSWORD_RESET);
             } catch (Exception ex) {
                 LOGGER.error("Unable to send password reset email to kafka");
                 LOGGER.error(ex.getMessage());

@@ -7,6 +7,7 @@ import com.strangequark.authservice.serviceaccount.ServiceAccountRequest;
 import com.strangequark.authservice.serviceaccount.ServiceAccountService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -109,8 +111,16 @@ public class EmailUtility {
         );
     }
 
-    public static void sendAsyncEmail(String recipient, String subject, EmailType emailType) {
+    public void sendAsyncEmail(String recipient, String subject, EmailType emailType) {
         LOGGER.info("Attempting to post message to email Kafka topic");
+
+        String accessToken = authenticateServiceAccount();
+        accessToken = "Bearer " + accessToken;
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("recipient", recipient);
+        requestBody.put("sender", SENDER);
+        requestBody.put("subject", subject);
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "email-kafka:9092");
@@ -126,8 +136,13 @@ public class EmailUtility {
 
         LOGGER.info("Message created, attempting to post to email Kafka topic");
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
-        producer.send(new ProducerRecord<>(topic, "{\"recipient\":\"" + recipient + "\",\"sender\":\"" + SENDER +
-                "\",\"email\":\"\",\"subject\":\"" + subject + "\"}"));
+        ProducerRecord<String, String> record = new ProducerRecord<String, String>(
+                topic,
+                null,
+                null,
+                requestBody.toString(),
+                List.of(new RecordHeader("Authorization", accessToken.getBytes())));
+        producer.send(record);
         producer.close();
     }
 }
