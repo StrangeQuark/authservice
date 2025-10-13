@@ -41,7 +41,7 @@ public class UserService {
      * {@link ServiceAccountRepository} for fetching {@link ServiceAccount} from the database
      */
     @Autowired
-    private ServiceAccountRepository serviceAccountRepository; // Integration funciton end: Email
+    private ServiceAccountRepository serviceAccountRepository; // Integration function end: Email
 
     /**
      * {@link JwtService} for extracting the username from the request token
