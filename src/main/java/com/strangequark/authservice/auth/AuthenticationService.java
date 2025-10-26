@@ -7,6 +7,7 @@ import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
+import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,12 @@ public class AuthenticationService {
     @Autowired
     EmailUtility emailUtility;
     // Integration function end: Email
+    /** Integration function start: Telemetry
+     * {@link TelemetryUtility} for sending telemetry events to the Kafka
+     */
+    @Autowired
+    TelemetryUtility telemetryUtility;
+    // Integration function end: Telemetry
     /**
      * Constructs a new {@code AuthenticationService} with the given dependencies.
      *
@@ -119,6 +126,12 @@ public class AuthenticationService {
             //Save the user to the database
             LOGGER.info("Saving user to database");
             userRepository.save(user);
+            // Send a telemetry event for user registration - Integration function start: Telemetry
+            try {
+                telemetryUtility.sendTelemetryEvent("user-registered", user.getId(), null);
+            } catch (Exception e) {
+                LOGGER.error("Unable to reach telemetry Kafka service");
+            } // Integration function end: Telemetry
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
@@ -158,6 +171,12 @@ public class AuthenticationService {
             LOGGER.info("Saving refresh token to user in database");
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
+            // Send a telemetry event for user registration - Integration function start: Telemetry
+            try {
+                telemetryUtility.sendTelemetryEvent("user-login", user.getId(), null);
+            } catch (Exception e) {
+                LOGGER.error("Unable to reach telemetry Kafka service");
+            } // Integration function end: Telemetry
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
