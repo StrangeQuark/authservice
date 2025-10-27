@@ -28,34 +28,39 @@ public class TelemetryUtility {
     private AuthUtility authUtility;
 
     public void sendTelemetryEvent(String eventType, UUID userId, Map<String, Object> metadata) {
-        LOGGER.info("Attempting to post message to auth telemetry Kafka topic");
+        try {
+            LOGGER.info("Attempting to post message to auth telemetry Kafka topic");
 
-        String accessToken = authUtility.authenticateServiceAccount();
-        accessToken = "Bearer " + accessToken;
+            String accessToken = authUtility.authenticateServiceAccount();
+            accessToken = "Bearer " + accessToken;
 
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("serviceName", "authservice");
-        requestBody.put("eventType", eventType);
-        requestBody.put("userId", userId);
-        requestBody.put("timestamp", LocalDateTime.now());
-        requestBody.put("metadata", metadata);
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("serviceName", "authservice");
+            requestBody.put("eventType", eventType);
+            requestBody.put("userId", userId);
+            requestBody.put("timestamp", LocalDateTime.now());
+            requestBody.put("metadata", metadata);
 
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "telemetry-kafka:9093");
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            Properties props = new Properties();
+            props.put("bootstrap.servers", "telemetry-kafka:9093");
+            props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        String topic = "auth-telemetry-events";
+            String topic = "auth-telemetry-events";
 
-        LOGGER.info("Message created, attempting to post to auth telemetry Kafka topic");
-        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
-        ProducerRecord<String, String> record = new ProducerRecord<String, String>(
-                topic,
-                null,
-                null,
-                requestBody.toString(),
-                List.of(new RecordHeader("Authorization", accessToken.getBytes())));
-        producer.send(record);
-        producer.close();
+            LOGGER.info("Message created, attempting to post to auth telemetry Kafka topic");
+            KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+            ProducerRecord<String, String> record = new ProducerRecord<String, String>(
+                    topic,
+                    null,
+                    null,
+                    requestBody.toString(),
+                    List.of(new RecordHeader("Authorization", accessToken.getBytes())));
+            producer.send(record);
+            producer.close();
+            LOGGER.info("Telemetry event successfully sent");
+        } catch (Exception ex) {
+            LOGGER.error("Unable to reach telemetry Kafka service: " + ex.getMessage());
+        }
     }
 }
