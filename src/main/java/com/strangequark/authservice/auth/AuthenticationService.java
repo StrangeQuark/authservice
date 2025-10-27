@@ -126,12 +126,8 @@ public class AuthenticationService {
             //Save the user to the database
             LOGGER.info("Saving user to database");
             userRepository.save(user);
-            // Send a telemetry event for user registration - Integration function start: Telemetry
-            try {
-                telemetryUtility.sendTelemetryEvent("user-registered", user.getId(), null);
-            } catch (Exception e) {
-                LOGGER.error("Unable to reach telemetry Kafka service");
-            } // Integration function end: Telemetry
+            // Send a telemetry event for user registration - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-registered", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
@@ -171,12 +167,8 @@ public class AuthenticationService {
             LOGGER.info("Saving refresh token to user in database");
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
-            // Send a telemetry event for user registration - Integration function start: Telemetry
-            try {
-                telemetryUtility.sendTelemetryEvent("user-login", user.getId(), null);
-            } catch (Exception e) {
-                LOGGER.error("Unable to reach telemetry Kafka service");
-            } // Integration function end: Telemetry
+            // Send a telemetry event for user registration - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-login", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
