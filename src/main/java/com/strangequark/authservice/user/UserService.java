@@ -8,6 +8,7 @@ import com.strangequark.authservice.utility.EmailType; // Integration line: Emai
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import com.strangequark.authservice.utility.FileUtility; // Integration line: File
 import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
+import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
+import java.util.Map; // Integration line: Telemetry
 import java.util.Optional;
 import java.util.UUID;
 
@@ -76,6 +78,12 @@ public class UserService {
     @Autowired
     EmailUtility emailUtility;
     // Integration function end: Email
+    /** Integration function start: Telemetry
+     * {@link TelemetryUtility} for sending telemetry events to the Kafka
+     */
+    @Autowired
+    TelemetryUtility telemetryUtility;
+    // Integration function end: Telemetry
     /**
      * Constructs a new {@code UserService} with the given dependencies.
      *
@@ -116,6 +124,8 @@ public class UserService {
             //Set the user's new password and save
             user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
             userRepository.save(user);
+            // Send a telemetry event for user password update - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-password-update", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Password successfully updated");
@@ -157,6 +167,11 @@ public class UserService {
             //Append the authorizations and save
             user.appendAuthorizations(userRequest.getAuthorizations());
             userRepository.save(user);
+            // Send a telemetry event for adding authorizations to user - Integration function start: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-add-authorizations", user.getId(), Map.of(
+                    "authorizations", userRequest.getAuthorizations(),
+                    "authorized-by", requestingUser.getId()
+            )); // Integration function end: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Authorization successfully added");
@@ -203,6 +218,11 @@ public class UserService {
             //Remove the authorizations and save
             user.removeAuthorizations(userRequest.getAuthorizations());
             userRepository.save(user);
+            // Send a telemetry event for removing authorizations from user - Integration function start: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-remove-authorizations", user.getId(), Map.of(
+                    "authorizations", userRequest.getAuthorizations(),
+                    "authorized-by", requestingUser.getId()
+            )); // Integration function end: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Authorizations successfully removed");
@@ -233,6 +253,8 @@ public class UserService {
                 LOGGER.error(ex.getMessage());
                 return ResponseEntity.status(500).body(new ErrorResponse("Unable to send password reset email"));
             }
+            // Send a telemetry event for sending password reset email - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-password-reset-email", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Password reset email has been sent");
@@ -267,6 +289,8 @@ public class UserService {
 
             user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
             userRepository.save(user);
+            // Send a telemetry event for user password reset - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-password-reset", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Password reset success");
@@ -296,6 +320,8 @@ public class UserService {
 
             userOptional.get().setEnabled(true);
             userRepository.save(userOptional.get());
+            // Send a telemetry event for user enablement - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-enabled", userOptional.get().getId(), null); // Integration line: Telemetry
 
             LOGGER.info("User has been enabled");
             return ResponseEntity.ok(new UserResponse("User has been enabled"));
@@ -346,6 +372,8 @@ public class UserService {
             // Disable the user
             user.setEnabled(false);
             userRepository.save(user);
+            // Send a telemetry event for user disable - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-disabled", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("User has been disabled");
@@ -423,6 +451,8 @@ public class UserService {
 
             //Delete the user
             userRepository.delete(user);
+            // Send a telemetry event for user delete - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-delete", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("User successfully deleted");
@@ -462,6 +492,8 @@ public class UserService {
             //Update the user's email
             user.setEmail(userRequest.getNewEmail());
             userRepository.save(user);
+            // Send a telemetry event for user email update - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-email-update", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Email successfully updated");
@@ -507,6 +539,8 @@ public class UserService {
             //Add the refresh token to the user and save
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
+            // Send a telemetry event for username update - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-username-update", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Successfully updated username");
@@ -548,6 +582,10 @@ public class UserService {
             //Append the authorizations and save
             user.setRole(userRequest.getNewRole());
             userRepository.save(user);
+            // Send a telemetry event for user role update - Integration function start: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-role-update", user.getId(), Map.of(
+                    "new-role", userRequest.getNewRole()
+            )); // Integration function end: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("User role successfully updated");

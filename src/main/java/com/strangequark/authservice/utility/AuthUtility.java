@@ -1,12 +1,15 @@
 package com.strangequark.authservice.utility;
 
-import com.strangequark.authservice.auth.AuthenticationResponse;
+import com.strangequark.authservice.config.JwtService;
+import com.strangequark.authservice.serviceaccount.ServiceAccount;
+import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRequest;
-import com.strangequark.authservice.serviceaccount.ServiceAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,33 +19,48 @@ public class AuthUtility {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthUtility.class);
 
+    private final ServiceAccountRepository serviceAccountRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
     /**
      * Secret for Auth service account
      */
     @Value("${SERVICE_SECRET_AUTH}")
     private String SERVICE_SECRET_AUTH;
 
-    /**
-     * For authenticating Auth service account
-     */
-    @Autowired
-    private ServiceAccountService serviceAccountService;
+    public AuthUtility(ServiceAccountRepository serviceAccountRepository, PasswordEncoder passwordEncoder,
+                                 JwtService jwtService) {
+        this.serviceAccountRepository = serviceAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
     public String authenticateServiceAccount() {
         try {
             LOGGER.info("Attempting to authenticate service account");
 
-            ServiceAccountRequest request = new ServiceAccountRequest("auth", SERVICE_SECRET_AUTH);
+            ServiceAccountRequest serviceAccountRequest = new ServiceAccountRequest("auth", SERVICE_SECRET_AUTH);
 
-            AuthenticationResponse response = (AuthenticationResponse) serviceAccountService.authenticate(request).getBody();
+            //Get the service account, throw an exception if the clientId is not found
+            ServiceAccount serviceAccount = serviceAccountRepository.findByClientId(serviceAccountRequest.getClientId())
+                    .orElseThrow(() -> new UsernameNotFoundException("Service account not found"));
 
-            String token = response.getJwtToken();
+            if(!passwordEncoder.matches(serviceAccountRequest.getClientPassword(), serviceAccount.getClientPassword()))
+                throw new BadCredentialsException("Invalid service account credentials");
 
-            if(token == null)
+            LOGGER.info("Service account found, creating access token");
+
+            //Create a JWT token to authenticate the service account
+            String accessToken = jwtService.generateServiceAccountToken(serviceAccount, false);
+
+            if(accessToken == null)
                 throw new RuntimeException("jwtToken not found in authentication response");
 
             LOGGER.info("Service account authentication success");
-            return token;
+            return accessToken;
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage());
             return null;
