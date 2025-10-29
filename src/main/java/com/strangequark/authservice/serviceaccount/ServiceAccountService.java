@@ -3,8 +3,10 @@ package com.strangequark.authservice.serviceaccount;
 import com.strangequark.authservice.auth.AuthenticationResponse;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired; // Integration line: Telemetry
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +22,12 @@ public class ServiceAccountService {
     private final PasswordEncoder passwordEncoder;
 
     private final JwtService jwtService;
+    /** Integration function start: Telemetry
+     * {@link TelemetryUtility} for sending telemetry events to the Kafka
+     */
+    @Autowired
+    TelemetryUtility telemetryUtility;
+    // Integration function end: Telemetry
 
     public ServiceAccountService(ServiceAccountRepository serviceAccountRepository, PasswordEncoder passwordEncoder,
                                  JwtService jwtService) {
@@ -43,6 +51,8 @@ public class ServiceAccountService {
 
             //Create a JWT token to authenticate the service account
             String accessToken = jwtService.generateServiceAccountToken(serviceAccount, false);
+            // Send a telemetry event for service account authentication - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("service-account-authenticate", serviceAccount.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");

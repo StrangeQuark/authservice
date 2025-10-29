@@ -6,8 +6,10 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
+import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired; // Integration line: Telemetry
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +30,12 @@ public class BootstrapService {
      * {@link PasswordEncoder} for encoding our password when registering a new user to the database
      */
     private final PasswordEncoder passwordEncoder;
+    /** Integration function start: Telemetry
+     * {@link TelemetryUtility} for sending telemetry events to the Kafka
+     */
+    @Autowired
+    TelemetryUtility telemetryUtility;
+    // Integration function end: Telemetry
 
     public BootstrapService(UserRepository userRepository, PasswordEncoder passwordEncoder)  {
         this.userRepository = userRepository;
@@ -63,6 +71,8 @@ public class BootstrapService {
             //Save the user to the database
             LOGGER.info("Saving bootstrap user to database");
             userRepository.save(user);
+            // Send a telemetry event for super user bootstrap - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("super-user-bootstrap", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a jwt token
             LOGGER.info("User successfully bootstrapped");

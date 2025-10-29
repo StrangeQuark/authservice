@@ -127,7 +127,7 @@ public class AuthenticationService {
             LOGGER.info("Saving user to database");
             userRepository.save(user);
             // Send a telemetry event for user registration - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-registered", user.getId(), null); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-register", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
@@ -167,8 +167,8 @@ public class AuthenticationService {
             LOGGER.info("Saving refresh token to user in database");
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
-            // Send a telemetry event for user registration - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-login", user.getId(), null); // Integration line: Telemetry
+            // Send a telemetry event for user authentication - Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-authenticate", user.getId(), null); // Integration line: Telemetry
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
