@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class TelemetryUtility {
@@ -39,7 +36,7 @@ public class TelemetryUtility {
             requestBody.put("eventType", eventType);
             requestBody.put("userId", userId);
             requestBody.put("timestamp", LocalDateTime.now());
-            requestBody.put("metadata", metadata);
+            requestBody.put("metadata", new JSONObject(new HashMap<>(metadata)));
 
             Properties props = new Properties();
             props.put("bootstrap.servers", "telemetry-kafka:9093");
