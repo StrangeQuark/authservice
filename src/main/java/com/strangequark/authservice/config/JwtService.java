@@ -142,7 +142,7 @@ public class JwtService {
      * @param isRefreshToken Flag to specify refresh or access token
      * @return True: Token is valid, False: Token is invalid
      */
-    public boolean isTokenValid(String jwtToken, UserDetails userDetails,boolean isRefreshToken) {
+    public boolean isTokenValid(String jwtToken, UserDetails userDetails, boolean isRefreshToken) {
         final String username = extractUsername(jwtToken, isRefreshToken);
 
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(jwtToken, isRefreshToken);
@@ -154,7 +154,7 @@ public class JwtService {
      * @param isRefreshToken Flag to specify refresh or access token
      * @return True: Token is expired, False: Token is not expired
      */
-    private boolean isTokenExpired(String jwtToken, boolean isRefreshToken) {
+    public boolean isTokenExpired(String jwtToken, boolean isRefreshToken) {
         return extractExpiration(jwtToken, isRefreshToken).before(new Date());
     }
 
