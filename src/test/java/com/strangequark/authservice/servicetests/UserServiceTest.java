@@ -1,6 +1,6 @@
 package com.strangequark.authservice.servicetests;
 
-import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.error.ErrorResponse; // Integration line: Email
 import com.strangequark.authservice.user.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
