@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.LinkedHashSet;
+import java.util.Map; // Integration line: Telemetry
 
 /**
  * {@link Service} for registering and authenticating user requests
@@ -127,7 +128,7 @@ public class AuthenticationService {
             LOGGER.info("Saving user to database");
             userRepository.save(user);
             // Send a telemetry event for user registration - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-register", user.getId(), null); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-register", user.getId(), Map.of()); // Integration line: Telemetry
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
@@ -168,7 +169,7 @@ public class AuthenticationService {
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
             // Send a telemetry event for user authentication - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-authenticate", user.getId(), null); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-authenticate", user.getId(), Map.of()); // Integration line: Telemetry
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
