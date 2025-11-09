@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import java.util.Map; // Integration line: Telemetry
 
 
 /**
@@ -75,7 +76,7 @@ public class AccessService {
             //Create a JWT token to authenticate the user
             String accessToken = jwtService.generateToken(user, false);
             // Send a telemetry event for user access token - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-authenticate", user.getId(), null); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-authenticate", user.getId(), Map.of()); // Integration line: Telemetry
 
             //Return a 200 response with the jwtToken
             LOGGER.info("Access token successfully served");

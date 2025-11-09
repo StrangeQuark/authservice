@@ -584,7 +584,7 @@ public class UserService {
             userRepository.save(user);
             // Send a telemetry event for user role update - Integration function start: Telemetry
             telemetryUtility.sendTelemetryEvent("user-role-update", user.getId(), Map.of(
-                    "new-role", userRequest.getNewRole()
+                    "role", userRequest.getNewRole().name()
             )); // Integration function end: Telemetry
 
             //Return a 200 response with a success message

@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Map; // Integration line: Telemetry
 
 @Service
 public class ServiceAccountService {
@@ -52,7 +53,7 @@ public class ServiceAccountService {
             //Create a JWT token to authenticate the service account
             String accessToken = jwtService.generateServiceAccountToken(serviceAccount, false);
             // Send a telemetry event for service account authentication - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("service-account-authenticate", serviceAccount.getId(), null); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("service-account-authenticate", serviceAccount.getId(), Map.of()); // Integration line: Telemetry
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
