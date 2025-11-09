@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthUtility {
     /**
-     * {@link Logger} for writing {@link EmailUtility} application logs
+     * {@link Logger} for writing {@link AuthUtility} application logs
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthUtility.class);
 
