@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class WebSecurityConfig {
 
     /**
      * {@link JwtAuthenticationFilter} to authenticate our JWT tokens and update the security context
@@ -41,7 +42,7 @@ public class SecurityConfig {
      * @param jwtAuthenticationFilter {@link JwtAuthenticationFilter} for processing JWT during authentication requests
      * @param authenticationProvider {@link AuthenticationProvider} for performing authentication
      */
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider) {
+    public WebSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationProvider = authenticationProvider;
     }
@@ -56,15 +57,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .csrf().disable()//Disable CSRF
-                .authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/authenticate",
-                        "/api/auth/health", "/api/auth/internal/bootstrap", "api/auth/service-account/authenticate").permitAll()//List of strings (URLs) which are whitelisted and don't need to be authenticated
-                .anyRequest().authenticated()//All other requests need to be authenticated
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)//Spring will create a new session for each request
-                .and()
-                .cors()
-                .and()
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/auth/register",
+                                "/api/auth/authenticate",
+                                "/api/auth/health",
+                                "/api/auth/internal/bootstrap",
+                                "/api/auth/service-account/authenticate"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .cors(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
