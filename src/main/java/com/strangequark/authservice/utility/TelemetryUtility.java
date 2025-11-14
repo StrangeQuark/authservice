@@ -3,6 +3,7 @@
 package com.strangequark.authservice.utility;
 
 import com.strangequark.authservice.config.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -35,10 +36,7 @@ public class TelemetryUtility {
         try {
             LOGGER.info("Attempting to post message to auth telemetry Kafka topic");
 
-            if (cachedServiceToken == null || jwtService.isTokenExpired(cachedServiceToken, false)) {
-                cachedServiceToken = authUtility.authenticateServiceAccount();
-            }
-            String accessToken = "Bearer " + cachedServiceToken;
+            String accessToken = "Bearer " + ensureValidServiceToken();
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("serviceName", "authservice");
@@ -73,4 +71,19 @@ public class TelemetryUtility {
         }
         return producer;
     }
+
+    private String ensureValidServiceToken() {
+        try {
+            if (cachedServiceToken == null || jwtService.isTokenExpired(cachedServiceToken, false)) {
+                cachedServiceToken = authUtility.authenticateServiceAccount();
+            }
+        } catch (ExpiredJwtException ex) {
+            cachedServiceToken = authUtility.authenticateServiceAccount();
+        } catch (Exception ex) {
+            LOGGER.warn("Service token invalid, regenerating: " + ex.getMessage());
+            cachedServiceToken = authUtility.authenticateServiceAccount();
+        }
+        return cachedServiceToken;
+    }
+
 }
