@@ -73,7 +73,7 @@ public class BootstrapService {
             LOGGER.info("Saving bootstrap user to database");
             userRepository.save(user);
             // Send a telemetry event for super user bootstrap - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("super-user-bootstrap", user.getId(), Map.of()); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("super-user-bootstrap", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a jwt token
             LOGGER.info("User successfully bootstrapped");
