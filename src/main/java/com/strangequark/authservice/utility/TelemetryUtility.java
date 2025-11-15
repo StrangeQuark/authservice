@@ -32,7 +32,7 @@ public class TelemetryUtility {
     private KafkaProducer<String, String> producer;
     private String cachedServiceToken = null;
 
-    public void sendTelemetryEvent(String eventType, UUID userId, Map<String, Object> metadata) {
+    public void sendTelemetryEvent(String eventType, Map<String, Object> metadata) {
         try {
             LOGGER.info("Attempting to post message to auth telemetry Kafka topic");
 
@@ -41,7 +41,6 @@ public class TelemetryUtility {
             JSONObject requestBody = new JSONObject();
             requestBody.put("serviceName", "authservice");
             requestBody.put("eventType", eventType);
-            requestBody.put("userId", userId);
             requestBody.put("timestamp", LocalDateTime.now());
             requestBody.put("metadata", new JSONObject(new HashMap<>(metadata)));
 

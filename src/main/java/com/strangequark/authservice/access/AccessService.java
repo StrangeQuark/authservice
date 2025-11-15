@@ -76,7 +76,7 @@ public class AccessService {
             //Create a JWT token to authenticate the user
             String accessToken = jwtService.generateToken(user, false);
             // Send a telemetry event for user access token - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-access", user.getId(), Map.of()); // Integration line: Telemetry
+            telemetryUtility.sendTelemetryEvent("user-access", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with the jwtToken
             LOGGER.info("Access token successfully served");
