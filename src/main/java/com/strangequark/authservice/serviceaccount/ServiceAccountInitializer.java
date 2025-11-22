@@ -29,7 +29,7 @@ public class ServiceAccountInitializer implements ApplicationRunner {
         String[] serviceIds = environment.getProperty("SERVICE_ACCOUNTS").split(",");
 
         for(String serviceId : serviceIds) {
-            LOGGER.info("Initializing service account with ID: " + serviceId);
+            LOGGER.debug("Initializing service account with ID: " + serviceId);
             String clientPassword = environment.getProperty("SERVICE_SECRET_" + serviceId.trim().toUpperCase());
 
             ServiceAccount serviceAccount = new ServiceAccount();
