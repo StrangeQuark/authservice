@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            LOGGER.info("Attempting to do an internal filter");
+            LOGGER.debug("Attempting to do an internal filter");
 
             final String authorizationHeader = request.getHeader("Authorization");
             final String jwtToken;
@@ -109,19 +109,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             //Extract the username from the JWT token
             username = jwtService.extractUsername(jwtToken, isRefreshToken);
-            LOGGER.info("Username successfully extracted from JWT token");
+            LOGGER.debug("Username successfully extracted from JWT token");
 
             //SecurityContextHolder.getContext().getAuthentication() == null -> User is not yet authenticated (Connected)
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                LOGGER.info("Username and SecurityContextHolder are valid");
+                LOGGER.debug("Username and SecurityContextHolder are valid");
 
                 //Load the UserDetails of the user
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-                LOGGER.info("Checking that JWT token is valid");
+                LOGGER.debug("Checking that JWT token is valid");
                 //Check if the JWT token is valid for the user
                 if (jwtService.isTokenValid(jwtToken, userDetails, isRefreshToken)) {
-                    LOGGER.info("JWT token confirmed valid");
+                    LOGGER.debug("JWT token confirmed valid");
 
                     //Create a new authentication token from the UserDetails
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
@@ -136,11 +136,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     //Update the security context holder
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-                    LOGGER.info("Security context holder updated");
+                    LOGGER.debug("Security context holder updated");
                 }
             }
 
-            LOGGER.info("doFilterInternal complete, passing request to next filter");
+            LOGGER.debug("doFilterInternal complete, passing request to next filter");
             //Pass the request to the next filter
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException expiredJwtException) {

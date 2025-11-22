@@ -40,7 +40,7 @@ public class AuthUtility {
 
     public String authenticateServiceAccount() {
         try {
-            LOGGER.info("Attempting to authenticate service account");
+            LOGGER.debug("Attempting to authenticate service account");
 
             ServiceAccountRequest serviceAccountRequest = new ServiceAccountRequest("auth", SERVICE_SECRET_AUTH);
 
@@ -51,7 +51,7 @@ public class AuthUtility {
             if(!passwordEncoder.matches(serviceAccountRequest.getClientPassword(), serviceAccount.getClientPassword()))
                 throw new BadCredentialsException("Invalid service account credentials");
 
-            LOGGER.info("Service account found, creating access token");
+            LOGGER.debug("Service account found, creating access token");
 
             //Create a JWT token to authenticate the service account
             String accessToken = jwtService.generateServiceAccountToken(serviceAccount, false);
@@ -59,10 +59,11 @@ public class AuthUtility {
             if(accessToken == null)
                 throw new RuntimeException("jwtToken not found in authentication response");
 
-            LOGGER.info("Service account authentication success");
+            LOGGER.debug("Service account authentication success");
             return accessToken;
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to authenticate service account: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return null;
         }
     }

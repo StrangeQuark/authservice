@@ -82,7 +82,8 @@ public class AccessService {
             LOGGER.info("Access token successfully served");
             return ResponseEntity.ok(new AuthenticationResponse(accessToken));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to serve access token: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }

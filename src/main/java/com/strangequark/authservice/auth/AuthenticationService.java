@@ -99,33 +99,33 @@ public class AuthenticationService {
             if (userRepository.findByEmail(registrationRequest.getEmail()).isPresent())
                 throw new RuntimeException("Email already registered");
 
-            LOGGER.info("Attempting to build user object");
+            LOGGER.debug("Attempting to build user object");
 
             //Build the user object to be saved to the database
             User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
                     false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
             //Send an email so the user can enable their account   -   Integration function start: Email
-            LOGGER.info("Attempting to send registration email");
+            LOGGER.debug("Attempting to send registration email");
             try {
                 ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
 
                 if (response.getStatusCode().value() != 200) {
-                    LOGGER.error("Error when calling email service: " + response.getBody());
-                    LOGGER.info("Continuing user registration, setting user to enabled");
+                    LOGGER.warn("Error when calling email service: " + response.getBody());
+                    LOGGER.debug("Continuing user registration, setting user to enabled");
                     user.setEnabled(true);
                     responseMessage = "Registered without email";
                 }
             } catch (ResourceAccessException resourceAccessException) {
                 //If we are unable to reach the email service, proceed with user creation and set user as enabled
-                LOGGER.error("Unable to reach email service: " + resourceAccessException.getMessage());
-                LOGGER.info("Continuing to register user, setting user to enabled");// Integration function end: Email
+                LOGGER.warn("Unable to reach email service: " + resourceAccessException.getMessage());
+                LOGGER.debug("Continuing to register user, setting user to enabled");// Integration function end: Email
                 user.setEnabled(true);
                 responseMessage = "Registered without email";
             }// Integration line: Email
 
             //Save the user to the database
-            LOGGER.info("Saving user to database");
+            LOGGER.debug("Saving user to database");
             userRepository.save(user);
             // Send a telemetry event for user registration - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-register", Map.of("userId", user.getId())); // Integration line: Telemetry
@@ -134,7 +134,8 @@ public class AuthenticationService {
             LOGGER.info("User successfully created");
             return ResponseEntity.ok(new RegistrationResponse(responseMessage));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to register user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -159,13 +160,13 @@ public class AuthenticationService {
             User user = userRepository.findByUsername(authenticationRequest.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            LOGGER.info("User found, creating refresh token");
+            LOGGER.debug("User found, creating refresh token");
 
             //Create a JWT token to authenticate the user
             String refreshToken = jwtService.generateToken(user, true);
 
             //Add the refresh token to the user and save
-            LOGGER.info("Saving refresh token to user in database");
+            LOGGER.debug("Saving refresh token to user in database");
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
             // Send a telemetry event for user authentication - Integration line: Telemetry
@@ -175,7 +176,8 @@ public class AuthenticationService {
             LOGGER.info("Authentication successful");
             return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
         } catch (AuthenticationException ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to authenticate user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(401).body(new ErrorResponse(ex.getMessage()));
         }
     }

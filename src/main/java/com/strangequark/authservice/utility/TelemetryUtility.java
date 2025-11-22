@@ -34,7 +34,7 @@ public class TelemetryUtility {
 
     public void sendTelemetryEvent(String eventType, Map<String, Object> metadata) {
         try {
-            LOGGER.info("Attempting to post message to auth telemetry Kafka topic");
+            LOGGER.debug("Attempting to post message to auth telemetry Kafka topic");
 
             String accessToken = "Bearer " + ensureValidServiceToken();
 
@@ -44,7 +44,7 @@ public class TelemetryUtility {
             requestBody.put("timestamp", LocalDateTime.now());
             requestBody.put("metadata", new JSONObject(new HashMap<>(metadata)));
 
-            LOGGER.info("Message created, attempting to post to auth telemetry Kafka topic");
+            LOGGER.debug("Message created, attempting to post to auth telemetry Kafka topic");
             ProducerRecord<String, String> record = new ProducerRecord<String, String>(
                     "auth-telemetry-events",
                     null,
@@ -54,9 +54,10 @@ public class TelemetryUtility {
             );
 
             getProducer().send(record);
-            LOGGER.info("Telemetry event successfully sent");
+            LOGGER.debug("Telemetry event successfully sent");
         } catch (Exception ex) {
             LOGGER.error("Unable to reach telemetry Kafka service: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
         }
     }
 
@@ -79,7 +80,7 @@ public class TelemetryUtility {
         } catch (ExpiredJwtException ex) {
             cachedServiceToken = authUtility.authenticateServiceAccount();
         } catch (Exception ex) {
-            LOGGER.warn("Service token invalid, regenerating: " + ex.getMessage());
+            LOGGER.debug("Service token invalid, regenerating: " + ex.getMessage());
             cachedServiceToken = authUtility.authenticateServiceAccount();
         }
         return cachedServiceToken;

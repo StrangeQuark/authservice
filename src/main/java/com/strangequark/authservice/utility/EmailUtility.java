@@ -44,18 +44,18 @@ public class EmailUtility {
      * @param emailType
      */
     public ResponseEntity<?> sendEmail(String recipient, String subject, EmailType emailType) {
-        LOGGER.info("Attempting to send email API request");
+        LOGGER.debug("Attempting to send email API request");
 
         String accessToken = authUtility.authenticateServiceAccount();
 
         //Set the headers
-        LOGGER.info("Setting email API request headers");
+        LOGGER.debug("Setting email API request headers");
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         //Create the request body
-        LOGGER.info("Creating email API request body");
+        LOGGER.debug("Creating email API request body");
         JSONObject requestBody = new JSONObject();
         requestBody.put("recipient", recipient);
         requestBody.put("sender", SENDER);
@@ -71,7 +71,7 @@ public class EmailUtility {
             case PASSWORD_RESET -> url = "http://email-service:6005/api/email/send-password-reset-email";
         }
 
-        LOGGER.info("Email API request creation complete, attempting to send request");
+        LOGGER.debug("Email API request creation complete, attempting to send request");
         return new RestTemplate().exchange(
                 url,
                 HttpMethod.POST,
@@ -81,7 +81,7 @@ public class EmailUtility {
     }
 
     public void sendAsyncEmail(String recipient, String subject, EmailType emailType) {
-        LOGGER.info("Attempting to post message to email Kafka topic");
+        LOGGER.debug("Attempting to post message to email Kafka topic");
 
         String accessToken = authUtility.authenticateServiceAccount();
         accessToken = "Bearer " + accessToken;
@@ -103,7 +103,7 @@ public class EmailUtility {
             case PASSWORD_RESET -> topic = "password-reset-email-events";
         }
 
-        LOGGER.info("Message created, attempting to post to email Kafka topic");
+        LOGGER.debug("Message created, attempting to post to email Kafka topic");
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
         ProducerRecord<String, String> record = new ProducerRecord<String, String>(
                 topic,

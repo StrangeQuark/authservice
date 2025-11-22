@@ -131,7 +131,8 @@ public class UserService {
             LOGGER.info("Password successfully updated");
             return ResponseEntity.ok(new UserResponse("Password successfully updated"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to update user password: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -178,7 +179,8 @@ public class UserService {
             LOGGER.info("Authorization successfully added");
             return ResponseEntity.ok(new UserResponse("Authorizations successfully added"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to add authorizations to user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -230,7 +232,8 @@ public class UserService {
             LOGGER.info("Authorizations successfully removed");
             return ResponseEntity.ok(new UserResponse("Authorizations successfully removed"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to remove authorizations from user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -251,8 +254,8 @@ public class UserService {
             try {
                 emailUtility.sendAsyncEmail(user.getEmail(), "Password reset", EmailType.PASSWORD_RESET);
             } catch (Exception ex) {
-                LOGGER.error("Unable to send password reset email to kafka");
-                LOGGER.error(ex.getMessage());
+                LOGGER.error("Unable to send password reset email to kafka: " + ex.getMessage());
+                LOGGER.debug("Stack trace: ", ex);
                 return ResponseEntity.status(500).body(new ErrorResponse("Unable to send password reset email"));
             }
             // Send a telemetry event for sending password reset email - Integration line: Telemetry
@@ -262,7 +265,8 @@ public class UserService {
             LOGGER.info("Password reset email has been sent");
             return ResponseEntity.ok(new UserResponse("Email is sent"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to send password reset email: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -298,7 +302,8 @@ public class UserService {
             LOGGER.info("Password reset success");
             return ResponseEntity.ok(new UserResponse("Password reset success"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to reset user password: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -316,7 +321,7 @@ public class UserService {
 
         if (userOptional.isPresent()) {
             if(userOptional.get().isEnabled()) {
-                LOGGER.error("User is already enabled");
+                LOGGER.warn("User is already enabled");
                 return ResponseEntity.status(400).body(new ErrorResponse("User is already enabled"));
             }
 
@@ -330,7 +335,7 @@ public class UserService {
         }
 
         // Handle the case where neither username nor email exists
-        LOGGER.error("User not found for those credentials when attempting to enable");
+        LOGGER.error("Invalid user credentials");
         return ResponseEntity.status(404).body(new ErrorResponse("User is not present"));
     }
 
@@ -381,7 +386,8 @@ public class UserService {
             LOGGER.info("User has been disabled");
             return ResponseEntity.ok(new UserResponse("User has been disabled"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to disable user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -427,7 +433,7 @@ public class UserService {
                 throw new RuntimeException("Users can only be deleted by self, ADMIN, or SUPER users");
 
             // Integration function start: File
-            LOGGER.info("Attempting to delete user from all File collections");
+            LOGGER.debug("Attempting to delete user from all File collections");
             try {
                 ResponseEntity<?> response = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
 
@@ -435,11 +441,11 @@ public class UserService {
                     throw new RuntimeException("Error when deleting user from fileservice:\n\n" + response.getBody());
             } catch (ResourceAccessException resourceAccessException) {
                 //If we are unable to reach the file service, proceed with user deletion
-                LOGGER.error("Unable to reach file service: " + resourceAccessException.getMessage());
-                LOGGER.info("Skip file deletion - continuing to delete user");
+                LOGGER.debug("Unable to reach file service: " + resourceAccessException.getMessage());
+                LOGGER.debug("Skip file deletion - continuing to delete user");
             }// Integration function end: File
             // Integration function start: Vault
-            LOGGER.info("Attempting to delete user from all Vault services");
+            LOGGER.debug("Attempting to delete user from all Vault services");
             try {
                 ResponseEntity<?> response = vaultUtility.deleteUserFromAllServices(user.getUsername(), authToken);
 
@@ -447,8 +453,8 @@ public class UserService {
                     throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + response.getBody());
             } catch (ResourceAccessException resourceAccessException) {
                 //If we are unable to reach the vault service, proceed with user deletion
-                LOGGER.error("Unable to reach vault service: " + resourceAccessException.getMessage());
-                LOGGER.info("Skip vault deletion - continuing to delete user");
+                LOGGER.debug("Unable to reach vault service: " + resourceAccessException.getMessage());
+                LOGGER.debug("Skip vault deletion - continuing to delete user");
             }// Integration function end: Vault
 
             //Delete the user
@@ -460,7 +466,8 @@ public class UserService {
             LOGGER.info("User successfully deleted");
             return ResponseEntity.ok(new UserResponse("User successfully deleted"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to delete user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -498,10 +505,11 @@ public class UserService {
             telemetryUtility.sendTelemetryEvent("user-email-update", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a success message
-            LOGGER.info("Email successfully updated");
+            LOGGER.info("User email successfully updated");
             return ResponseEntity.ok(new UserResponse("Email successfully updated"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to update user email: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -548,7 +556,8 @@ public class UserService {
             LOGGER.info("Successfully updated username");
             return ResponseEntity.ok(new UpdateUsernameResponse(refreshToken, jwtService.generateToken(user, false)));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to update username: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(404).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -594,7 +603,8 @@ public class UserService {
             LOGGER.info("User role successfully updated");
             return ResponseEntity.ok(new UserResponse("User role successfully updated"));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to update user role: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -614,7 +624,8 @@ public class UserService {
             LOGGER.info("User Id retrieval success");
             return ResponseEntity.ok(user.getId());
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to fetch user id: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -639,7 +650,8 @@ public class UserService {
             LOGGER.info("User search success");
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to search users: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
@@ -662,7 +674,8 @@ public class UserService {
             LOGGER.info("List of user details successfully compiled");
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to get user details by IDs" + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }

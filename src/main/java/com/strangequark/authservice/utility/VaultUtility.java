@@ -24,16 +24,16 @@ public class VaultUtility {
      * @param username User to be deleted
      */
     public ResponseEntity<?> deleteUserFromAllServices(String username, String authToken) {
-        LOGGER.info("Attempting to send vault API request");
+        LOGGER.debug("Attempting to send vault API request");
 
         //Set the headers
-        LOGGER.info("Setting vault API request headers");
+        LOGGER.debug("Setting vault API request headers");
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         //Create the request body
-        LOGGER.info("Creating file API request body");
+        LOGGER.debug("Creating file API request body");
         JSONObject requestBody = new JSONObject();
         requestBody.put("username", username);
 
@@ -43,7 +43,7 @@ public class VaultUtility {
         //Define the endpoint URL
         String url = "http://vault-service:6020/api/vault/delete-user-from-all-services";
 
-        LOGGER.info("Vault API request creation complete, attempting to send request");
+        LOGGER.debug("Vault API request creation complete, attempting to send request");
         return new RestTemplate().exchange(
                 url,
                 HttpMethod.POST,

@@ -48,7 +48,7 @@ public class ServiceAccountService {
             if(!passwordEncoder.matches(serviceAccountRequest.getClientPassword(), serviceAccount.getClientPassword()))
                 throw new BadCredentialsException("Invalid service account credentials");
 
-            LOGGER.info("Service account found, creating access token");
+            LOGGER.debug("Service account found, creating access token");
 
             //Create a JWT token to authenticate the service account
             String accessToken = jwtService.generateServiceAccountToken(serviceAccount, false);
@@ -56,10 +56,11 @@ public class ServiceAccountService {
             telemetryUtility.sendTelemetryEvent("service-account-authenticate", Map.of("serviceAccountId", serviceAccount.getId())); // Integration line: Telemetry
 
             //Return a 200 response with the JWT refresh token
-            LOGGER.info("Authentication successful");
+            LOGGER.info("Service account authentication successful");
             return ResponseEntity.ok(new AuthenticationResponse(accessToken));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to authenticate service account: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(401).body(new ErrorResponse(ex.getMessage()));
         }
     }

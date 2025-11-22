@@ -64,13 +64,13 @@ public class BootstrapService {
                 throw new RuntimeException("Email address already registered");
 
             //Build the user object to be saved to the database
-            LOGGER.info("Attempting to build bootstrap user object");
+            LOGGER.debug("Attempting to build bootstrap user object");
             User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.SUPER,
                     true, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
 
             //Save the user to the database
-            LOGGER.info("Saving bootstrap user to database");
+            LOGGER.debug("Saving bootstrap user to database");
             userRepository.save(user);
             // Send a telemetry event for super user bootstrap - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("super-user-bootstrap", Map.of("userId", user.getId())); // Integration line: Telemetry
@@ -79,7 +79,8 @@ public class BootstrapService {
             LOGGER.info("User successfully bootstrapped");
             return ResponseEntity.ok(new AuthenticationResponse());
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            LOGGER.error("Failed to bootstrap super user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }

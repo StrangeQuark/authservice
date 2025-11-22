@@ -24,16 +24,16 @@ public class FileUtility {
      * @param username User to be deleted
      */
     public ResponseEntity<?> deleteUserFromAllCollections(String username, String authToken) {
-        LOGGER.info("Attempting to send file API request");
+        LOGGER.debug("Attempting to send file API request");
 
         //Set the headers
-        LOGGER.info("Setting file API request headers");
+        LOGGER.debug("Setting file API request headers");
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         //Create the request body
-        LOGGER.info("Creating file API request body");
+        LOGGER.debug("Creating file API request body");
         JSONObject requestBody = new JSONObject();
         requestBody.put("username", username);
 
@@ -43,7 +43,7 @@ public class FileUtility {
         //Define the endpoint URL
         String url = "http://file-service:6010/api/file/delete-user-from-all-collections";
 
-        LOGGER.info("File API request creation complete, attempting to send request");
+        LOGGER.debug("File API request creation complete, attempting to send request");
         return new RestTemplate().exchange(
                 url,
                 HttpMethod.POST,
