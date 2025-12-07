@@ -33,6 +33,11 @@ services:
       - SERVICE_SECRET_VAULT=${SERVICE_SECRET_VAULT}
       - SERVICE_SECRET_TEST=${SERVICE_SECRET_TEST}
       - SERVICE_SECRET_REACT=${SERVICE_SECRET_REACT}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:6001/api/auth/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
   auth-db:
     image: 'postgres:13.1-alpine'
     container_name: auth-db
