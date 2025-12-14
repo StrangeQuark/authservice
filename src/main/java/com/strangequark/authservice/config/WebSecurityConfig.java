@@ -63,6 +63,7 @@ public class WebSecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/authenticate",
                                 "/api/auth/health",
+                                "/api/auth/user/send-password-reset-email",
                                 "/api/auth/internal/bootstrap",
                                 "/api/auth/service-account/authenticate"
                         ).permitAll()
