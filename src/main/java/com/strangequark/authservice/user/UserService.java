@@ -252,7 +252,7 @@ public class UserService {
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             try {
-                emailUtility.sendAsyncEmail(user.getEmail(), "Password reset", EmailType.PASSWORD_RESET);
+                emailUtility.sendAsyncEmail(user.getEmail(), EmailType.PASSWORD_RESET);
             } catch (Exception ex) {
                 LOGGER.error("Unable to send password reset email to kafka: " + ex.getMessage());
                 LOGGER.debug("Stack trace: ", ex);
