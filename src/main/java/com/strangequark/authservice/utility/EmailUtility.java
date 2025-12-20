@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -40,10 +41,9 @@ public class EmailUtility {
     /**
      * Business logic sending an API request to the EmailService
      * @param recipient
-     * @param subject
      * @param emailType
      */
-    public ResponseEntity<?> sendEmail(String recipient, String subject, EmailType emailType) {
+    public ResponseEntity<?> sendEmail(String recipient, EmailType emailType) {
         LOGGER.debug("Attempting to send email API request");
 
         String accessToken = authUtility.authenticateServiceAccount();
@@ -59,17 +59,17 @@ public class EmailUtility {
         JSONObject requestBody = new JSONObject();
         requestBody.put("recipient", recipient);
         requestBody.put("sender", SENDER);
-        requestBody.put("subject", subject);
+        requestBody.put("includeToken", true);
+        requestBody.put("templateName", emailType == EmailType.REGISTER ? "USER_REGISTER" : emailType == EmailType.PASSWORD_RESET ? "USER_PASSWORD_RESET" : null);
+        requestBody.put("templateVariables", new JSONObject(Map.of("link",
+                emailType == EmailType.REGISTER ? "http://email-service:6005/api/email/enable-user"
+                        : emailType == EmailType.PASSWORD_RESET ? "http://email-service:6005/api/email/reset-user-password" : null)));
 
         //Compile the HttpEntity
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         //Check the email type, and send to the correct EmailService endpoint accordingly
-        String url = "";
-        switch (emailType) {
-            case REGISTER -> url = "http://email-service:6005/api/email/send-register-email";
-            case PASSWORD_RESET -> url = "http://email-service:6005/api/email/send-password-reset-email";
-        }
+        String url = "http://email-service:6005/api/email/send-template-email";
 
         LOGGER.debug("Email API request creation complete, attempting to send request");
         return new RestTemplate().exchange(
@@ -80,7 +80,7 @@ public class EmailUtility {
         );
     }
 
-    public void sendAsyncEmail(String recipient, String subject, EmailType emailType) {
+    public void sendAsyncEmail(String recipient, EmailType emailType) {
         LOGGER.debug("Attempting to post message to email Kafka topic");
 
         String accessToken = authUtility.authenticateServiceAccount();
@@ -89,19 +89,18 @@ public class EmailUtility {
         JSONObject requestBody = new JSONObject();
         requestBody.put("recipient", recipient);
         requestBody.put("sender", SENDER);
-        requestBody.put("subject", subject);
+        requestBody.put("includeToken", true);
+        requestBody.put("templateName", emailType == EmailType.REGISTER ? "USER_REGISTER" : emailType == EmailType.PASSWORD_RESET ? "USER_PASSWORD_RESET" : null);
+        requestBody.put("templateVariables", new JSONObject(Map.of("link",
+                emailType == EmailType.REGISTER ? "http://email-service:6005/api/email/enable-user"
+                        : emailType == EmailType.PASSWORD_RESET ? "http://email-service:6005/api/email/reset-user-password" : null)));
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "email-kafka:9092");
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        String topic = "";
-
-        switch (emailType) {
-            case REGISTER -> topic = "register-email-events";
-            case PASSWORD_RESET -> topic = "password-reset-email-events";
-        }
+        String topic = "template-email-events";
 
         LOGGER.debug("Message created, attempting to post to email Kafka topic");
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);

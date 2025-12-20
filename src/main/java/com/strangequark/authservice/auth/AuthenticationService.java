@@ -108,7 +108,7 @@ public class AuthenticationService {
             //Send an email so the user can enable their account   -   Integration function start: Email
             LOGGER.debug("Attempting to send registration email");
             try {
-                ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), "Account registration", EmailType.REGISTER);
+                ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), EmailType.REGISTER);
 
                 if (response.getStatusCode().value() != 200) {
                     LOGGER.warn("Error when calling email service: " + response.getBody());
