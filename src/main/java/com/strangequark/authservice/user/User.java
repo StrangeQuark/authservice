@@ -53,18 +53,21 @@ public class User implements UserDetails {
     /**
      * A unique username for each user
      */
+    @Column(nullable = false, unique = true)
     @Convert(converter = StringEncryptDecryptConverter.class)
     private String username;
 
     /**
      * A unique email address for each user
      */
+    @Column(nullable = false, unique = true)
     @Convert(converter = StringEncryptDecryptConverter.class)
     private String email;
 
     /**
      * A password for the user
      */
+    @Column(nullable = false)
     private String password;
 
     /**

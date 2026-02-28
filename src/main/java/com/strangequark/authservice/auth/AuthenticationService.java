@@ -91,6 +91,14 @@ public class AuthenticationService {
         String responseMessage = "";
 
         try {
+            //Null checks
+            if(registrationRequest.getUsername() == null || registrationRequest.getUsername().isEmpty())
+                throw new RuntimeException("Username cannot be empty or null");
+            if(registrationRequest.getEmail() == null || registrationRequest.getEmail().isEmpty())
+                throw new RuntimeException("Email cannot be empty or null");
+            if(registrationRequest.getPassword() == null || registrationRequest.getPassword().isEmpty())
+                throw new RuntimeException("Password cannot be empty or null");
+
             //Check if the username has already been registered
             if (userRepository.findByUsername(registrationRequest.getUsername()).isPresent())
                 throw new RuntimeException("Username already registered");
