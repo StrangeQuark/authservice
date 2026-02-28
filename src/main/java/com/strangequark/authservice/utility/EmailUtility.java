@@ -61,9 +61,9 @@ public class EmailUtility {
         requestBody.put("sender", SENDER);
         requestBody.put("includeToken", true);
         requestBody.put("templateName", emailType == EmailType.REGISTER ? "USER_REGISTER" : emailType == EmailType.PASSWORD_RESET ? "USER_PASSWORD_RESET" : null);
-        requestBody.put("templateVariables", new JSONObject(Map.of("link",
-                emailType == EmailType.REGISTER ? "http://react-service/confirm-email"
-                        : emailType == EmailType.PASSWORD_RESET ? "http://react-service/new-password" : null)));
+//        requestBody.put("templateVariables", new JSONObject(Map.of("link",
+//                emailType == EmailType.REGISTER ? "http://react-service/confirm-email"
+//                        : emailType == EmailType.PASSWORD_RESET ? "http://react-service/new-password" : null)));
 
         //Compile the HttpEntity
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
