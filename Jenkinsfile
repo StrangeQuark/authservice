@@ -1,5 +1,10 @@
 pipeline {
-    agent { label 'Host PC' }
+    agent {
+        docker {
+            image 'docker:26-cli'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     stages {
         // Integration function start: Vault
@@ -29,7 +34,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        bat "docker-compose --env-file .env up --build -d"
+                        sh "docker-compose --env-file .env up --build -d"
 
                         def maxRetries = 4 * 10
                         def retryInterval = 15
@@ -53,13 +58,13 @@ pipeline {
 
                         if (!success) {
                             echo "Health check ultimately failed. Tearing down containers."
-                            bat "docker-compose down"
+                            sh "docker-compose down"
                             error("Deployment failed: service not healthy.")
                         }
 
                     } catch (ex) {
                         echo "Unexpected failure: ${ex.getMessage()}"
-                        bat "docker-compose down"
+                        sh "docker-compose down"
                         error("Deployment crashed.")
                     }
                 }
