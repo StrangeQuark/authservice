@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'Host PC' }
 
+    environment {
+        CICD_TOKEN = credentials('CICD_TOKEN') // Integration line: Vault
+    }
+
     stages {
         // Integration function start: Vault
         stage("Retrieve Env Vars") {
@@ -9,6 +13,9 @@ pipeline {
                     def response = httpRequest(
                         url: 'http://localhost:6020/api/vault/getVariablesByEnvironment/authservice/e3',
                         httpMode: 'GET',
+                        customHeaders: [
+                            [name: 'X-CICD-TOKEN', value: CICD_TOKEN, maskValue: true]
+                        ],
                         acceptType: 'APPLICATION_JSON'
                     )
 
