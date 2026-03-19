@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh "docker-compose --env-file .env up --build -d"
+                        sh "docker compose --env-file .env up --build -d"
 
                         def maxRetries = 4 * 10
                         def retryInterval = 15
@@ -61,13 +61,13 @@ pipeline {
 
                         if (!success) {
                             echo "Health check ultimately failed. Tearing down containers."
-                            sh "docker-compose down"
+                            sh "docker compose down"
                             error("Deployment failed: service not healthy.")
                         }
 
                     } catch (ex) {
                         echo "Unexpected failure: ${ex.getMessage()}"
-                        sh "docker-compose down"
+                        sh "docker compose down"
                         error("Deployment crashed.")
                     }
                 }
