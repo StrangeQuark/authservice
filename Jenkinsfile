@@ -2,6 +2,7 @@ pipeline {
     agent { label 'Host PC' }
 
     environment {
+        VAULT_URL = credentials('VAULT_URL') // Integration line: Vault
         CICD_TOKEN = credentials('CICD_TOKEN') // Integration line: Vault
     }
 
@@ -11,7 +12,7 @@ pipeline {
             steps {
                 script {
                     def response = httpRequest(
-                        url: 'http://localhost:6020/api/vault/getVariablesByEnvironment/authservice/e3',
+                        url: VAULT_URL + '/api/vault/cicd/authservice/e3',
                         httpMode: 'GET',
                         customHeaders: [
                             [name: 'X-CICD-TOKEN', value: CICD_TOKEN, maskValue: true]
