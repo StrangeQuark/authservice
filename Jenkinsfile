@@ -27,8 +27,8 @@ pipeline {
                         envFileContent += "${entry.key}=${entry.value}\n"
                     }
 
-                    writeFile file: '.env', text: envFileContent
-                    echo "Environment variables written to .env"
+                    writeFile file: 'authservice.env', text: envFileContent
+                    echo "Environment variables written to authservice.env"
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh "docker compose --env-file .env up --build -d"
+                        sh "docker compose --env-file authservice.env up --build -d"
 
                         def maxRetries = 4 * 10
                         def retryInterval = 15
@@ -73,5 +73,13 @@ pipeline {
                 }
             }
         }
+        // Integration function start: Vault
+        post {
+            always {
+                sh "rm -f authservice.env"
+                echo "Cleaned up authservice.env"
+            }
+        }
+        // Integration function end: Vault
     }
 }
