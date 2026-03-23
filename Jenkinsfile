@@ -73,13 +73,13 @@ pipeline {
                 }
             }
         }
-        // Integration function start: Vault
-        post {
-            always {
-                sh "rm -f authservice.env"
-                echo "Cleaned up authservice.env"
-            }
-        }
-        // Integration function end: Vault
     }
+    // Integration function start: Vault
+    post {
+        always {
+            sh "rm -f authservice.env"
+            echo "Cleaned up authservice.env"
+        }
+    }
+    // Integration function end: Vault
 }
