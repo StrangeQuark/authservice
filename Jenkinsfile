@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'Host PC' }
+    agent { label 'linux-agent' }
 
     environment {
         VAULT_URL = credentials('VAULT_URL') // Integration line: Vault
