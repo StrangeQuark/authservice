@@ -29,15 +29,21 @@ public class ServiceAccountInitializer implements ApplicationRunner {
         String[] serviceIds = environment.getProperty("SERVICE_ACCOUNTS").split(",");
 
         for(String serviceId : serviceIds) {
-            LOGGER.debug("Initializing service account with ID: " + serviceId);
-            String clientPassword = environment.getProperty("SERVICE_SECRET_" + serviceId.trim().toUpperCase());
+            LOGGER.debug("Attempting to initialize service account with ID: " + serviceId);
+            String trimmedId = serviceId.trim();
 
+            if (serviceAccountRepository.findByClientId(trimmedId).isPresent()) {
+                LOGGER.debug("Service account already exists: " + trimmedId);
+                continue;
+            }
+
+            String clientPassword = environment.getProperty("SERVICE_SECRET_" + trimmedId.toUpperCase());
             ServiceAccount serviceAccount = new ServiceAccount();
-            serviceAccount.setClientId(serviceId.trim());
+            serviceAccount.setClientId(trimmedId);
             serviceAccount.setClientPassword(passwordEncoder.encode(clientPassword));
 
             serviceAccountRepository.save(serviceAccount);
-            LOGGER.info("Service account successfully initialized");
+            LOGGER.info("Service account successfully initialized: " + trimmedId);
         }
     }
 }
