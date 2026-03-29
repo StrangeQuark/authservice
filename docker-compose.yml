@@ -43,7 +43,7 @@ services:
     container_name: auth-db
     restart: unless-stopped
     volumes:
-      - auth-db-volume:/var/lib/postgresql/data
+      - auth-db-volume:/var/lib/postgresql/data/authservice
     networks:
       - authdb-network
     environment:
