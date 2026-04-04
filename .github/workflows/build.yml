@@ -1,0 +1,63 @@
+name: AuthService Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux-agent]
+
+    env:
+      VAULT_URL: ${{ secrets.VAULT_URL }}
+      CICD_TOKEN: ${{ secrets.CICD_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Retrieve Env Vars from Vault
+        run: |
+          echo "Requesting environment variables from Vault..."
+
+          response=$(curl -s \
+            -H "X-CICD-TOKEN: $CICD_TOKEN" \
+            "$VAULT_URL/api/vault/cicd/authservice/e3")
+
+          echo "$response" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > authservice.env
+
+          echo "Environment variables written to authservice.env"
+
+      - name: Deploy & Health Check
+        run: |
+          set -e
+
+          docker compose --env-file authservice.env up --build -d
+
+          max_retries=40
+          retry_interval=15
+          success=0
+
+          for i in $(seq 1 $max_retries); do
+            echo "Health check attempt $i..."
+
+            if curl -s -f http://localhost:6001/api/auth/health > /dev/null; then
+              echo "App is healthy"
+              success=1
+              break
+            else
+              echo "Health check failed, retrying in $retry_interval seconds..."
+              sleep $retry_interval
+            fi
+          done
+
+          if [ $success -ne 1 ]; then
+            echo "Health check ultimately failed. Tearing down containers."
+            docker compose down
+            exit 1
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f authservice.env
+          echo "Cleaned up authservice.env"
