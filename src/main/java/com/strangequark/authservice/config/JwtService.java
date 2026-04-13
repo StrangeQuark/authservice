@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -166,5 +167,14 @@ public class JwtService {
      */
     private Date extractExpiration(String jwtToken, boolean isRefreshToken) {
         return extractClaim(jwtToken, Claims::getExpiration, isRefreshToken);
+    }
+
+    public ResponseCookie buildTokenCookie(String tokenName, String token) {
+        return ResponseCookie.from(tokenName, token)
+                .httpOnly(false)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .build();
     }
 }

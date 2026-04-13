@@ -25,6 +25,8 @@ public class AccessServiceTest extends BaseServiceTest {
             ResponseEntity<?> response =  accessService.serveAccessToken();
 
             Assertions.assertEquals(200, response.getStatusCode().value());
+            Assertions.assertNotNull(response.getHeaders().getFirst("Set-Cookie"));
+            Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("access_token="));
         }
     }
 }

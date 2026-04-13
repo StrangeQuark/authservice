@@ -11,6 +11,7 @@ import com.strangequark.authservice.utility.TelemetryUtility; // Integration lin
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -182,7 +183,9 @@ public class AuthenticationService {
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
-            return ResponseEntity.ok(new AuthenticationResponse(refreshToken));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken).toString())
+                    .body(new AuthenticationResponse(refreshToken));
         } catch (AuthenticationException ex) {
             LOGGER.error("Failed to authenticate user: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
