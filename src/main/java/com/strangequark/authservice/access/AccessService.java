@@ -6,9 +6,13 @@ import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
 import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired; // Integration line: Telemetry
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -62,15 +66,27 @@ public class AccessService {
         LOGGER.info("Attempting to serve access token");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String refreshToken = "";
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+            try {
+                refreshToken = request.getHeader("Authorization").substring(7);
+            } catch (Exception ex) {
+                if (request.getCookies() == null) return null;
+
+                for (Cookie cookie : request.getCookies()) {
+                    if (cookie.getName().equals("refresh_token")) {
+                        refreshToken = cookie.getValue();
+                    }
+                }
+                return null;
+            }
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(authToken, true))
+            User user = userRepository.findByUsername(jwtService.extractUsername(refreshToken, true))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Verify the refresh token against the User's refresh token
-            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(authToken))
+            if(user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken))
                         throw new RuntimeException("Refresh token is invalid");
 
             //Create a JWT token to authenticate the user
@@ -80,7 +96,9 @@ public class AccessService {
 
             //Return a 200 response with the jwtToken
             LOGGER.info("Access token successfully served");
-            return ResponseEntity.ok(new AuthenticationResponse(accessToken));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("access_token", accessToken).toString())
+                    .body(new AuthenticationResponse(accessToken));
         } catch (Exception ex) {
             LOGGER.error("Failed to serve access token: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
