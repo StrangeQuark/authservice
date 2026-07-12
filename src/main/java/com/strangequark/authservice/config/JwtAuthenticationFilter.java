@@ -7,6 +7,7 @@ import com.strangequark.authservice.error.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -90,22 +91,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             LOGGER.debug("Attempting to do an internal filter");
 
             final String authorizationHeader = request.getHeader("Authorization");
-            final String jwtToken;
             final String username;
             final boolean isRefreshToken;
+            String jwtToken = "";
 
             //Check if the authorizationHeader is null or does not start with "Bearer "
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
-                LOGGER.error("Invalid authorization header");
-                return;
+                //Check the cookies
+                Cookie[] cookies = request.getCookies();
+                if (cookies != null) {
+                    for (Cookie cookie : cookies) {
+                        if ("access_token".equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                            LOGGER.debug("Token successfully retrieved from cookie");
+                            jwtToken = cookie.getValue();
+                        }
+                    }
+                }
+
+                if(jwtToken.isEmpty()) {
+                    filterChain.doFilter(request, response);
+                    LOGGER.error("Invalid authorization header and missing cookie");
+                    return;
+                }
             }
 
             //Check the path, set refresh or access token
             isRefreshToken = request.getRequestURI().equals("/api/auth/access");
 
-            //Insert the authorization header, excluding the "Bearer " substring
-            jwtToken = authorizationHeader.substring(7);
+            //Insert the authorization header, excluding the "Bearer " substring, if not already set by cookie
+            if(!jwtToken.isEmpty())
+                jwtToken = authorizationHeader.substring(7);
 
             //Extract the username from the JWT token
             username = jwtService.extractUsername(jwtToken, isRefreshToken);
