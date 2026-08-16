@@ -68,8 +68,8 @@ public class UserServiceTest extends BaseServiceTest {
 
         ResponseEntity<?> response =  userService.sendPasswordResetEmail(userRequest);
 
-        Assertions.assertEquals(500, response.getStatusCode().value());
-        Assertions.assertEquals("Unable to send password reset email", ((ErrorResponse) response.getBody()).getErrorMessage());
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("If an account exists, a password reset email has been sent", ((UserResponse) response.getBody()).getMessage());
     }
 
     @Test
