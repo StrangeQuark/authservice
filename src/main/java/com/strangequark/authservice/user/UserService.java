@@ -256,18 +256,18 @@ public class UserService {
             } catch (Exception ex) {
                 LOGGER.error("Unable to send password reset email to kafka: " + ex.getMessage());
                 LOGGER.debug("Stack trace: ", ex);
-                return ResponseEntity.status(500).body(new ErrorResponse("Unable to send password reset email"));
+                return ResponseEntity.ok(new UserResponse("If an account exists, a password reset email has been sent"));
             }
             // Send a telemetry event for sending password reset email - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-password-reset-email", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Password reset email has been sent");
-            return ResponseEntity.ok(new UserResponse("Email is sent"));
+            return ResponseEntity.ok(new UserResponse("If an account exists, a password reset email has been sent"));
         } catch (Exception ex) {
             LOGGER.error("Failed to send password reset email: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
-            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.ok(new UserResponse("If an account exists, a password reset email has been sent"));
         }
     }
 
