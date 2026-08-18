@@ -3,6 +3,7 @@ package com.strangequark.authservice.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -67,6 +68,8 @@ public class WebSecurityConfig {
                                 "/api/auth/internal/bootstrap",
                                 "/api/auth/service-account/authenticate"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/user/enable-user")
+                        .hasAnyAuthority("EMAIL_SERVICE", "ADMIN", "SUPER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
