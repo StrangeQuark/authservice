@@ -119,7 +119,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             isRefreshToken = request.getRequestURI().equals("/api/auth/access");
 
             //Insert the authorization header, excluding the "Bearer " substring, if not already set by cookie
-            if(!jwtToken.isEmpty())
+            if(jwtToken.isEmpty())
                 jwtToken = authorizationHeader.substring(7);
 
             //Extract the username from the JWT token

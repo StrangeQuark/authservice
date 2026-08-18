@@ -60,7 +60,10 @@ public class ServiceAccount implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("SERVICE_ACCOUNT"));
+        return List.of(
+                new SimpleGrantedAuthority("SERVICE_ACCOUNT"),
+                new SimpleGrantedAuthority(clientId.toUpperCase() + "_SERVICE")
+        );
     }
 
     @Override

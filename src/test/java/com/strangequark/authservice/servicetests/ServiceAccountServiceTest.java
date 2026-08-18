@@ -14,6 +14,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.UUID;
+
 public class ServiceAccountServiceTest extends BaseServiceTest {
 
     @Autowired
@@ -29,7 +31,7 @@ public class ServiceAccountServiceTest extends BaseServiceTest {
     @BeforeEach
     void setup() {
         testServiceAccount = new ServiceAccount();
-        testServiceAccount.setClientId("testClientId");
+        testServiceAccount.setClientId("testClientId" + UUID.randomUUID());
         testServiceAccount.setClientPassword(passwordEncoder.encode("testClientPassword"));
         serviceAccountRepository.save(testServiceAccount);
 
@@ -43,10 +45,19 @@ public class ServiceAccountServiceTest extends BaseServiceTest {
 
     @Test
     void authenticateTest() {
-        ServiceAccountRequest request = new ServiceAccountRequest("testClientId", "testClientPassword");
+        ServiceAccountRequest request = new ServiceAccountRequest(testServiceAccount.getClientId(), "testClientPassword");
 
         ResponseEntity<?> response =  serviceAccountService.authenticate(request);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    void serviceAccountAuthoritiesTest() {
+        Assertions.assertTrue(testServiceAccount.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("SERVICE_ACCOUNT")));
+
+        Assertions.assertTrue(testServiceAccount.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(testServiceAccount.getClientId().toUpperCase() + "_SERVICE")));
     }
 }
