@@ -38,6 +38,7 @@ public abstract class BaseServiceTest {
     public PasswordEncoder passwordEncoder;
     public User testUser;
     public User testAdmin;
+    public User testSuper;
     private String accessToken;
     @Autowired // Integration line: Email
     private ServiceAccountRepository serviceAccountRepository; // Integration line: Email
@@ -78,6 +79,20 @@ public abstract class BaseServiceTest {
         accessToken = jwtService.generateToken(testAdmin, false);
 
         //Set the accessToken to the Authorization header in the requestContextHolder
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer " + accessToken);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    }
+
+    void setupSuperUser() {
+        testSuper = new User("testSuper", "super@test.com", Role.SUPER, true, new HashSet<>(), passwordEncoder.encode("superPassword"));
+        userRepository.save(testSuper);
+
+        testSuper.setRefreshToken(jwtService.generateToken(testSuper, true));
+        userRepository.save(testSuper);
+
+        accessToken = jwtService.generateToken(testSuper, false);
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + accessToken);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));

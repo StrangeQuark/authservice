@@ -131,6 +131,20 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void deleteLastSuperUserTest() {
+        setupSuperUser();
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testSuper.getUsername());
+        userRequest.setPassword("superPassword");
+
+        ResponseEntity<?> response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(testSuper.getUsername()).isPresent());
+    }
+
+    @Test
     void updateEmailTest() {
         String newEmail = "new@test.com";
 
@@ -178,6 +192,20 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
         Assertions.assertEquals(Role.SUPER, userRepository.findByUsername(testUser.getUsername()).get().getRole());
+    }
+
+    @Test
+    void updateLastSuperUserRoleTest() {
+        setupSuperUser();
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testSuper.getUsername());
+        userRequest.setNewRole(Role.ADMIN);
+
+        ResponseEntity<?> response = userService.updateRole(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(Role.SUPER, userRepository.findByUsername(testSuper.getUsername()).get().getRole());
     }
 
     @Test

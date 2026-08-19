@@ -1,4 +1,5 @@
 .env
+/bootstrap-credentials/
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
