@@ -1,6 +1,7 @@
 package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -10,6 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,22 +27,31 @@ import java.util.UUID;
 @Order(2)
 public class InitialSuperUserInitializer implements ApplicationRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitialSuperUserInitializer.class);
+    private static final int INITIAL_SUPER_USER_LOCK_ID = 6001;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Environment environment;
     private final TelemetryUtility telemetryUtility; // Integration line: Telemetry
+    private final EntityManager entityManager;
 
     public InitialSuperUserInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                                       Environment environment, TelemetryUtility telemetryUtility) {
+                                       Environment environment, TelemetryUtility telemetryUtility,
+                                       EntityManager entityManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.environment = environment;
         this.telemetryUtility = telemetryUtility; // Integration line: Telemetry
+        this.entityManager = entityManager;
     }
 
     @Override
+    @Transactional
     public void run(ApplicationArguments applicationArguments) throws Exception {
+        // Prevent multiple AuthService instances from creating initial SUPER users at the same time
+        entityManager.createNativeQuery("SELECT pg_advisory_xact_lock(" + INITIAL_SUPER_USER_LOCK_ID + ")")
+                .getSingleResult();
+
         if(userRepository.count() != 0) {
             if(!userRepository.existsByRole(Role.SUPER))
                 LOGGER.error("Users exist but no SUPER user exists. Initial SUPER user will not be created automatically");
@@ -74,7 +85,7 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
         try {
             User user = new User(username, username + "@msinit.local", Role.SUPER,
                     true, new HashSet<>(), passwordEncoder.encode(password));
-            userRepository.save(user);
+            userRepository.saveAndFlush(user);
         } catch (Exception ex) {
             Files.deleteIfExists(credentialsFile);
             throw ex;
