@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -569,6 +570,7 @@ public class UserService {
      * Business logic for updating a user's role
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
+    @Transactional
     public ResponseEntity<?> updateRole(UserRequest userRequest) {
         LOGGER.info("Attempting to update user's role");
 
@@ -586,12 +588,16 @@ public class UserService {
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
             if(user.getRole() == Role.SUPER && userRequest.getNewRole() != Role.SUPER &&
-                    userRepository.countByRole(Role.SUPER) == 1)
+                    userRepository.findByRole(Role.SUPER).size() == 1)
                 throw new RuntimeException("The last SUPER user cannot be demoted");
 
             // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
             if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
                 throw new RuntimeException("Only SUPER users can update roles of SUPER users");
+
+            // Only SUPER users can assign SUPER roles
+            if(userRequest.getNewRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can assign SUPER roles");
 
             // Only SUPER and ADMIN users can assign roles
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN)
