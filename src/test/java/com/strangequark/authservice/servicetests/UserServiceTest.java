@@ -178,7 +178,7 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void updateRoleTest() {
-        Role newRole = Role.SUPER;
+        Role newRole = Role.ADMIN;
 
         UserRequest userRequest = new UserRequest();
         userRequest.setUsername(testUser.getUsername());
@@ -191,6 +191,48 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
+        Assertions.assertEquals(Role.ADMIN, userRepository.findByUsername(testUser.getUsername()).get().getRole());
+    }
+
+    @Test
+    void updateRoleRejectsAdminSelfPromotionToSuperTest() {
+        setupAdminUser();
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testAdmin.getUsername());
+        userRequest.setNewRole(Role.SUPER);
+
+        ResponseEntity<?> response = userService.updateRole(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(Role.ADMIN, userRepository.findByUsername(testAdmin.getUsername()).get().getRole());
+    }
+
+    @Test
+    void updateRoleRejectsAdminPromotionToSuperTest() {
+        setupAdminUser();
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setNewRole(Role.SUPER);
+
+        ResponseEntity<?> response = userService.updateRole(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(Role.USER, userRepository.findByUsername(testUser.getUsername()).get().getRole());
+    }
+
+    @Test
+    void updateRoleAllowsSuperPromotionToSuperTest() {
+        setupSuperUser();
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setNewRole(Role.SUPER);
+
+        ResponseEntity<?> response = userService.updateRole(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals(Role.SUPER, userRepository.findByUsername(testUser.getUsername()).get().getRole());
     }
 

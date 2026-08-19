@@ -1,6 +1,8 @@
 package com.strangequark.authservice.user;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +36,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @param role {@link Role}
      */
     long countByRole(Role role);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<User> findByRole(Role role);
 
     /**
      * Return a list of user objects when passed a list of user IDs
