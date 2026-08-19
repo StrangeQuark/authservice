@@ -65,7 +65,6 @@ public class WebSecurityConfig {
                                 "/api/auth/authenticate",
                                 "/api/auth/health",
                                 "/api/auth/user/send-password-reset-email",
-                                "/api/auth/internal/bootstrap",
                                 "/api/auth/service-account/authenticate"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/user/enable-user")

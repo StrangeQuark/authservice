@@ -864,55 +864,6 @@
 			"response": []
 		},
 		{
-			"name": "Bootstrap Super User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-BOOTSTRAP-SECRET",
-						"value": "6F54AFE5EBE3355E3E6932ADA8FB9F00BA1780E80B277AB56F23A5AE806C0660",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"testSuper\",\r\n    \"email\": \"super@t.com\",\r\n    \"password\": \"password123!\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:6001/api/auth/internal/bootstrap",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "6001",
-					"path": [
-						"api",
-						"auth",
-						"internal",
-						"bootstrap"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Service Account Authentication",
 			"event": [
 				{

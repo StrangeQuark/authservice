@@ -53,6 +53,11 @@ public class UserRepositoryTest extends BaseRepositoryTest {
     }
 
     @Test
+    void countByRoleTest() {
+        Assertions.assertEquals(1, userRepository.countByRole(Role.USER));
+    }
+
+    @Test
     void findByIdInTest() {
         List<UUID> uuidList = new ArrayList<>();
         uuidList.add(testUser.getId());

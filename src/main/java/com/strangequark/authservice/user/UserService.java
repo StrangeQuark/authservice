@@ -419,6 +419,9 @@ public class UserService {
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
+            if(user.getRole() == Role.SUPER && userRepository.countByRole(Role.SUPER) == 1)
+                throw new RuntimeException("The last SUPER user cannot be deleted");
+
             // If the target user is a SUPER user, ensure the requesting user is the target user
             if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId()))
                 throw new RuntimeException("SUPER users can only be self-deleted");
@@ -581,6 +584,10 @@ public class UserService {
             User user = userRepository.findByUsername(userRequest.getUsername())
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
+
+            if(user.getRole() == Role.SUPER && userRequest.getNewRole() != Role.SUPER &&
+                    userRepository.countByRole(Role.SUPER) == 1)
+                throw new RuntimeException("The last SUPER user cannot be demoted");
 
             // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
             if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)

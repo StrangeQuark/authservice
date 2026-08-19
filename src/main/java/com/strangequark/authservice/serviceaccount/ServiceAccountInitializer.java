@@ -4,11 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@Order(1)
 public class ServiceAccountInitializer implements ApplicationRunner {
     private final static Logger LOGGER = LoggerFactory.getLogger(ServiceAccountInitializer.class);
     private final ServiceAccountRepository serviceAccountRepository;

@@ -30,6 +30,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByRole(Role role);
 
     /**
+     * Return the number of user objects with the given role
+     * @param role {@link Role}
+     */
+    long countByRole(Role role);
+
+    /**
      * Return a list of user objects when passed a list of user IDs
      * @param ids to be retrieved
      */
