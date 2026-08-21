@@ -77,6 +77,11 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
         if(credentialsFile.getParent() == null)
             throw new RuntimeException("INITIAL_SUPER_CREDENTIALS_FILE must include a directory");
 
+        if(Files.exists(credentialsFile)) {
+            LOGGER.warn("Deleting existing initial SUPER credentials file because no users exist in database");
+            Files.delete(credentialsFile);
+        }
+
         Files.createDirectories(credentialsFile.getParent());
         Files.createFile(credentialsFile, PosixFilePermissions.asFileAttribute(
                 PosixFilePermissions.fromString("rw-------")));

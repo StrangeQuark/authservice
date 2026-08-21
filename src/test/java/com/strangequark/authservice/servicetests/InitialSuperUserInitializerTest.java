@@ -13,7 +13,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.mock.env.MockEnvironment;
 
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -80,10 +79,10 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
                 entityManager);
 
-        Assertions.assertThrows(FileAlreadyExistsException.class,
-                () -> initialSuperUserInitializer.run(new DefaultApplicationArguments()));
-        Assertions.assertEquals(0, userRepository.count());
-        Assertions.assertEquals("existing credentials", Files.readString(credentialsFile));
+        initialSuperUserInitializer.run(new DefaultApplicationArguments());
+
+        Assertions.assertEquals(1, userRepository.count());
+        Assertions.assertNotEquals("existing credentials", Files.readString(credentialsFile));
     }
 
     private MockEnvironment getEnvironment(Path credentialsFile) {
