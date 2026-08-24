@@ -1,7 +1,7 @@
 package com.strangequark.authservice.access;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,11 +27,16 @@ public class AccessController {
     }
 
     /**
-     * Get request endpoint for retrieving a new access key
+     * Post request endpoint for retrieving a new access key
      * @return {@link ResponseEntity}
      */
-    @GetMapping()
+    @PostMapping()
     public ResponseEntity<?> serveAccessToken() {
         return accessService.serveAccessToken();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        return accessService.logout();
     }
 }

@@ -184,8 +184,8 @@ public class AuthenticationService {
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken).toString())
-                    .body(new AuthenticationResponse(refreshToken));
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new AuthenticationResponse());
         } catch (AuthenticationException ex) {
             LOGGER.error("Failed to authenticate user: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);

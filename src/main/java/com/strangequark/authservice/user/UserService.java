@@ -11,9 +11,11 @@ import com.strangequark.authservice.utility.EmailUtility; // Integration line: E
 import com.strangequark.authservice.utility.FileUtility; // Integration line: File
 import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
 import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -115,8 +117,7 @@ public class UserService {
         LOGGER.info("Attempting to update password");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -131,13 +132,19 @@ public class UserService {
 
             //Set the user's new password and save
             user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
+
+            String refreshToken = jwtService.generateToken(user, true);
+
+            user.setRefreshToken(refreshToken);
             userRepository.save(user);
             // Send a telemetry event for user password update - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-password-update", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Password successfully updated");
-            return ResponseEntity.ok(new UserResponse("Password successfully updated"));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new UserResponse("Password successfully updated"));
         } catch (Exception ex) {
             LOGGER.error("Failed to update user password: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -153,8 +160,7 @@ public class UserService {
         LOGGER.info("Attempting to add authorizations to user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -208,8 +214,7 @@ public class UserService {
         LOGGER.info("Attempting to remove authorizations from user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -296,8 +301,7 @@ public class UserService {
         LOGGER.info("Attempting to reset user's password");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             ServiceAccount requestingServiceAccount = serviceAccountRepository.findByClientId(jwtService.extractUsername(authToken, false))
@@ -365,8 +369,7 @@ public class UserService {
         LOGGER.info("Attempting to disable user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -417,8 +420,7 @@ public class UserService {
         LOGGER.info("Attempting to delete user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -504,8 +506,7 @@ public class UserService {
             if (userRepository.findByEmail(userRequest.getNewEmail()).isPresent())
                 throw new RuntimeException("Email already registered");
 
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -520,13 +521,19 @@ public class UserService {
 
             //Update the user's email
             user.setEmail(userRequest.getNewEmail());
+
+            String refreshToken = jwtService.generateToken(user, true);
+
+            user.setRefreshToken(refreshToken);
             userRepository.save(user);
             // Send a telemetry event for user email update - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-email-update", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("User email successfully updated");
-            return ResponseEntity.ok(new UserResponse("Email successfully updated"));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new UserResponse("Email successfully updated"));
         } catch (Exception ex) {
             LOGGER.error("Failed to update user email: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -546,8 +553,7 @@ public class UserService {
             if (userRepository.findByUsername(userRequest.getNewUsername()).isPresent())
                 throw new RuntimeException("Username already registered");
 
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -574,7 +580,9 @@ public class UserService {
 
             //Return a 200 response with a success message
             LOGGER.info("Successfully updated username");
-            return ResponseEntity.ok(new UpdateUsernameResponse(refreshToken, jwtService.generateToken(user, false)));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new UserResponse("Username successfully updated"));
         } catch (Exception ex) {
             LOGGER.error("Failed to update username: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -591,8 +599,7 @@ public class UserService {
         LOGGER.info("Attempting to update user's role");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -707,5 +714,23 @@ public class UserService {
             LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
+    }
+
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        String authorizationHeader = attributes.getRequest().getHeader("Authorization");
+
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer "))
+            return authorizationHeader.substring(7);
+
+        Cookie[] cookies = attributes.getRequest().getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if(cookie.getName().equals("access_token") && !cookie.getValue().isBlank())
+                    return cookie.getValue();
+            }
+        }
+
+        throw new RuntimeException("Access token was not found");
     }
 }

@@ -44,6 +44,9 @@ public class JwtService {
     @Value("${REFRESH_SECRET_KEY}")
     private String REFRESH_SECRET_KEY;
 
+    @Value("${cookie.secure}")
+    private boolean cookieSecure;
+
     /**
      * The amount of time in milliseconds that an access token will expire
      */
@@ -202,11 +205,22 @@ public class JwtService {
         return extractClaim(jwtToken, Claims::getExpiration, isRefreshToken);
     }
 
-    public ResponseCookie buildTokenCookie(String tokenName, String token) {
+    public ResponseCookie buildTokenCookie(String tokenName, String token, boolean isRefreshToken) {
         return ResponseCookie.from(tokenName, token)
-                .httpOnly(false)
-                .secure(false)
+                .httpOnly(true)
+                .secure(cookieSecure)
                 .sameSite("Lax")
+                .maxAge(isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME / 1000 : ACCESS_TOKEN_EXPIRATION_TIME / 1000)
+                .path("/")
+                .build();
+    }
+
+    public ResponseCookie clearTokenCookie(String tokenName) {
+        return ResponseCookie.from(tokenName, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .maxAge(0)
                 .path("/")
                 .build();
     }

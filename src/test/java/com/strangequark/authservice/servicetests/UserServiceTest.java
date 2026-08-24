@@ -26,6 +26,7 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Password successfully updated", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("refresh_token="));
     }
 
     @Test
@@ -168,6 +169,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Email successfully updated", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertEquals(newEmail, userRepository.findByUsername(testUser.getUsername()).get().getEmail());
+        Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("refresh_token="));
     }
 
     @Test
@@ -183,6 +185,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(newUsername).isPresent());
         Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
+        Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("refresh_token="));
     }
 
     @Test

@@ -30,5 +30,6 @@ public class AuthenticationServiceTest extends BaseServiceTest{
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertNotNull(response.getHeaders().getFirst("Set-Cookie"));
         Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("refresh_token="));
+        Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("HttpOnly"));
     }
 }
