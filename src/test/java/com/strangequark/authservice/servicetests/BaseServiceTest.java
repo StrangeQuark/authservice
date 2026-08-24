@@ -1,6 +1,9 @@
 package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.config.JwtService;
+import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.AuthorizationRepository;
+import com.strangequark.authservice.authorization.RoleAuthorizationRepository;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRepository; // Integration line: Email
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
@@ -33,7 +36,11 @@ public abstract class BaseServiceTest {
     @Autowired
     public UserRepository userRepository;
     @Autowired
-    private JwtService jwtService;
+    protected JwtService jwtService;
+    @Autowired
+    public AuthorizationRepository authorizationRepository;
+    @Autowired
+    public RoleAuthorizationRepository roleAuthorizationRepository;
     @Autowired
     public PasswordEncoder passwordEncoder;
     public User testUser;
@@ -45,8 +52,7 @@ public abstract class BaseServiceTest {
 
     @BeforeEach
     void setup() {
-        HashSet<String> testAuthorizations = new HashSet<>();
-        testAuthorizations.add("testAuthorization1");
+        HashSet<Authorization> testAuthorizations = new HashSet<>();
 
         testUser = new User("testUser", "test@test.com", Role.USER, true, testAuthorizations, passwordEncoder.encode("password"));
         userRepository.save(testUser);
@@ -65,6 +71,7 @@ public abstract class BaseServiceTest {
     @AfterEach
     void teardown() {
         userRepository.deleteAll();
+        roleAuthorizationRepository.deleteAll();
         accessToken = null;
         testUser = null;
     }

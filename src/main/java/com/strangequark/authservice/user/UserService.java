@@ -1,5 +1,7 @@
 package com.strangequark.authservice.user;
 
+import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.AuthorizationRepository;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.serviceaccount.ServiceAccount; // Integration line: Email
@@ -24,8 +26,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map; // Integration line: Telemetry
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -39,6 +43,7 @@ public class UserService {
      * {@link UserRepository} for fetching {@link User} from the database
      */
     private final UserRepository userRepository;
+    private final AuthorizationRepository authorizationRepository;
     // Integration function start: Email
     /**
      * {@link ServiceAccountRepository} for fetching {@link ServiceAccount} from the database
@@ -93,8 +98,10 @@ public class UserService {
      * @param jwtService {@link JwtService} for generating JWT tokens
      * @param authenticationManager {@link AuthenticationManager} for authenticating JWT tokens
      */
-    public UserService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
+    public UserService(UserRepository userRepository, AuthorizationRepository authorizationRepository, JwtService jwtService,
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
         this.userRepository = userRepository;
+        this.authorizationRepository = authorizationRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -158,16 +165,23 @@ public class UserService {
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
-            // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
-            if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
-                throw new RuntimeException("Only SUPER users can add authorizations to SUPER users");
+            if(requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can add authorizations");
 
-            // Only SUPER and ADMIN users can assign roles
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN)
-                throw new RuntimeException("Only SUPER or ADMIN users can add authorizations to users");
+            if(userRequest.getAuthorizations() == null || userRequest.getAuthorizations().isEmpty())
+                throw new RuntimeException("Authorizations are required");
+
+            Set<Authorization> authorizations = new HashSet<>();
+
+            for(String authorizationName : userRequest.getAuthorizations()) {
+                Authorization authorization = authorizationRepository.findByName(authorizationName)
+                        .orElseThrow(() -> new RuntimeException("Authorization was not found"));
+
+                authorizations.add(authorization);
+            }
 
             //Append the authorizations and save
-            user.appendAuthorizations(userRequest.getAuthorizations());
+            user.appendAuthorizations(authorizations);
             userRepository.save(user);
             // Send a telemetry event for adding authorizations to user - Integration function start: Telemetry
             telemetryUtility.sendTelemetryEvent("user-add-authorizations", Map.of(
@@ -206,21 +220,23 @@ public class UserService {
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
-            // If the target user is a SUPER user, ensure the requesting user is the target user
-            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId()))
-                throw new RuntimeException("Roles on SUPER users can only be self removed");
+            if(requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can remove authorizations");
 
-            // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
-            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER)
-                if(!requestingUser.getId().equals(user.getId()))
-                    throw new RuntimeException("Roles on ADMIN users can only be self removed or by a SUPER user");
+            if(userRequest.getAuthorizations() == null || userRequest.getAuthorizations().isEmpty())
+                throw new RuntimeException("Authorizations are required");
 
-            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
-                throw new RuntimeException("Roles can only be removed by self, ADMIN, or SUPER users");
+            Set<Authorization> authorizations = new HashSet<>();
+
+            for(String authorizationName : userRequest.getAuthorizations()) {
+                Authorization authorization = authorizationRepository.findByName(authorizationName)
+                        .orElseThrow(() -> new RuntimeException("Authorization was not found"));
+
+                authorizations.add(authorization);
+            }
 
             //Remove the authorizations and save
-            user.removeAuthorizations(userRequest.getAuthorizations());
+            user.removeAuthorizations(authorizations);
             userRepository.save(user);
             // Send a telemetry event for removing authorizations from user - Integration function start: Telemetry
             telemetryUtility.sendTelemetryEvent("user-remove-authorizations", Map.of(

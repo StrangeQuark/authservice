@@ -1,5 +1,6 @@
 package com.strangequark.authservice.servicetests;
 
+import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.error.ErrorResponse; // Integration line: Email
 import com.strangequark.authservice.user.*;
 import org.junit.jupiter.api.Assertions;
@@ -29,8 +30,10 @@ public class UserServiceTest extends BaseServiceTest {
 
     @Test
     void addAuthorizationsToUserTest() {
-        //Init the Admin user as the request context holder
-        setupAdminUser();
+        setupSuperUser();
+
+        authorizationRepository.save(new Authorization("Auth 1"));
+        authorizationRepository.save(new Authorization("test 2"));
 
         Set<String> authorizations = new HashSet<>();
         authorizations.add("Auth 1");
@@ -44,10 +47,16 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Authorizations successfully added", ((UserResponse) response.getBody()).getMessage());
+        Assertions.assertEquals(2, userRepository.findByUsername(testUser.getUsername()).get().getAuthorizations().size());
     }
 
     @Test
     void removeAuthorizationsTest() {
+        Authorization authorization = authorizationRepository.save(new Authorization("testAuthorization1"));
+        testUser.getAuthorizations().add(authorization);
+        userRepository.save(testUser);
+        setupSuperUser();
+
         Set<String> authorizationsToRemove = new HashSet<>();
         authorizationsToRemove.add("testAuthorization1");
 

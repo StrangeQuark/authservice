@@ -1,5 +1,8 @@
 package com.strangequark.authservice.config;
 
+import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.RoleAuthorization;
+import com.strangequark.authservice.authorization.RoleAuthorizationRepository;
 import com.strangequark.authservice.serviceaccount.ServiceAccount;
 import com.strangequark.authservice.user.User;
 import io.jsonwebtoken.Claims;
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -21,6 +26,11 @@ import java.util.function.Function;
  */
 @Service
 public class JwtService {
+    private final RoleAuthorizationRepository roleAuthorizationRepository;
+
+    public JwtService(RoleAuthorizationRepository roleAuthorizationRepository) {
+        this.roleAuthorizationRepository = roleAuthorizationRepository;
+    }
 
     /**
      * The JWT access secret key defined in the application.properties
@@ -89,6 +99,8 @@ public class JwtService {
      * @return Generated JWT token
      */
     public String generateToken(User user, boolean isRefreshToken) {
+        Set<String> authorizations = getAuthorizations(user);
+
         return Jwts
                 .builder()
                 .setClaims(null)
@@ -98,7 +110,8 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() +
                         (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
-                .setAudience(isRefreshToken ? null : user.getAuthorizations().toString())
+                .setAudience(isRefreshToken ? null : getAuthorizationNames(user.getAuthorizations()).toString())
+                .claim("authorizations", authorizations)
                 .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -110,6 +123,8 @@ public class JwtService {
      * @return Generated JWT token
      */
     public String generateServiceAccountToken(ServiceAccount serviceAccount, boolean isRefreshToken) {
+        Set<String> authorizations = getAuthorizationNames(serviceAccount.getAuthorizations());
+
         return Jwts
                 .builder()
                 .setClaims(null)
@@ -119,9 +134,27 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() +
                         (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
-//                .setAudience(serviceAccount.getAuthorizations().toString())
+                .claim("authorizations", authorizations)
                 .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    private Set<String> getAuthorizations(User user) {
+        Set<String> authorizations = getAuthorizationNames(user.getAuthorizations());
+
+        for(RoleAuthorization roleAuthorization : roleAuthorizationRepository.findByRole(user.getRole()))
+            authorizations.add(roleAuthorization.getAuthorization().getName());
+
+        return authorizations;
+    }
+
+    private Set<String> getAuthorizationNames(Set<Authorization> authorizationEntities) {
+        Set<String> authorizations = new HashSet<>();
+
+        for(Authorization authorization : authorizationEntities)
+            authorizations.add(authorization.getName());
+
+        return authorizations;
     }
 
     /**

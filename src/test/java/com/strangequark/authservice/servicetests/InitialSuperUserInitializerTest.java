@@ -1,5 +1,6 @@
 package com.strangequark.authservice.servicetests;
 
+import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.user.InitialSuperUserInitializer;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
@@ -42,7 +43,7 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
 
         InitialSuperUserInitializer initialSuperUserInitializer = new InitialSuperUserInitializer(
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
-                entityManager);
+                entityManager, authorizationRepository, roleAuthorizationRepository);
         initialSuperUserInitializer.run(new DefaultApplicationArguments());
 
         String[] credentials = Files.readString(credentialsFile).split("\\n");
@@ -53,6 +54,8 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
         Assertions.assertEquals(Role.SUPER, user.getRole());
         Assertions.assertTrue(user.isEnabled());
         Assertions.assertTrue(passwordEncoder.matches(password, user.getPassword()));
+        Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS").get();
+        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, authorization).isPresent());
         verify(entityManager).createNativeQuery("SELECT pg_advisory_xact_lock(6001)");
     }
 
@@ -62,7 +65,7 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
 
         InitialSuperUserInitializer initialSuperUserInitializer = new InitialSuperUserInitializer(
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
-                entityManager);
+                entityManager, authorizationRepository, roleAuthorizationRepository);
         initialSuperUserInitializer.run(new DefaultApplicationArguments());
 
         Assertions.assertEquals(1, userRepository.count());
@@ -77,7 +80,7 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
 
         InitialSuperUserInitializer initialSuperUserInitializer = new InitialSuperUserInitializer(
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
-                entityManager);
+                entityManager, authorizationRepository, roleAuthorizationRepository);
 
         initialSuperUserInitializer.run(new DefaultApplicationArguments());
 

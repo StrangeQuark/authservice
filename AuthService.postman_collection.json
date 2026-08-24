@@ -864,6 +864,99 @@
 			"response": []
 		},
 		{
+			"name": "Create Authorization",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"EMAIL_API_ACCESS\"\r\n}",
+					"options": {"raw": {"language": "json"}}
+				},
+				"url": "http://localhost:6001/api/auth/authorization/create"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Authorizations",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/authorization/get-all"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Authorization",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/authorization/delete/EMAIL_API_ACCESS"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Role Authorization",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"role\": \"SUPER\",\r\n    \"authorization\": \"EMAIL_API_ACCESS\"\r\n}",
+					"options": {"raw": {"language": "json"}}
+				},
+				"url": "http://localhost:6001/api/auth/role-authorization/add"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Role Authorizations",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/role-authorization/get?role=SUPER"
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Role Authorization",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"role\": \"SUPER\",\r\n    \"authorization\": \"EMAIL_API_ACCESS\"\r\n}",
+					"options": {"raw": {"language": "json"}}
+				},
+				"url": "http://localhost:6001/api/auth/role-authorization/remove"
+			},
+			"response": []
+		},
+		{
 			"name": "Service Account Authentication",
 			"event": [
 				{

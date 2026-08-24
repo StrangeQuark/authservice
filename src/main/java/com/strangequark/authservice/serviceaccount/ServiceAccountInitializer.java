@@ -1,5 +1,7 @@
 package com.strangequark.authservice.serviceaccount;
 
+import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.AuthorizationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -16,12 +18,14 @@ public class ServiceAccountInitializer implements ApplicationRunner {
     private final ServiceAccountRepository serviceAccountRepository;
     private final Environment environment;
     private final PasswordEncoder passwordEncoder;
+    private final AuthorizationRepository authorizationRepository;
 
     public ServiceAccountInitializer(ServiceAccountRepository serviceAccountRepository, Environment environment,
-                                     PasswordEncoder passwordEncoder) {
+                                     PasswordEncoder passwordEncoder, AuthorizationRepository authorizationRepository) {
         this.serviceAccountRepository = serviceAccountRepository;
         this.environment = environment;
         this.passwordEncoder = passwordEncoder;
+        this.authorizationRepository = authorizationRepository;
     }
 
     @Override
@@ -43,6 +47,13 @@ public class ServiceAccountInitializer implements ApplicationRunner {
             ServiceAccount serviceAccount = new ServiceAccount();
             serviceAccount.setClientId(trimmedId);
             serviceAccount.setClientPassword(passwordEncoder.encode(clientPassword));
+
+            if(trimmedId.equals("auth")) {
+                Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS")
+                        .orElseGet(() -> authorizationRepository.save(new Authorization("EMAIL_API_ACCESS")));
+
+                serviceAccount.getAuthorizations().add(authorization);
+            }
 
             serviceAccountRepository.save(serviceAccount);
             LOGGER.info("Service account successfully initialized: " + trimmedId);
