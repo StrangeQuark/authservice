@@ -20,7 +20,7 @@ public class JwtServiceTest extends BaseServiceTest {
 
         Assertions.assertTrue(authorizations.contains("TEST_AUTHORIZATION"));
     }
-
+    // Integration function start: Email
     @Test
     void superRoleAuthorizationsAreAddedToAccessTokenTest() {
         Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS").orElseThrow();
@@ -32,5 +32,5 @@ public class JwtServiceTest extends BaseServiceTest {
                 claims -> claims.get("authorizations", List.class), false);
 
         Assertions.assertTrue(authorizations.contains("EMAIL_API_ACCESS"));
-    }
+    }// Integration function end: Email
 }

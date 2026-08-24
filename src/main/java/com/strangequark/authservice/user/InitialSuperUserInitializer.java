@@ -97,10 +97,11 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
         Files.writeString(credentialsFile, "Username: " + username + "\nPassword: " + password + "\n");
 
         try {
+            // Integration function start: Email
             Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS")
                     .orElseGet(() -> authorizationRepository.save(new Authorization("EMAIL_API_ACCESS")));
             roleAuthorizationRepository.save(new RoleAuthorization(Role.SUPER, authorization));
-
+            // Integration function end: Email
             User user = new User(username, username + "@msinit.local", Role.SUPER,
                     true, new HashSet<>(), passwordEncoder.encode(password));
             userRepository.saveAndFlush(user);

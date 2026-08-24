@@ -47,13 +47,13 @@ public class ServiceAccountInitializer implements ApplicationRunner {
             ServiceAccount serviceAccount = new ServiceAccount();
             serviceAccount.setClientId(trimmedId);
             serviceAccount.setClientPassword(passwordEncoder.encode(clientPassword));
-
+            // Integration function start: Email
             if(trimmedId.equals("auth")) {
                 Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS")
                         .orElseGet(() -> authorizationRepository.save(new Authorization("EMAIL_API_ACCESS")));
 
                 serviceAccount.getAuthorizations().add(authorization);
-            }
+            }// Integration function end: Email
 
             serviceAccountRepository.save(serviceAccount);
             LOGGER.info("Service account successfully initialized: " + trimmedId);

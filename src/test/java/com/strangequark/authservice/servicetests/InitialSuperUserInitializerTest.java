@@ -54,8 +54,9 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
         Assertions.assertEquals(Role.SUPER, user.getRole());
         Assertions.assertTrue(user.isEnabled());
         Assertions.assertTrue(passwordEncoder.matches(password, user.getPassword()));
+        // Integration function start: Email
         Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS").get();
-        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, authorization).isPresent());
+        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, authorization).isPresent());// Integration function end: Email
         verify(entityManager).createNativeQuery("SELECT pg_advisory_xact_lock(6001)");
     }
 
