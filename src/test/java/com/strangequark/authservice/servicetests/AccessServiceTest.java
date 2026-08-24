@@ -1,6 +1,7 @@
 package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.access.AccessService;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +20,15 @@ public class AccessServiceTest extends BaseServiceTest {
         {
             //Set the refreshToken to the one stored in the user's DB
             MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addHeader("Authorization", "Bearer " + testUser.getRefreshToken());
+            request.setCookies(new Cookie("refresh_token", testUser.getRefreshToken()));
             RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
             ResponseEntity<?> response =  accessService.serveAccessToken();
 
             Assertions.assertEquals(200, response.getStatusCode().value());
-            Assertions.assertNotNull(response.getHeaders().getFirst("Set-Cookie"));
-            Assertions.assertTrue(response.getHeaders().getFirst("Set-Cookie").contains("access_token="));
+            Assertions.assertEquals(2, response.getHeaders().get("Set-Cookie").size());
+            Assertions.assertTrue(response.getHeaders().get("Set-Cookie").get(0).contains("refresh_token="));
+            Assertions.assertTrue(response.getHeaders().get("Set-Cookie").get(1).contains("access_token="));
         }
     }
 }

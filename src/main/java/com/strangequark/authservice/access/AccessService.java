@@ -12,10 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired; // Integration line: Telemetry
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.Map; // Integration line: Telemetry
@@ -62,47 +62,80 @@ public class AccessService {
      * Business logic checking refresh token, and returning an access token if successful
      * @return {@link ResponseEntity} with a {@link AuthenticationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
+    @Transactional
     public ResponseEntity<?> serveAccessToken() {
         LOGGER.info("Attempting to serve access token");
 
         try {
-            String refreshToken = "";
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-            try {
-                refreshToken = request.getHeader("Authorization").substring(7);
-            } catch (Exception ex) {
-                if (request.getCookies() == null) return null;
-
-                for (Cookie cookie : request.getCookies()) {
-                    if (cookie.getName().equals("refresh_token")) {
-                        refreshToken = cookie.getValue();
-                    }
-                }
-                return null;
-            }
+            String refreshToken = getRefreshToken();
 
             //Get the user, throw an exception if the username is not found
-            User user = userRepository.findByUsername(jwtService.extractUsername(refreshToken, true))
+            User user = userRepository.findByUsernameForUpdate(jwtService.extractUsername(refreshToken, true))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             //Verify the refresh token against the User's refresh token
             if(user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken))
                         throw new RuntimeException("Refresh token is invalid");
 
-            //Create a JWT token to authenticate the user
+            //Create JWT tokens to authenticate the user
+            String newRefreshToken = jwtService.generateToken(user, true);
             String accessToken = jwtService.generateToken(user, false);
+
+            user.setRefreshToken(newRefreshToken);
+            userRepository.save(user);
             // Send a telemetry event for user access token - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-access", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with the jwtToken
             LOGGER.info("Access token successfully served");
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("access_token", accessToken).toString())
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", newRefreshToken, true).toString())
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("access_token", accessToken, false).toString())
                     .body(new AuthenticationResponse(accessToken));
         } catch (Exception ex) {
             LOGGER.error("Failed to serve access token: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
-            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+            return ResponseEntity.status(401).body(new ErrorResponse(ex.getMessage()));
         }
+    }
+
+    public ResponseEntity<?> logout() {
+        LOGGER.info("Attempting to logout user");
+
+        try {
+            String refreshToken = getRefreshToken();
+            User user = userRepository.findByUsernameForUpdate(jwtService.extractUsername(refreshToken, true))
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            if(user.getRefreshToken() != null && user.getRefreshToken().equals(refreshToken)) {
+                user.setRefreshToken(null);
+                userRepository.save(user);
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Failed to logout user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtService.clearTokenCookie("refresh_token").toString())
+                .header(HttpHeaders.SET_COOKIE, jwtService.clearTokenCookie("access_token").toString())
+                .body(new AuthenticationResponse());
+    }
+
+    private String getRefreshToken() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer "))
+            return authorizationHeader.substring(7);
+
+        if(request.getCookies() != null) {
+            for(Cookie cookie : request.getCookies()) {
+                if(cookie.getName().equals("refresh_token") && !cookie.getValue().isBlank())
+                    return cookie.getValue();
+            }
+        }
+
+        throw new RuntimeException("Refresh token was not found");
     }
 }

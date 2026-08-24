@@ -64,11 +64,14 @@ public class WebSecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/authenticate",
                                 "/api/auth/health",
+                                "/api/auth/access",
+                                "/api/auth/access/logout",
                                 "/api/auth/user/send-password-reset-email",
                                 "/api/auth/service-account/authenticate"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/user/enable-user")
                         .hasAnyAuthority("EMAIL_SERVICE", "ADMIN", "SUPER")
+                        .requestMatchers("/api/auth/authorization/**", "/api/auth/role-authorization/**").hasAuthority("SUPER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

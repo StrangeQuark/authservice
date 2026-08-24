@@ -1,5 +1,6 @@
 package com.strangequark.authservice.serviceaccount;
 
+import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.utility.StringEncryptDecryptConverter;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -7,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -23,8 +25,8 @@ public class ServiceAccount implements UserDetails {
 
     private String clientPassword;
 
-    @Convert(converter = StringEncryptDecryptConverter.class)
-    private Set<String> authorizations;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Authorization> authorizations = new HashSet<>();
 
     public UUID getId() {
         return id;
@@ -50,11 +52,11 @@ public class ServiceAccount implements UserDetails {
         this.clientPassword = clientPassword;
     }
 
-    public Set<String> getAuthorizations() {
+    public Set<Authorization> getAuthorizations() {
         return authorizations;
     }
 
-    public void setAuthorizations(Set<String> authorizations) {
+    public void setAuthorizations(Set<Authorization> authorizations) {
         this.authorizations = authorizations;
     }
 

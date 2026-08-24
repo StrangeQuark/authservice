@@ -1,5 +1,6 @@
 package com.strangequark.authservice.user;
 
+import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.utility.StringEncryptDecryptConverter;
 import com.strangequark.authservice.utility.RoleEncryptDecryptConverter;
 import jakarta.persistence.*;
@@ -31,10 +32,10 @@ public class User implements UserDetails {
      * @param email Email address of the {@link User} object
      * @param role {@link Role} of the {@link User} object
      * @param isEnabled {@link Boolean} to determine if the {@link User} is enabled or disabled
-     * @param authorizations {@link HashSet} Set of authorizations assigned to {@link User}
+     * @param authorizations {@link Set} Set of authorizations assigned to {@link User}
      * @param password Password of the {@link User} object
      */
-    public User(String username, String email, Role role, boolean isEnabled, HashSet<String> authorizations, String password) {
+    public User(String username, String email, Role role, boolean isEnabled, Set<Authorization> authorizations, String password) {
         this.username = username;
         this.email = email;
         this.role = role;
@@ -91,8 +92,8 @@ public class User implements UserDetails {
     /**
      * A set of authorizations for the user
      */
-    @Convert(converter = StringEncryptDecryptConverter.class)
-    private Set<String> authorizations;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Authorization> authorizations = new HashSet<>();
 
     /**
      * Returns all the authorities granted to this user
@@ -149,14 +150,14 @@ public class User implements UserDetails {
     /**
      * Append to the list of authorizations
      */
-    public void appendAuthorizations(Set<String> auths) {
+    public void appendAuthorizations(Set<Authorization> auths) {
         authorizations.addAll(auths);
     }
 
     /**
      * Remove from the list of authorizations
      */
-    public void removeAuthorizations(Set<String> auths) {
+    public void removeAuthorizations(Set<Authorization> auths) {
         authorizations.removeAll(auths);
     }
 
@@ -235,14 +236,14 @@ public class User implements UserDetails {
     /**
      * Get {@link Set} of authorizations for user object
      */
-    public Set<String> getAuthorizations() {
+    public Set<Authorization> getAuthorizations() {
         return authorizations;
     }
 
     /**
      * Set {@link Set} of authorizations for user object
      */
-    public void setAuthorizations(Set<String> authorizations) {
+    public void setAuthorizations(Set<Authorization> authorizations) {
         this.authorizations = authorizations;
     }
 

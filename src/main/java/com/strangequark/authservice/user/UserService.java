@@ -1,5 +1,7 @@
 package com.strangequark.authservice.user;
 
+import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.AuthorizationRepository;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.serviceaccount.ServiceAccount; // Integration line: Email
@@ -9,9 +11,11 @@ import com.strangequark.authservice.utility.EmailUtility; // Integration line: E
 import com.strangequark.authservice.utility.FileUtility; // Integration line: File
 import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
 import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,8 +28,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map; // Integration line: Telemetry
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -39,6 +45,7 @@ public class UserService {
      * {@link UserRepository} for fetching {@link User} from the database
      */
     private final UserRepository userRepository;
+    private final AuthorizationRepository authorizationRepository;
     // Integration function start: Email
     /**
      * {@link ServiceAccountRepository} for fetching {@link ServiceAccount} from the database
@@ -93,8 +100,10 @@ public class UserService {
      * @param jwtService {@link JwtService} for generating JWT tokens
      * @param authenticationManager {@link AuthenticationManager} for authenticating JWT tokens
      */
-    public UserService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
+    public UserService(UserRepository userRepository, AuthorizationRepository authorizationRepository, JwtService jwtService,
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
         this.userRepository = userRepository;
+        this.authorizationRepository = authorizationRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -108,8 +117,7 @@ public class UserService {
         LOGGER.info("Attempting to update password");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -124,13 +132,19 @@ public class UserService {
 
             //Set the user's new password and save
             user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
+
+            String refreshToken = jwtService.generateToken(user, true);
+
+            user.setRefreshToken(refreshToken);
             userRepository.save(user);
             // Send a telemetry event for user password update - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-password-update", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("Password successfully updated");
-            return ResponseEntity.ok(new UserResponse("Password successfully updated"));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new UserResponse("Password successfully updated"));
         } catch (Exception ex) {
             LOGGER.error("Failed to update user password: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -146,8 +160,7 @@ public class UserService {
         LOGGER.info("Attempting to add authorizations to user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -158,16 +171,23 @@ public class UserService {
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
-            // If the target user is a SUPER user, ensure the requesting user is also a SUPER user
-            if(user.getRole() == Role.SUPER && requestingUser.getRole() != Role.SUPER)
-                throw new RuntimeException("Only SUPER users can add authorizations to SUPER users");
+            if(requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can add authorizations");
 
-            // Only SUPER and ADMIN users can assign roles
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN)
-                throw new RuntimeException("Only SUPER or ADMIN users can add authorizations to users");
+            if(userRequest.getAuthorizations() == null || userRequest.getAuthorizations().isEmpty())
+                throw new RuntimeException("Authorizations are required");
+
+            Set<Authorization> authorizations = new HashSet<>();
+
+            for(String authorizationName : userRequest.getAuthorizations()) {
+                Authorization authorization = authorizationRepository.findByName(authorizationName)
+                        .orElseThrow(() -> new RuntimeException("Authorization was not found"));
+
+                authorizations.add(authorization);
+            }
 
             //Append the authorizations and save
-            user.appendAuthorizations(userRequest.getAuthorizations());
+            user.appendAuthorizations(authorizations);
             userRepository.save(user);
             // Send a telemetry event for adding authorizations to user - Integration function start: Telemetry
             telemetryUtility.sendTelemetryEvent("user-add-authorizations", Map.of(
@@ -194,8 +214,7 @@ public class UserService {
         LOGGER.info("Attempting to remove authorizations from user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -206,21 +225,23 @@ public class UserService {
                     .or(() -> userRepository.findByEmail(userRequest.getEmail()))
                     .orElseThrow(() -> new UsernameNotFoundException("Target user not found"));
 
-            // If the target user is a SUPER user, ensure the requesting user is the target user
-            if(user.getRole() == Role.SUPER && !requestingUser.getId().equals(user.getId()))
-                throw new RuntimeException("Roles on SUPER users can only be self removed");
+            if(requestingUser.getRole() != Role.SUPER)
+                throw new RuntimeException("Only SUPER users can remove authorizations");
 
-            // If the target user is an ADMIN user, ensure the requesting user is either the target user or a SUPER user
-            if(user.getRole() == Role.ADMIN && requestingUser.getRole() != Role.SUPER)
-                if(!requestingUser.getId().equals(user.getId()))
-                    throw new RuntimeException("Roles on ADMIN users can only be self removed or by a SUPER user");
+            if(userRequest.getAuthorizations() == null || userRequest.getAuthorizations().isEmpty())
+                throw new RuntimeException("Authorizations are required");
 
-            // If the requesting user is not SUPER, ADMIN, or self, don't allow users to remove authorizations from each other
-            if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
-                throw new RuntimeException("Roles can only be removed by self, ADMIN, or SUPER users");
+            Set<Authorization> authorizations = new HashSet<>();
+
+            for(String authorizationName : userRequest.getAuthorizations()) {
+                Authorization authorization = authorizationRepository.findByName(authorizationName)
+                        .orElseThrow(() -> new RuntimeException("Authorization was not found"));
+
+                authorizations.add(authorization);
+            }
 
             //Remove the authorizations and save
-            user.removeAuthorizations(userRequest.getAuthorizations());
+            user.removeAuthorizations(authorizations);
             userRepository.save(user);
             // Send a telemetry event for removing authorizations from user - Integration function start: Telemetry
             telemetryUtility.sendTelemetryEvent("user-remove-authorizations", Map.of(
@@ -280,8 +301,7 @@ public class UserService {
         LOGGER.info("Attempting to reset user's password");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             ServiceAccount requestingServiceAccount = serviceAccountRepository.findByClientId(jwtService.extractUsername(authToken, false))
@@ -349,8 +369,7 @@ public class UserService {
         LOGGER.info("Attempting to disable user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -401,8 +420,7 @@ public class UserService {
         LOGGER.info("Attempting to delete user");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -488,8 +506,7 @@ public class UserService {
             if (userRepository.findByEmail(userRequest.getNewEmail()).isPresent())
                 throw new RuntimeException("Email already registered");
 
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -504,13 +521,19 @@ public class UserService {
 
             //Update the user's email
             user.setEmail(userRequest.getNewEmail());
+
+            String refreshToken = jwtService.generateToken(user, true);
+
+            user.setRefreshToken(refreshToken);
             userRepository.save(user);
             // Send a telemetry event for user email update - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-email-update", Map.of("userId", user.getId())); // Integration line: Telemetry
 
             //Return a 200 response with a success message
             LOGGER.info("User email successfully updated");
-            return ResponseEntity.ok(new UserResponse("Email successfully updated"));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new UserResponse("Email successfully updated"));
         } catch (Exception ex) {
             LOGGER.error("Failed to update user email: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -530,8 +553,7 @@ public class UserService {
             if (userRepository.findByUsername(userRequest.getNewUsername()).isPresent())
                 throw new RuntimeException("Username already registered");
 
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Authenticate the user, throw an AuthenticationException if the username and password combination are incorrect
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -558,7 +580,9 @@ public class UserService {
 
             //Return a 200 response with a success message
             LOGGER.info("Successfully updated username");
-            return ResponseEntity.ok(new UpdateUsernameResponse(refreshToken, jwtService.generateToken(user, false)));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtService.buildTokenCookie("refresh_token", refreshToken, true).toString())
+                    .body(new UserResponse("Username successfully updated"));
         } catch (Exception ex) {
             LOGGER.error("Failed to update username: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -575,8 +599,7 @@ public class UserService {
         LOGGER.info("Attempting to update user's role");
 
         try {
-            String authToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest()
-                    .getHeader("Authorization").substring(7);
+            String authToken = getAuthToken();
 
             //Get the user, throw an exception if the username is not found
             User requestingUser = userRepository.findByUsername(jwtService.extractUsername(authToken, false))
@@ -691,5 +714,23 @@ public class UserService {
             LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
+    }
+
+    private String getAuthToken() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        String authorizationHeader = attributes.getRequest().getHeader("Authorization");
+
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer "))
+            return authorizationHeader.substring(7);
+
+        Cookie[] cookies = attributes.getRequest().getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if(cookie.getName().equals("access_token") && !cookie.getValue().isBlank())
+                    return cookie.getValue();
+            }
+        }
+
+        throw new RuntimeException("Access token was not found");
     }
 }

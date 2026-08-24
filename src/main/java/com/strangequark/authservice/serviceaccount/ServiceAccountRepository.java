@@ -1,5 +1,6 @@
 package com.strangequark.authservice.serviceaccount;
 
+import com.strangequark.authservice.authorization.Authorization;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -11,4 +12,6 @@ public interface ServiceAccountRepository extends JpaRepository<ServiceAccount, 
      * @param clientId The clientId to be retrieved
      */
     Optional<ServiceAccount> findByClientId(String clientId);
+
+    boolean existsByAuthorizationsContaining(Authorization authorization);
 }
