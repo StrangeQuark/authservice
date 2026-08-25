@@ -23,6 +23,19 @@ public class JwtServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void userRoleAuthorizationsAreAddedToAccessTokenTest() {
+        String token = jwtService.generateToken(testUser, false);
+        List<String> authorizations = jwtService.extractClaim(token,
+                claims -> claims.get("authorizations", List.class), false);
+
+        Assertions.assertTrue(authorizations.contains("AUTH_API_ACCESS"));
+        Assertions.assertTrue(authorizations.contains("FILE_API_ACCESS"));
+        Assertions.assertTrue(authorizations.contains("VAULT_API_ACCESS"));
+        Assertions.assertFalse(authorizations.contains("EMAIL_API_ACCESS"));
+        Assertions.assertFalse(authorizations.contains("TELEMETRY_API_ACCESS"));
+    }
+
+    @Test
     void tokenClaimsAreAddedToAccessTokenTest() {
         String token = jwtService.generateToken(testUser, false);
         Claims claims = jwtService.extractClaim(token, jwtClaims -> jwtClaims, false);
