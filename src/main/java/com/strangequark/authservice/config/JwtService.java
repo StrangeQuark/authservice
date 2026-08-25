@@ -9,16 +9,19 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.security.KeyFactory;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -33,16 +36,19 @@ public class JwtService {
     }
 
     /**
-     * The JWT access secret key defined in the application.properties
+     * The JWT private key defined in the application.properties
      */
-    @Value("${ACCESS_SECRET_KEY}")
-    private String ACCESS_SECRET_KEY;
+    @Value("${JWT_PRIVATE_KEY}")
+    private String JWT_PRIVATE_KEY;
 
     /**
-     * The JWT refresh secret key defined in the application.properties
+     * The JWT public key defined in the application.properties
      */
-    @Value("${REFRESH_SECRET_KEY}")
-    private String REFRESH_SECRET_KEY;
+    @Value("${JWT_PUBLIC_KEY}")
+    private String JWT_PUBLIC_KEY;
+
+    @Value("${JWT_ISSUER}")
+    private String JWT_ISSUER;
 
     @Value("${cookie.secure}")
     private boolean cookieSecure;
@@ -87,12 +93,21 @@ public class JwtService {
      * @return The Claims contained in the JWT token
      */
     private Claims extractAllClaims(String jwtToken, boolean isRefreshToken) {
-        return Jwts
+        Claims claims = Jwts
                 .parserBuilder()
-                .setSigningKey(getSigningKey(isRefreshToken))
+                .setSigningKey(getPublicKey())
+                .requireIssuer(JWT_ISSUER)
                 .build()
                 .parseClaimsJws(jwtToken)
                 .getBody();
+
+        if(!claims.get("tokenType", String.class).equals(isRefreshToken ? "REFRESH" : "ACCESS"))
+            throw new RuntimeException("JWT token type is invalid");
+
+        if(claims.getId() == null || claims.get("principalId", String.class) == null)
+            throw new RuntimeException("JWT is missing required claims");
+
+        return claims;
     }
 
     /**
@@ -107,15 +122,17 @@ public class JwtService {
         return Jwts
                 .builder()
                 .setClaims(null)
-                .setId(user.getId().toString())
+                .setId(UUID.randomUUID().toString())
+                .setIssuer(JWT_ISSUER)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() +
                         (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
-                .setAudience(isRefreshToken ? null : getAuthorizationNames(user.getAuthorizations()).toString())
+                .claim("principalId", user.getId().toString())
+                .claim("tokenType", isRefreshToken ? "REFRESH" : "ACCESS")
                 .claim("authorizations", authorizations)
-                .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
+                .signWith(getPrivateKey(), SignatureAlgorithm.RS256)
                 .compact();
     }
 
@@ -131,14 +148,17 @@ public class JwtService {
         return Jwts
                 .builder()
                 .setClaims(null)
-                .setId(serviceAccount.getId().toString())
+                .setId(UUID.randomUUID().toString())
+                .setIssuer(JWT_ISSUER)
                 .setSubject(serviceAccount.getClientId())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() +
                         (isRefreshToken ? REFRESH_TOKEN_EXPIRATION_TIME : ACCESS_TOKEN_EXPIRATION_TIME)
                 ))
+                .claim("principalId", serviceAccount.getId().toString())
+                .claim("tokenType", isRefreshToken ? "REFRESH" : "ACCESS")
                 .claim("authorizations", authorizations)
-                .signWith(getSigningKey(isRefreshToken), SignatureAlgorithm.HS256)
+                .signWith(getPrivateKey(), SignatureAlgorithm.RS256)
                 .compact();
     }
 
@@ -161,15 +181,23 @@ public class JwtService {
     }
 
     /**
-     * Retrieve and decode the JWT signing key defined in application.properties
-     * @param isRefreshToken Flag to specify refresh or access token
-     * @return The decoded SHA key
+     * Retrieve and decode the JWT private key defined in application.properties
+     * @return The decoded RSA key
      */
-    private Key getSigningKey(boolean isRefreshToken) {
-        String key = isRefreshToken ? REFRESH_SECRET_KEY : ACCESS_SECRET_KEY;
-        byte[] keyBytes = Decoders.BASE64.decode(key);
+    private Key getPrivateKey() {
+        try {
+            return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Decoders.BASE64.decode(JWT_PRIVATE_KEY)));
+        } catch(Exception ex) {
+            throw new RuntimeException("Failed to decode JWT private key", ex);
+        }
+    }
 
-        return Keys.hmacShaKeyFor(keyBytes);
+    private Key getPublicKey() {
+        try {
+            return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Decoders.BASE64.decode(JWT_PUBLIC_KEY)));
+        } catch(Exception ex) {
+            throw new RuntimeException("Failed to decode JWT public key", ex);
+        }
     }
 
     /**

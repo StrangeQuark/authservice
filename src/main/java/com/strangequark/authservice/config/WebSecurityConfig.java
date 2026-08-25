@@ -72,7 +72,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/user/enable-user")
                         .hasAnyAuthority("EMAIL_SERVICE", "ADMIN", "SUPER")
                         .requestMatchers("/api/auth/authorization/**", "/api/auth/role-authorization/**").hasAuthority("SUPER")
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAuthority("AUTH_API_ACCESS")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

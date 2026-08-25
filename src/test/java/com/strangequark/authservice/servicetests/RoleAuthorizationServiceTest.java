@@ -26,7 +26,8 @@ public class RoleAuthorizationServiceTest extends BaseServiceTest {
         ResponseEntity<?> response = roleAuthorizationService.addRoleAuthorization(request);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertEquals(1, roleAuthorizationRepository.findByRole(Role.ADMIN).size());
+        Authorization authorization = authorizationRepository.findByName(authorizationName).get();
+        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.ADMIN, authorization).isPresent());
     }
 
     @Test
@@ -41,6 +42,7 @@ public class RoleAuthorizationServiceTest extends BaseServiceTest {
         ResponseEntity<?> response = roleAuthorizationService.removeRoleAuthorization(request);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertTrue(roleAuthorizationRepository.findByRole(Role.ADMIN).isEmpty());
+        Authorization authorization = authorizationRepository.findByName(authorizationName).get();
+        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.ADMIN, authorization).isEmpty());
     }
 }

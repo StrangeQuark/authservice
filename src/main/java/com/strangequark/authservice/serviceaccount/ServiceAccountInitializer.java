@@ -47,16 +47,43 @@ public class ServiceAccountInitializer implements ApplicationRunner {
             ServiceAccount serviceAccount = new ServiceAccount();
             serviceAccount.setClientId(trimmedId);
             serviceAccount.setClientPassword(passwordEncoder.encode(clientPassword));
-            // Integration function start: Email
             if(trimmedId.equals("auth")) {
-                Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS")
-                        .orElseGet(() -> authorizationRepository.save(new Authorization("EMAIL_API_ACCESS")));
-
-                serviceAccount.getAuthorizations().add(authorization);
-            }// Integration function end: Email
+                addAuthorization(serviceAccount, "EMAIL_API_ACCESS"); // Integration line: Email
+                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
+            }
+            // Integration function start: Email
+            if(trimmedId.equals("email")) {
+                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
+                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
+            } // Integration function end: Email
+            // Integration function start: File
+            if(trimmedId.equals("file")) {
+                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
+                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
+            } // Integration function end: File
+            // Integration function start: Vault
+            if(trimmedId.equals("vault")) {
+                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
+                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
+            } // Integration function end: Vault
+            // Integration function start: Test
+            if(trimmedId.equals("test")) {
+                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
+                addAuthorization(serviceAccount, "EMAIL_API_ACCESS"); // Integration line: Email
+                addAuthorization(serviceAccount, "FILE_API_ACCESS"); // Integration line: File
+                addAuthorization(serviceAccount, "VAULT_API_ACCESS"); // Integration line: Vault
+                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
+            } // Integration function end: Test
 
             serviceAccountRepository.save(serviceAccount);
             LOGGER.info("Service account successfully initialized: " + trimmedId);
         }
+    }
+
+    private void addAuthorization(ServiceAccount serviceAccount, String name) {
+        Authorization authorization = authorizationRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Authorization was not found"));
+
+        serviceAccount.getAuthorizations().add(authorization);
     }
 }
