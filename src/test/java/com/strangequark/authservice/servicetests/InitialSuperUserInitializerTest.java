@@ -43,7 +43,7 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
 
         InitialSuperUserInitializer initialSuperUserInitializer = new InitialSuperUserInitializer(
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
-                entityManager, authorizationRepository, roleAuthorizationRepository);
+                entityManager);
         initialSuperUserInitializer.run(new DefaultApplicationArguments());
 
         String[] credentials = Files.readString(credentialsFile).split("\\n");
@@ -66,7 +66,7 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
 
         InitialSuperUserInitializer initialSuperUserInitializer = new InitialSuperUserInitializer(
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
-                entityManager, authorizationRepository, roleAuthorizationRepository);
+                entityManager);
         initialSuperUserInitializer.run(new DefaultApplicationArguments());
 
         Assertions.assertEquals(1, userRepository.count());
@@ -81,7 +81,7 @@ public class InitialSuperUserInitializerTest extends BaseServiceTest {
 
         InitialSuperUserInitializer initialSuperUserInitializer = new InitialSuperUserInitializer(
                 userRepository, passwordEncoder, getEnvironment(credentialsFile), mock(TelemetryUtility.class),
-                entityManager, authorizationRepository, roleAuthorizationRepository);
+                entityManager);
 
         initialSuperUserInitializer.run(new DefaultApplicationArguments());
 

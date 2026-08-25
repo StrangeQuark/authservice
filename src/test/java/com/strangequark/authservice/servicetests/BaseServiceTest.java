@@ -2,6 +2,7 @@ package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.AuthorizationInitializer;
 import com.strangequark.authservice.authorization.AuthorizationRepository;
 import com.strangequark.authservice.authorization.RoleAuthorizationRepository;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRepository; // Integration line: Email
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -42,6 +44,8 @@ public abstract class BaseServiceTest {
     @Autowired
     public RoleAuthorizationRepository roleAuthorizationRepository;
     @Autowired
+    public AuthorizationInitializer authorizationInitializer;
+    @Autowired
     public PasswordEncoder passwordEncoder;
     public User testUser;
     public User testAdmin;
@@ -52,6 +56,8 @@ public abstract class BaseServiceTest {
 
     @BeforeEach
     void setup() {
+        authorizationInitializer.run(new DefaultApplicationArguments());
+
         HashSet<Authorization> testAuthorizations = new HashSet<>();
 
         testUser = new User("testUser", "test@test.com", Role.USER, true, testAuthorizations, passwordEncoder.encode("password"));

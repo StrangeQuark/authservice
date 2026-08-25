@@ -1,9 +1,5 @@
 package com.strangequark.authservice.user;
 
-import com.strangequark.authservice.authorization.Authorization;
-import com.strangequark.authservice.authorization.AuthorizationRepository;
-import com.strangequark.authservice.authorization.RoleAuthorization;
-import com.strangequark.authservice.authorization.RoleAuthorizationRepository;
 import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
@@ -38,20 +34,15 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
     private final Environment environment;
     private final TelemetryUtility telemetryUtility; // Integration line: Telemetry
     private final EntityManager entityManager;
-    private final AuthorizationRepository authorizationRepository;
-    private final RoleAuthorizationRepository roleAuthorizationRepository;
 
     public InitialSuperUserInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
                                        Environment environment, TelemetryUtility telemetryUtility,
-                                       EntityManager entityManager, AuthorizationRepository authorizationRepository,
-                                       RoleAuthorizationRepository roleAuthorizationRepository) {
+                                       EntityManager entityManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.environment = environment;
         this.telemetryUtility = telemetryUtility; // Integration line: Telemetry
         this.entityManager = entityManager;
-        this.authorizationRepository = authorizationRepository;
-        this.roleAuthorizationRepository = roleAuthorizationRepository;
     }
 
     @Override
@@ -97,11 +88,6 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
         Files.writeString(credentialsFile, "Username: " + username + "\nPassword: " + password + "\n");
 
         try {
-            // Integration function start: Email
-            Authorization authorization = authorizationRepository.findByName("EMAIL_API_ACCESS")
-                    .orElseGet(() -> authorizationRepository.save(new Authorization("EMAIL_API_ACCESS")));
-            roleAuthorizationRepository.save(new RoleAuthorization(Role.SUPER, authorization));
-            // Integration function end: Email
             User user = new User(username, username + "@msinit.local", Role.SUPER,
                     true, new HashSet<>(), passwordEncoder.encode(password));
             userRepository.saveAndFlush(user);

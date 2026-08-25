@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +24,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A filter to be run every time a request is made to the "users" table.
@@ -139,11 +143,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtService.isTokenValid(jwtToken, userDetails, isRefreshToken)) {
                     LOGGER.debug("JWT token confirmed valid");
 
+                    List<GrantedAuthority> authorities = new ArrayList<>(userDetails.getAuthorities());
+                    List<String> authorizationNames = jwtService.extractClaim(
+                            jwtToken,
+                            claims -> claims.get("authorizations", List.class),
+                            isRefreshToken
+                    );
+
+                    if(authorizationNames != null) {
+                        for(String authorizationName : authorizationNames)
+                            authorities.add(new SimpleGrantedAuthority(authorizationName));
+                    }
+
                     //Create a new authentication token from the UserDetails
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
-                            userDetails.getAuthorities()
+                            authorities
                     );
 
                     //Enforce the authentication token with the details from our request

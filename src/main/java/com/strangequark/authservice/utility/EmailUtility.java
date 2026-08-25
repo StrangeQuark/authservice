@@ -92,8 +92,8 @@ public class EmailUtility {
         requestBody.put("includeToken", true);
         requestBody.put("templateName", emailType == EmailType.REGISTER ? "USER_REGISTER" : emailType == EmailType.PASSWORD_RESET ? "USER_PASSWORD_RESET" : null);
         requestBody.put("templateVariables", new JSONObject(Map.of("link",
-                emailType == EmailType.REGISTER ? "http://react-service/confirm-email"
-                        : emailType == EmailType.PASSWORD_RESET ? "http://react-service/new-password" : null)));
+                emailType == EmailType.REGISTER ? "http://localhost:6080/confirm-email"
+                        : emailType == EmailType.PASSWORD_RESET ? "http://localhost:6080/new-password" : null)));
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "email-kafka:9092");
