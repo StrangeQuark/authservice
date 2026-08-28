@@ -44,9 +44,20 @@ public class JwtServiceTest extends BaseServiceTest {
         Assertions.assertEquals("msinit-authservice", claims.getIssuer());
         Assertions.assertEquals("ACCESS", claims.get("tokenType", String.class));
         Assertions.assertEquals(testUser.getId().toString(), claims.get("principalId", String.class));
+        Assertions.assertEquals("USER", claims.get("principalType", String.class));
         Assertions.assertNotNull(claims.getId());
         Assertions.assertNotEquals(testUser.getId().toString(), claims.getId());
         Assertions.assertTrue(header.contains("RS256"));
+    }
+
+    @Test
+    void serviceAccountClaimsAreAddedToAccessTokenTest() {
+        String token = jwtService.generateServiceAccountToken(
+                serviceAccountRepository.findByClientId("email").get(), false
+        );
+        Claims claims = jwtService.extractClaim(token, jwtClaims -> jwtClaims, false);
+
+        Assertions.assertEquals("SERVICE_ACCOUNT", claims.get("principalType", String.class));
     }
     // Integration function start: Email
     @Test
