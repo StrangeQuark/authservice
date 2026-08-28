@@ -38,6 +38,9 @@ public class EmailUtility {
     @Autowired
     private AuthUtility authUtility;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     /**
      * Business logic sending an API request to the EmailService
      * @param recipient
@@ -72,7 +75,7 @@ public class EmailUtility {
         String url = "http://email-service:6005/api/email/send-template-email";
 
         LOGGER.debug("Email API request creation complete, attempting to send request");
-        return new RestTemplate().exchange(
+        return restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 requestEntity,
