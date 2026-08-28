@@ -57,7 +57,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
 networks:
   authdb-network:
-    external: true
+    internal: true
   shared-network:
     external: true
 volumes:
