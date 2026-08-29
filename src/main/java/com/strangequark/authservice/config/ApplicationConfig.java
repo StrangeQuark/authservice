@@ -4,6 +4,7 @@ import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.user.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -13,12 +14,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Spring {@link Configuration} for application settings
  */
 @Configuration
 public class ApplicationConfig {
+
+    @Value("${service.http.connect.timeout}")
+    private int serviceHttpConnectTimeout;
+
+    @Value("${service.http.read.timeout}")
+    private int serviceHttpReadTimeout;
 
     /**
      * {@link UserRepository} for fetching the user from the database
@@ -79,6 +88,15 @@ public class ApplicationConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(serviceHttpConnectTimeout);
+        requestFactory.setReadTimeout(serviceHttpReadTimeout);
+
+        return new RestTemplate(requestFactory);
     }
 
     /**

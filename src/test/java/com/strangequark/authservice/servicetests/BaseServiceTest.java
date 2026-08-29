@@ -52,7 +52,7 @@ public abstract class BaseServiceTest {
     public User testSuper;
     private String accessToken;
     @Autowired // Integration line: Email
-    private ServiceAccountRepository serviceAccountRepository; // Integration line: Email
+    protected ServiceAccountRepository serviceAccountRepository; // Integration line: Email
 
     @BeforeEach
     void setup() {

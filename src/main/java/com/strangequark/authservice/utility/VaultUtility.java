@@ -5,6 +5,7 @@ package com.strangequark.authservice.utility;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,6 +19,9 @@ public class VaultUtility {
      * {@link Logger} for writing {@link VaultUtility} application logs
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(VaultUtility.class);
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * Business logic sending an API request to the VaultService
@@ -44,7 +48,7 @@ public class VaultUtility {
         String url = "http://vault-service:6020/api/vault/delete-user-from-all-services";
 
         LOGGER.debug("Vault API request creation complete, attempting to send request");
-        return new RestTemplate().exchange(
+        return restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 requestEntity,

@@ -25,6 +25,7 @@ public class AuthorizationInitializer implements ApplicationRunner {
         Authorization fileAuthorization = getOrCreateAuthorization("FILE_API_ACCESS"); // Integration line: File
         Authorization vaultAuthorization = getOrCreateAuthorization("VAULT_API_ACCESS"); // Integration line: Vault
         Authorization telemetryAuthorization = getOrCreateAuthorization("TELEMETRY_API_ACCESS"); // Integration line: Telemetry
+        Authorization telemetryReadAuthorization = getOrCreateAuthorization("TELEMETRY_READ_ACCESS"); // Integration line: Telemetry
 
         addRoleAuthorization(Role.USER, authAuthorization);
         addRoleAuthorization(Role.USER, fileAuthorization); // Integration line: File
@@ -42,6 +43,7 @@ public class AuthorizationInitializer implements ApplicationRunner {
         addRoleAuthorization(Role.SUPER, emailAuthorization); // Integration line: Email
         addRoleAuthorization(Role.SUPER, fileAuthorization); // Integration line: File
         addRoleAuthorization(Role.SUPER, vaultAuthorization); // Integration line: Vault
+        addRoleAuthorization(Role.SUPER, telemetryReadAuthorization); // Integration line: Telemetry
     }
 
     private Authorization getOrCreateAuthorization(String name) {
