@@ -7,6 +7,9 @@ services:
     ports:
       - "6001:6001"
     container_name: auth-service
+    labels:
+      com.msinit.log: "true"
+      com.msinit.service-name: "authservice"
     depends_on:
       - auth-db
     environment:
