@@ -24,9 +24,9 @@ public class RoleAuthorizationController {
         return roleAuthorizationService.addRoleAuthorization(request);
     }
 
-    @GetMapping("/get")
-    public ResponseEntity<?> getRoleAuthorizations(@RequestParam Role role) {
-        return roleAuthorizationService.getRoleAuthorizations(role);
+    @PostMapping("/get")
+    public ResponseEntity<?> getRoleAuthorizations(@RequestBody RoleAuthorizationRequest roleAuthorizationRequest) {
+        return roleAuthorizationService.getRoleAuthorizations(roleAuthorizationRequest.getRole());
     }
 
     @DeleteMapping("/remove")

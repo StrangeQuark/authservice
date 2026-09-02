@@ -6,6 +6,9 @@ public class ServiceAccountRequest {
 
     private String clientPassword;
 
+    public ServiceAccountRequest() {
+    }
+
     public ServiceAccountRequest(String clientId, String clientPassword) {
         this.clientId = clientId;
         this.clientPassword = clientPassword;

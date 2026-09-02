@@ -28,8 +28,8 @@ public class AuthorizationController {
         return authorizationService.getAuthorizations();
     }
 
-    @DeleteMapping("/delete/{name}")
-    public ResponseEntity<?> deleteAuthorization(@PathVariable String name) {
-        return authorizationService.deleteAuthorization(name);
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAuthorization(@RequestBody AuthorizationRequest authorizationRequest) {
+        return authorizationService.deleteAuthorization(authorizationRequest.getName());
     }
 }

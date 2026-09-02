@@ -58,11 +58,11 @@
 						}
 					]
 				},
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"username\": \"testUser\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -70,7 +70,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/api/auth/user/get-user-id?username=testUser",
+					"raw": "http://localhost:6001/api/auth/user/get-user-id",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -81,12 +81,6 @@
 						"auth",
 						"user",
 						"get-user-id"
-					],
-					"query": [
-						{
-							"key": "username",
-							"value": "testUser"
-						}
 					]
 				}
 			},
@@ -108,11 +102,11 @@
 						}
 					]
 				},
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"query\": \"test@t.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -120,7 +114,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:6001/api/auth/user/search-users?query=test@t.com",
+					"raw": "http://localhost:6001/api/auth/user/search-users",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -131,12 +125,6 @@
 						"auth",
 						"user",
 						"search-users"
-					],
-					"query": [
-						{
-							"key": "query",
-							"value": "test@t.com"
-						}
 					]
 				}
 			},
@@ -463,59 +451,59 @@
 			},
 			"response": []
 		},
-        {
-          "name": "Reset Password",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ACCESS_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"email\": \"test@t.com\",\r\n    \"newPassword\": \"newPassword\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:6001/api/auth/user/reset-password",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "6001",
-              "path": [
-                "api",
-                "auth",
-                "user",
-                "reset-password"
-              ]
-            }
-          },
-          "response": []
-        },
+		{
+			"name": "Reset Password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"test@t.com\",\r\n    \"newPassword\": \"newPassword\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/api/auth/user/reset-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"user",
+						"reset-password"
+					]
+				}
+			},
+			"response": []
+		},
 		{
 			"name": "Add Authorizations To User",
 			"event": [
@@ -781,59 +769,59 @@
 			},
 			"response": []
 		},
-        {
-          "name": "Update role",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {}
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{ACCESS_TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"newRole\": \"SUPER\",\r\n    \"username\": \"testUser\"\n    // \"email\": \"t@test.com\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "http://localhost:6001/api/auth/user/update-role",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "6001",
-              "path": [
-                "api",
-                "auth",
-                "user",
-                "update-role"
-              ]
-            }
-          },
-          "response": []
-        },
+		{
+			"name": "Update role",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newRole\": \"SUPER\",\r\n    \"username\": \"testUser\"\n    // \"email\": \"t@test.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:6001/api/auth/user/update-role",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "6001",
+					"path": [
+						"api",
+						"auth",
+						"user",
+						"update-role"
+					]
+				}
+			},
+			"response": []
+		},
 		{
 			"name": "Send password reset email",
 			"event": [
@@ -885,14 +873,24 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"name\": \"EMAIL_API_ACCESS\"\r\n}",
-					"options": {"raw": {"language": "json"}}
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": "http://localhost:6001/api/auth/authorization/create"
 			},
@@ -903,7 +901,13 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "GET",
 				"header": [],
@@ -916,11 +920,26 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "DELETE",
 				"header": [],
-				"url": "http://localhost:6001/api/auth/authorization/delete/EMAIL_API_ACCESS"
+				"url": "http://localhost:6001/api/auth/authorization/delete/EMAIL_API_ACCESS",
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"EMAIL_API_ACCESS\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				}
 			},
 			"response": []
 		},
@@ -929,14 +948,24 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"role\": \"SUPER\",\r\n    \"authorization\": \"EMAIL_API_ACCESS\"\r\n}",
-					"options": {"raw": {"language": "json"}}
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": "http://localhost:6001/api/auth/role-authorization/add"
 			},
@@ -947,11 +976,26 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
 				},
-				"method": "GET",
+				"method": "POST",
 				"header": [],
-				"url": "http://localhost:6001/api/auth/role-authorization/get?role=SUPER"
+				"url": "http://localhost:6001/api/auth/role-authorization/get?role=SUPER",
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"role\": \"SUPER\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				}
 			},
 			"response": []
 		},
@@ -960,14 +1004,24 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string"}]
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
 				},
 				"method": "DELETE",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"role\": \"SUPER\",\r\n    \"authorization\": \"EMAIL_API_ACCESS\"\r\n}",
-					"options": {"raw": {"language": "json"}}
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": "http://localhost:6001/api/auth/role-authorization/remove"
 			},

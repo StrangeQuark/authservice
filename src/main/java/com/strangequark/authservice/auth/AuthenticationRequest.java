@@ -15,6 +15,9 @@ public class AuthenticationRequest {
      */
     private String password;
 
+    public AuthenticationRequest() {
+    }
+
     /**
      * Constructs a new {@code AuthenticationRequest} with the given dependencies.
      *
