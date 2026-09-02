@@ -141,9 +141,9 @@ public class UserController {
      * @param username containing the user's credentials
      * @return {@link ResponseEntity}
      */
-    @GetMapping("/get-user-id")
-    public ResponseEntity<?> getUserId(@RequestParam String username) {
-        return userService.getUserId(username);
+    @PostMapping("/get-user-id")
+    public ResponseEntity<?> getUserId(@RequestBody UserLookupRequest userLookupRequest) {
+        return userService.getUserId(userLookupRequest.getUsername());
     }
 
     /**
@@ -151,9 +151,9 @@ public class UserController {
      * @param query containing the user's username or email address
      * @return {@link ResponseEntity}
      */
-    @GetMapping("/search-users")
-    public ResponseEntity<?> searchUsers(@RequestParam String query) {
-        return userService.searchUsers(query);
+    @PostMapping("/search-users")
+    public ResponseEntity<?> searchUsers(@RequestBody UserLookupRequest userLookupRequest) {
+        return userService.searchUsers(userLookupRequest.getQuery());
     }
 
     /**

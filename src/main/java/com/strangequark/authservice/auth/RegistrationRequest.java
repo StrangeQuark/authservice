@@ -20,6 +20,9 @@ public class RegistrationRequest {
      */
     private String password;
 
+    public RegistrationRequest() {
+    }
+
     /**
      * Constructs a new {@code RegistrationRequest} with the given dependencies.
      *
