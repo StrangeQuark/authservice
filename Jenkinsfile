@@ -19,17 +19,10 @@ pipeline {
                         customHeaders: [
                             [name: 'X-CICD-TOKEN', value: CICD_TOKEN, maskValue: true]
                         ],
-                        acceptType: 'APPLICATION_JSON'
+                        validResponseCodes: '200'
                     )
 
-                    def json = readJSON text: response.content
-                    def envFileContent = ''
-
-                    json.each { entry ->
-                        envFileContent += "${entry.key}=${entry.value}\n"
-                    }
-
-                    writeFile file: 'authservice.env', text: envFileContent
+                    writeFile file: 'authservice.env', text: response.content
                     echo "Environment variables written to authservice.env"
                 }
             }
