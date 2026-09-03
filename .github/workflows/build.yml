@@ -41,8 +41,8 @@ jobs:
           for i in $(seq 1 $max_retries); do
             echo "Health check attempt $i..."
 
-            if curl -s -f http://localhost:6001/api/auth/health > /dev/null; then
-              echo "App is healthy"
+            if response=$(curl -sS -f http://localhost:6001/api/auth/health) && [ "$response" = "200 OK" ]; then
+              echo "Authservice is healthy"
               success=1
               break
             else
