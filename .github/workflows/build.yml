@@ -30,12 +30,12 @@ jobs:
               exit 1
             }
 
-          if ! echo "$response" | jq -e 'type == "array" and length > 0 and all(.[]; (.key | type == "string" and length > 0) and (.value | type == "string"))' > /dev/null; then
-            echo "Vault returned an invalid environment-variable response"
+          if [ -z "$response" ]; then
+            echo "Vault returned an empty environment file"
             exit 1
           fi
 
-          echo "$response" | jq -r '.[] | "\(.key)=\(.value)"' > authservice.env
+          printf '%s\n' "$response" > authservice.env
 
           echo "Environment variables written to authservice.env"
 
