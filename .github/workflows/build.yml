@@ -20,11 +20,22 @@ jobs:
         run: |
           echo "Requesting environment variables from Vault..."
 
-          response=$(curl -s \
+          response=$(curl -sS --fail-with-body \
+            -X POST \
             -H "X-CICD-TOKEN: $CICD_TOKEN" \
-            "$VAULT_URL/api/vault/cicd/authservice/e3")
+            -H "Content-Type: application/json" \
+            -d '{"serviceName":"authservice","environmentName":"e3"}' \
+            "$VAULT_URL/api/vault/cicd") || {
+              echo "Unable to retrieve environment variables from Vault"
+              exit 1
+            }
 
-          echo "$response" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' > authservice.env
+          if ! echo "$response" | jq -e 'type == "array" and length > 0 and all(.[]; (.key | type == "string" and length > 0) and (.value | type == "string"))' > /dev/null; then
+            echo "Vault returned an invalid environment-variable response"
+            exit 1
+          fi
+
+          echo "$response" | jq -r '.[] | "\(.key)=\(.value)"' > authservice.env
 
           echo "Environment variables written to authservice.env"
 

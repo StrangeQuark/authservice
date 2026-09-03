@@ -19,7 +19,8 @@ pipeline {
                         customHeaders: [
                             [name: 'X-CICD-TOKEN', value: CICD_TOKEN, maskValue: true]
                         ],
-                        acceptType: 'APPLICATION_JSON'
+                        acceptType: 'APPLICATION_JSON',
+                        validResponseCodes: '200'
                     )
 
                     def json = readJSON text: response.content
