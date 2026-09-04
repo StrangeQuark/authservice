@@ -20,6 +20,7 @@ public class ServiceAccount implements UserDetails {
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true, nullable = false)
     @Convert(converter = StringEncryptDecryptConverter.class)
     private String clientId;
 

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -40,5 +41,15 @@ public class ServiceAccountRepositoryTest extends BaseRepositoryTest {
         Optional<ServiceAccount> sa = serviceAccountRepository.findByClientId("testServiceAccount");
 
         Assertions.assertTrue(sa.isPresent());
+    }
+
+    @Test
+    void clientIdIsUniqueTest() {
+        ServiceAccount serviceAccount = new ServiceAccount();
+        serviceAccount.setClientId("testServiceAccount");
+        serviceAccount.setClientPassword("testClientPassword");
+
+        Assertions.assertThrows(DataIntegrityViolationException.class,
+                () -> serviceAccountRepository.saveAndFlush(serviceAccount));
     }
 }
