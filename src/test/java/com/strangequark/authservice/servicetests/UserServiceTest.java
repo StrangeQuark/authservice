@@ -83,6 +83,17 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void sendPasswordResetEmailMissingUserTest() {
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail("missing@email.com");
+
+        ResponseEntity<?> response = userService.sendPasswordResetEmail(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("If an account exists, a password reset email has been sent", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
     void resetPasswordTest() {
         setupEmailServiceAccount();
 

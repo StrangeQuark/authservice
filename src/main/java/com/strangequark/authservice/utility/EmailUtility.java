@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -83,37 +84,43 @@ public class EmailUtility {
         );
     }
 
+    @Async
     public void sendAsyncEmail(String recipient, EmailType emailType) {
-        LOGGER.debug("Attempting to post message to email Kafka topic");
+        try {
+            LOGGER.debug("Attempting to post message to email Kafka topic");
 
-        String accessToken = authUtility.authenticateServiceAccount();
-        accessToken = "Bearer " + accessToken;
+            String accessToken = authUtility.authenticateServiceAccount();
+            accessToken = "Bearer " + accessToken;
 
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("recipient", recipient);
-        requestBody.put("sender", SENDER);
-        requestBody.put("includeToken", true);
-        requestBody.put("templateName", emailType == EmailType.REGISTER ? "USER_REGISTER" : emailType == EmailType.PASSWORD_RESET ? "USER_PASSWORD_RESET" : null);
-        requestBody.put("templateVariables", new JSONObject(Map.of("link",
-                emailType == EmailType.REGISTER ? "http://localhost:6080/confirm-email"
-                        : emailType == EmailType.PASSWORD_RESET ? "http://localhost:6080/new-password" : null)));
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("recipient", recipient);
+            requestBody.put("sender", SENDER);
+            requestBody.put("includeToken", true);
+            requestBody.put("templateName", emailType == EmailType.REGISTER ? "USER_REGISTER" : emailType == EmailType.PASSWORD_RESET ? "USER_PASSWORD_RESET" : null);
+            requestBody.put("templateVariables", new JSONObject(Map.of("link",
+                    emailType == EmailType.REGISTER ? "http://localhost:6080/confirm-email"
+                            : emailType == EmailType.PASSWORD_RESET ? "http://localhost:6080/new-password" : null)));
 
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "email-kafka:9092");
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            Properties props = new Properties();
+            props.put("bootstrap.servers", "email-kafka:9092");
+            props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        String topic = "template-email-events";
+            String topic = "template-email-events";
 
-        LOGGER.debug("Message created, attempting to post to email Kafka topic");
-        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
-        ProducerRecord<String, String> record = new ProducerRecord<String, String>(
-                topic,
-                null,
-                null,
-                requestBody.toString(),
-                List.of(new RecordHeader("Authorization", accessToken.getBytes())));
-        producer.send(record);
-        producer.close();
+            LOGGER.debug("Message created, attempting to post to email Kafka topic");
+            KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+            ProducerRecord<String, String> record = new ProducerRecord<String, String>(
+                    topic,
+                    null,
+                    null,
+                    requestBody.toString(),
+                    List.of(new RecordHeader("Authorization", accessToken.getBytes())));
+            producer.send(record);
+            producer.close();
+        } catch (Exception ex) {
+            LOGGER.error("Unable to send email to kafka: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+        }
     }
 }
