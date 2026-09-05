@@ -4,20 +4,42 @@ services:
     networks:
       - shared-network
       - authdb-network
+      - auth-rate-limit-network
     ports:
       - "6001:6001"
     container_name: auth-service
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
     labels:
       com.msinit.log: "true"
       com.msinit.service-name: "authservice"
     depends_on:
       - auth-db
+      - auth-rate-limit-redis
     environment:
       - SPRING_APPLICATION_NAME=${SPRING_APPLICATION_NAME}
       - SERVER_PORT=${SERVER_PORT}
       - LOGGING_LEVEL=${LOGGING_LEVEL}
       - SERVICE_HTTP_CONNECT_TIMEOUT=${SERVICE_HTTP_CONNECT_TIMEOUT}
       - SERVICE_HTTP_READ_TIMEOUT=${SERVICE_HTTP_READ_TIMEOUT}
+      - AUTH_RATE_LIMIT_REDIS_HOST=${AUTH_RATE_LIMIT_REDIS_HOST}
+      - AUTH_RATE_LIMIT_REDIS_PORT=${AUTH_RATE_LIMIT_REDIS_PORT}
+      - AUTH_RATE_LIMIT_REDIS_PASSWORD=${AUTH_RATE_LIMIT_REDIS_PASSWORD}
+      - AUTH_RATE_LIMIT_REDIS_CONNECT_TIMEOUT=${AUTH_RATE_LIMIT_REDIS_CONNECT_TIMEOUT}
+      - AUTH_RATE_LIMIT_REDIS_TIMEOUT=${AUTH_RATE_LIMIT_REDIS_TIMEOUT}
+      - LOGIN_RATE_LIMIT_MAX_REQUESTS=${LOGIN_RATE_LIMIT_MAX_REQUESTS}
+      - LOGIN_RATE_LIMIT_WINDOW_MINUTES=${LOGIN_RATE_LIMIT_WINDOW_MINUTES}
+      - REGISTER_RATE_LIMIT_MAX_REQUESTS=${REGISTER_RATE_LIMIT_MAX_REQUESTS}
+      - REGISTER_RATE_LIMIT_WINDOW_MINUTES=${REGISTER_RATE_LIMIT_WINDOW_MINUTES}
+      - PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS=${PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS}
+      - PASSWORD_RESET_RATE_LIMIT_WINDOW_MINUTES=${PASSWORD_RESET_RATE_LIMIT_WINDOW_MINUTES}
+      - SERVICE_ACCOUNT_RATE_LIMIT_MAX_REQUESTS=${SERVICE_ACCOUNT_RATE_LIMIT_MAX_REQUESTS}
+      - SERVICE_ACCOUNT_RATE_LIMIT_WINDOW_MINUTES=${SERVICE_ACCOUNT_RATE_LIMIT_WINDOW_MINUTES}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_DRIVER=${SPRING_DATASOURCE_DRIVER}
@@ -48,8 +70,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 20
+  auth-rate-limit-redis:
+    image: redis:7.4-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
+    container_name: auth-rate-limit-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${AUTH_RATE_LIMIT_REDIS_PASSWORD}
+    networks:
+      - auth-rate-limit-network
+    volumes:
+      - auth-rate-limit-redis-volume:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli -a ${AUTH_RATE_LIMIT_REDIS_PASSWORD} ping | grep PONG" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
   auth-db:
-    image: 'postgres:13.1-alpine'
+    image: 'postgres:13.1-alpine@sha256:16af09e480c49226f8e7cd4d602ab27e59f434eb255d2b45bd0cfe1defb86fd7'
     container_name: auth-db
     restart: unless-stopped
     volumes:
@@ -63,7 +99,10 @@ services:
 networks:
   authdb-network:
     internal: true
+  auth-rate-limit-network:
+    internal: true
   shared-network:
     external: true
 volumes:
   auth-db-volume:
+  auth-rate-limit-redis-volume:

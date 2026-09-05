@@ -25,6 +25,7 @@ public class WebSecurityConfig {
      * {@link JwtAuthenticationFilter} to authenticate our JWT tokens and update the security context
      */
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthRateLimitFilter authRateLimitFilter;
 
     /**
      * {@link AuthenticationProvider} neccessary for the security filter
@@ -43,8 +44,10 @@ public class WebSecurityConfig {
      * @param jwtAuthenticationFilter {@link JwtAuthenticationFilter} for processing JWT during authentication requests
      * @param authenticationProvider {@link AuthenticationProvider} for performing authentication
      */
-    public WebSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider) {
+    public WebSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthRateLimitFilter authRateLimitFilter,
+                             AuthenticationProvider authenticationProvider) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authRateLimitFilter = authRateLimitFilter;
         this.authenticationProvider = authenticationProvider;
     }
 
@@ -79,6 +82,7 @@ public class WebSecurityConfig {
                 )
                 .cors(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider)
+                .addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
