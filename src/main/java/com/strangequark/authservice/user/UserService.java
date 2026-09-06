@@ -23,7 +23,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -456,28 +455,18 @@ public class UserService {
 
             // Integration function start: File
             LOGGER.debug("Attempting to delete user from all File collections");
-            try {
-                ResponseEntity<?> response = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
+            ResponseEntity<?> fileResponse = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
 
-                if (response.getStatusCode().value() != 200)
-                    throw new RuntimeException("Error when deleting user from fileservice:\n\n" + response.getBody());
-            } catch (ResourceAccessException resourceAccessException) {
-                //If we are unable to reach the file service, proceed with user deletion
-                LOGGER.debug("Unable to reach file service: " + resourceAccessException.getMessage());
-                LOGGER.debug("Skip file deletion - continuing to delete user");
-            }// Integration function end: File
+            if(fileResponse.getStatusCode().value() != 200)
+                throw new RuntimeException("Error when deleting user from fileservice:\n\n" + fileResponse.getBody());
+            // Integration function end: File
             // Integration function start: Vault
             LOGGER.debug("Attempting to delete user from all Vault services");
-            try {
-                ResponseEntity<?> response = vaultUtility.deleteUserFromAllServices(user.getUsername(), authToken);
+            ResponseEntity<?> vaultResponse = vaultUtility.deleteUserFromAllServices(user.getUsername(), authToken);
 
-                if (response.getStatusCode().value() != 200)
-                    throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + response.getBody());
-            } catch (ResourceAccessException resourceAccessException) {
-                //If we are unable to reach the vault service, proceed with user deletion
-                LOGGER.debug("Unable to reach vault service: " + resourceAccessException.getMessage());
-                LOGGER.debug("Skip vault deletion - continuing to delete user");
-            }// Integration function end: Vault
+            if(vaultResponse.getStatusCode().value() != 200)
+                throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
+            // Integration function end: Vault
 
             //Delete the user
             userRepository.delete(user);
