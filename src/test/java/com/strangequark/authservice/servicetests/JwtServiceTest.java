@@ -2,11 +2,20 @@ package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.authorization.Authorization;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 public class JwtServiceTest extends BaseServiceTest {
@@ -59,6 +68,50 @@ public class JwtServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals("SERVICE_ACCOUNT", claims.get("principalType", String.class));
     }
+
+    @Test
+    void malformedAccessTokenIsRejectedTest() {
+        Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername("invalid token", false));
+    }
+
+    @Test
+    void refreshTokenIsRejectedAsAccessTokenTest() {
+        String token = jwtService.generateToken(testUser, true);
+
+        Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername(token, false));
+    }
+
+    @Test
+    void accessTokenWithWrongIssuerIsRejectedTest() {
+        String token = createAccessToken("wrong-issuer", new Date(System.currentTimeMillis() + 60000),
+                "token-id", testUser.getId().toString());
+
+        Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername(token, false));
+    }
+
+    @Test
+    void expiredAccessTokenIsRejectedTest() {
+        String token = createAccessToken("msinit-authservice", new Date(System.currentTimeMillis() - 60000),
+                "token-id", testUser.getId().toString());
+
+        Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername(token, false));
+    }
+
+    @Test
+    void accessTokenWithoutJtiIsRejectedTest() {
+        String token = createAccessToken("msinit-authservice", new Date(System.currentTimeMillis() + 60000),
+                null, testUser.getId().toString());
+
+        Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername(token, false));
+    }
+
+    @Test
+    void accessTokenWithoutPrincipalIdIsRejectedTest() {
+        String token = createAccessToken("msinit-authservice", new Date(System.currentTimeMillis() + 60000),
+                "token-id", null);
+
+        Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername(token, false));
+    }
     // Integration function start: Email
     @Test
     void superRoleAuthorizationsAreAddedToAccessTokenTest() {
@@ -70,4 +123,29 @@ public class JwtServiceTest extends BaseServiceTest {
 
         Assertions.assertTrue(authorizations.contains("EMAIL_API_ACCESS"));
     }// Integration function end: Email
+
+    private String createAccessToken(String issuer, Date expiration, String jti, String principalId) {
+        JwtBuilder builder = Jwts.builder()
+                .setIssuer(issuer)
+                .setSubject(testUser.getUsername())
+                .setExpiration(expiration)
+                .claim("tokenType", "ACCESS");
+
+        if(jti != null)
+            builder.setId(jti);
+
+        if(principalId != null)
+            builder.claim("principalId", principalId);
+
+        return builder.signWith(getPrivateKey(), SignatureAlgorithm.RS256).compact();
+    }
+
+    private Key getPrivateKey() {
+        try {
+            String privateKey = (String) ReflectionTestUtils.getField(jwtService, "JWT_PRIVATE_KEY");
+            return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(Decoders.BASE64.decode(privateKey)));
+        } catch(Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }
