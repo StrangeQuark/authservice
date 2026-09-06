@@ -2,18 +2,38 @@ package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.error.ErrorResponse; // Integration line: Email
+import com.strangequark.authservice.utility.FileUtility; // Integration line: File
+import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
 import com.strangequark.authservice.user.*;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.util.*;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 public class UserServiceTest extends BaseServiceTest {
 
     @Autowired
     private UserService userService;
+    @MockitoBean // Integration line: File
+    private FileUtility fileUtility;
+    @MockitoBean // Integration line: Vault
+    private VaultUtility vaultUtility;
+
+    @BeforeEach
+    void setupUtilities() {
+        when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
+                .thenReturn(ResponseEntity.ok().build()); // Integration line: File
+        when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))
+                .thenReturn(ResponseEntity.ok().build()); // Integration line: Vault
+    }
 
     @Test
     void updatePasswordTest() {
@@ -149,6 +169,36 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("User successfully deleted", ((UserResponse) response.getBody()).getMessage());
         Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
+    }
+
+    @Test
+    void deleteUserWhenFileServiceFailsTest() {
+        when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
+                .thenThrow(new ResourceAccessException("File service unavailable")); // Integration line: File
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
+
+        ResponseEntity<?> response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
+    }
+
+    @Test
+    void deleteUserWhenVaultServiceFailsTest() {
+        when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))
+                .thenThrow(new ResourceAccessException("Vault service unavailable")); // Integration line: Vault
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
+
+        ResponseEntity<?> response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 
     @Test
