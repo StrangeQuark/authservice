@@ -2,6 +2,8 @@ package com.strangequark.authservice.auth;
 
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.invitation.Invitation;
+import com.strangequark.authservice.invitation.InvitationService;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
@@ -11,6 +13,7 @@ import com.strangequark.authservice.utility.TelemetryUtility; // Integration lin
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +22,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.client.ResourceAccessException; // Integration line: Email
 
 import java.util.LinkedHashSet;
@@ -54,6 +59,11 @@ public class AuthenticationService {
      */
     private final AuthenticationManager authenticationManager;
 
+    private final InvitationService invitationService;
+
+    @Value("${invite.only}")
+    private boolean INVITE_ONLY;
+
     /** Integration function start: Email
      * {@link EmailUtility} for sending requests to email service
      */
@@ -75,11 +85,12 @@ public class AuthenticationService {
      * @param authenticationManager {@link AuthenticationManager} for authenticating JWT tokens
      */
     public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                                 AuthenticationManager authenticationManager) {
+                                 AuthenticationManager authenticationManager, InvitationService invitationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.invitationService = invitationService;
     }
 
     /**
@@ -87,6 +98,7 @@ public class AuthenticationService {
      * @param registrationRequest Request body containing registration details
      * @return {@link ResponseEntity} with a {@link RegistrationResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
+    @Transactional
     public ResponseEntity<?> register(RegistrationRequest registrationRequest) {
         LOGGER.info("Attempting to register user");
         String responseMessage = "";
@@ -99,6 +111,10 @@ public class AuthenticationService {
                 throw new RuntimeException("Email cannot be empty or null");
             if(registrationRequest.getPassword() == null || registrationRequest.getPassword().isEmpty())
                 throw new RuntimeException("Password cannot be empty or null");
+
+            Invitation invitation = null;
+            if(INVITE_ONLY)
+                invitation = invitationService.getValidInvitation(registrationRequest.getEmail(), registrationRequest.getInviteToken());
 
             //Check if the username has already been registered
             if (userRepository.findByUsername(registrationRequest.getUsername()).isPresent())
@@ -136,6 +152,8 @@ public class AuthenticationService {
             //Save the user to the database
             LOGGER.debug("Saving user to database");
             userRepository.save(user);
+            if(INVITE_ONLY)
+                invitationService.useInvitation(invitation);
             // Send a telemetry event for user registration - Integration line: Telemetry
             telemetryUtility.sendTelemetryEvent("user-register", Map.of("userId", user.getId())); // Integration line: Telemetry
 
@@ -143,6 +161,7 @@ public class AuthenticationService {
             LOGGER.info("User successfully created");
             return ResponseEntity.ok(new RegistrationResponse(responseMessage));
         } catch (Exception ex) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             LOGGER.error("Failed to register user: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));

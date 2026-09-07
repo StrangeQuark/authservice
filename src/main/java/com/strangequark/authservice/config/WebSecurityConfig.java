@@ -72,6 +72,8 @@ public class WebSecurityConfig {
                                 "/api/auth/user/send-password-reset-email",
                                 "/api/auth/service-account/authenticate"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/invitation/invite-only").permitAll()
+                        .requestMatchers("/api/auth/invitation/**").hasAuthority("INVITATION_MANAGEMENT")
                         .requestMatchers(HttpMethod.POST, "/api/auth/user/enable-user")
                         .hasAnyAuthority("EMAIL_SERVICE", "ADMIN", "SUPER")
                         .requestMatchers("/api/auth/authorization/**", "/api/auth/role-authorization/**").hasAuthority("SUPER")

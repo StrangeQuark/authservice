@@ -20,6 +20,8 @@ public class RegistrationRequest {
      */
     private String password;
 
+    private String inviteToken;
+
     public RegistrationRequest() {
     }
 
@@ -76,5 +78,13 @@ public class RegistrationRequest {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getInviteToken() {
+        return inviteToken;
+    }
+
+    public void setInviteToken(String inviteToken) {
+        this.inviteToken = inviteToken;
     }
 }

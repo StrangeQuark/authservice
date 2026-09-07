@@ -84,6 +84,32 @@ public class EmailUtility {
         );
     }
 
+    public ResponseEntity<?> sendInviteEmail(String recipient, String token) {
+        LOGGER.debug("Attempting to send invitation email API request");
+
+        String accessToken = authUtility.authenticateServiceAccount();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("recipient", recipient);
+        requestBody.put("sender", SENDER);
+        requestBody.put("includeToken", false);
+        requestBody.put("templateName", "USER_INVITE");
+        requestBody.put("templateVariables", new JSONObject(Map.of("inviteToken", token)));
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
+
+        return restTemplate.exchange(
+                "http://email-service:6005/api/email/send-template-email",
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
+    }
+
     @Async
     public void sendAsyncEmail(String recipient, EmailType emailType) {
         try {
