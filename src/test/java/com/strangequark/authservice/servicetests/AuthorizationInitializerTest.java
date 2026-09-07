@@ -14,6 +14,7 @@ public class AuthorizationInitializerTest extends BaseServiceTest {
         Authorization fileAuthorization = authorizationRepository.findByName("FILE_API_ACCESS").get();
         Authorization vaultAuthorization = authorizationRepository.findByName("VAULT_API_ACCESS").get();
         Authorization telemetryAuthorization = authorizationRepository.findByName("TELEMETRY_API_ACCESS").get();
+        Authorization invitationManagementAuthorization = authorizationRepository.findByName("INVITATION_MANAGEMENT").get();
 
         Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.USER, authAuthorization).isPresent());
         Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.USER, fileAuthorization).isPresent());
@@ -23,5 +24,6 @@ public class AuthorizationInitializerTest extends BaseServiceTest {
         Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, fileAuthorization).isPresent());
         Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, vaultAuthorization).isPresent());
         Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.USER, telemetryAuthorization).isEmpty());
+        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, invitationManagementAuthorization).isPresent());
     }
 }

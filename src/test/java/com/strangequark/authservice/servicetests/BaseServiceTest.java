@@ -1,6 +1,7 @@
 package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.config.JwtService;
+import com.strangequark.authservice.invitation.InvitationRepository;
 import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.authorization.AuthorizationInitializer;
 import com.strangequark.authservice.authorization.AuthorizationRepository;
@@ -44,6 +45,8 @@ public abstract class BaseServiceTest {
     @Autowired
     public RoleAuthorizationRepository roleAuthorizationRepository;
     @Autowired
+    public InvitationRepository invitationRepository;
+    @Autowired
     public AuthorizationInitializer authorizationInitializer;
     @Autowired
     public PasswordEncoder passwordEncoder;
@@ -77,6 +80,7 @@ public abstract class BaseServiceTest {
     @AfterEach
     void teardown() {
         userRepository.deleteAll();
+        invitationRepository.deleteAll();
         roleAuthorizationRepository.deleteAll();
         accessToken = null;
         testUser = null;

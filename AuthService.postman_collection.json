@@ -285,6 +285,51 @@
 			"response": []
 		},
 		{
+			"name": "Get Invite-only Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/invitation/invite-only"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Invitation",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"invitee@test.com\"\r\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": "http://localhost:6001/api/auth/invitation/create"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Invitation",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"INVITATION_ID\"\r\n}",
+					"options": { "raw": { "language": "json" } }
+				},
+				"url": "http://localhost:6001/api/auth/invitation/delete"
+			},
+			"response": []
+		},
+		{
 			"name": "Authenticate User",
 			"event": [
 				{

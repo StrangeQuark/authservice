@@ -16,6 +16,7 @@ import org.springframework.web.client.ResourceAccessException;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 public class UserServiceTest extends BaseServiceTest {
@@ -199,6 +200,52 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(400, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
+    }
+
+    @Test
+    void deleteUserWhenFileServiceReturnsErrorCanRetryTest() {
+        doReturn(ResponseEntity.internalServerError().body("File service error"))
+                .when(fileUtility).deleteUserFromAllCollections(anyString(), anyString()); // Integration line: File
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
+
+        ResponseEntity<?> response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
+
+        when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
+                .thenReturn(ResponseEntity.ok().build()); // Integration line: File
+
+        response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
+    }
+
+    @Test
+    void deleteUserWhenVaultServiceReturnsErrorCanRetryTest() {
+        doReturn(ResponseEntity.internalServerError().body("Vault service error"))
+                .when(vaultUtility).deleteUserFromAllServices(anyString(), anyString()); // Integration line: Vault
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
+
+        ResponseEntity<?> response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
+
+        when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))
+                .thenReturn(ResponseEntity.ok().build()); // Integration line: Vault
+
+        response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertFalse(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 
     @Test
