@@ -2,6 +2,7 @@ package com.strangequark.authservice.serviceaccount;
 
 import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.authorization.AuthorizationRepository;
+import com.strangequark.authservice.authorization.AuthorizationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -45,19 +46,50 @@ public class ServiceAccountInitializer implements ApplicationRunner {
                 account.setClientPassword(passwordEncoder.encode(clientPassword));
                 return account;
             });
-            String authorizationNames = environment.getProperty("INITIAL_" + trimmedId.toUpperCase() + "_SERVICE_ACCOUNT_AUTHORIZATIONS", "");
-            for(String authorizationName : authorizationNames.split(",")) {
-                if(!authorizationName.isBlank())
-                    addAuthorization(serviceAccount, authorizationName.trim());
-            }
+            addInitialAuthorizations(serviceAccount, trimmedId);
 
             serviceAccountRepository.save(serviceAccount);
             LOGGER.info("Service account successfully initialized: " + trimmedId);
         }
     }
 
-    private void addAuthorization(ServiceAccount serviceAccount, String name) {
-        Authorization authorization = authorizationRepository.findByName(name)
+    private void addInitialAuthorizations(ServiceAccount serviceAccount, String clientId) {
+        if(clientId.equals("auth")) {
+            addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS); // Integration line: Email
+            addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS); // Integration line: Vault
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
+        }
+
+        // Integration function start: Email
+        if(clientId.equals("email")) {
+            addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
+        } // Integration function end: Email
+
+        // Integration function start: File
+        if(clientId.equals("file")) {
+            addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
+        } // Integration function end: File
+
+        // Integration function start: Vault
+        if(clientId.equals("vault")) {
+            addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
+        } // Integration function end: Vault
+
+        // Integration function start: Test
+        if(clientId.equals("test")) {
+            addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS); // Integration line: Email
+            addAuthorization(serviceAccount, AuthorizationType.FILE_API_ACCESS); // Integration line: File
+            addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS); // Integration line: Vault
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
+        } // Integration function end: Test
+    }
+
+    private void addAuthorization(ServiceAccount serviceAccount, AuthorizationType authorizationType) {
+        Authorization authorization = authorizationRepository.findByName(authorizationType.name())
                 .orElseThrow(() -> new RuntimeException("Authorization was not found"));
 
         serviceAccount.getAuthorizations().add(authorization);
