@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VAULT_URL = credentials('VAULT_URL') // Integration line: Vault
-        CICD_TOKEN = credentials('CICD_TOKEN') // Integration line: Vault
+        CICD_TOKEN = credentials('AUTH_CICD_TOKEN') // Integration line: Vault
     }
 
     stages {
