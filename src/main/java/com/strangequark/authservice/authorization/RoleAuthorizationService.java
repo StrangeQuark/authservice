@@ -58,6 +58,18 @@ public class RoleAuthorizationService {
         }
     }
 
+    public ResponseEntity<?> getAllRoles() {
+        LOGGER.info("Attempting to get all roles");
+
+        try {
+            return ResponseEntity.ok(Role.values());
+        } catch(Exception ex) {
+            LOGGER.error("Failed to get all roles: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
     public ResponseEntity<?> removeRoleAuthorization(RoleAuthorizationRequest roleAuthorizationRequest) {
         LOGGER.info("Attempting to remove role authorization");
 

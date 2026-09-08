@@ -2,10 +2,12 @@ package com.strangequark.authservice.user;
 
 import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.authorization.AuthorizationRepository;
+import com.strangequark.authservice.authorization.RoleAuthorization;
+import com.strangequark.authservice.authorization.RoleAuthorizationRepository;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
-import com.strangequark.authservice.serviceaccount.ServiceAccount; // Integration line: Email
-import com.strangequark.authservice.serviceaccount.ServiceAccountRepository; // Integration line: Email
+import com.strangequark.authservice.serviceaccount.ServiceAccount;
+import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.utility.EmailType; // Integration line: Email
 import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
 import com.strangequark.authservice.utility.FileUtility; // Integration line: File
@@ -45,12 +47,12 @@ public class UserService {
      */
     private final UserRepository userRepository;
     private final AuthorizationRepository authorizationRepository;
-    // Integration function start: Email
+    private final RoleAuthorizationRepository roleAuthorizationRepository;
     /**
      * {@link ServiceAccountRepository} for fetching {@link ServiceAccount} from the database
      */
     @Autowired
-    private ServiceAccountRepository serviceAccountRepository; // Integration function end: Email
+    private ServiceAccountRepository serviceAccountRepository;
 
     /**
      * {@link JwtService} for extracting the username from the request token
@@ -99,10 +101,12 @@ public class UserService {
      * @param jwtService {@link JwtService} for generating JWT tokens
      * @param authenticationManager {@link AuthenticationManager} for authenticating JWT tokens
      */
-    public UserService(UserRepository userRepository, AuthorizationRepository authorizationRepository, JwtService jwtService,
+    public UserService(UserRepository userRepository, AuthorizationRepository authorizationRepository,
+                       RoleAuthorizationRepository roleAuthorizationRepository, JwtService jwtService,
                        PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager){
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
+        this.roleAuthorizationRepository = roleAuthorizationRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -462,7 +466,11 @@ public class UserService {
             // Integration function end: File
             // Integration function start: Vault
             LOGGER.debug("Attempting to delete user from all Vault services");
-            ResponseEntity<?> vaultResponse = vaultUtility.deleteUserFromAllServices(user.getUsername(), authToken);
+            String vaultToken = jwtService.generateServiceAccountToken(
+                    serviceAccountRepository.findByClientId("auth")
+                            .orElseThrow(() -> new RuntimeException("Auth service account was not found")), false
+            );
+            ResponseEntity<?> vaultResponse = vaultUtility.deleteUserFromAllServices(user.getUsername(), vaultToken);
 
             if(vaultResponse.getStatusCode().value() != 200)
                 throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
@@ -676,6 +684,41 @@ public class UserService {
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
             LOGGER.error("Failed to search users: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
+    public ResponseEntity<?> getAdminUser(String query) {
+        LOGGER.info("Attempting to get admin user details");
+
+        try {
+            User user = userRepository.findByUsername(query)
+                    .or(() -> userRepository.findByEmail(query))
+                    .orElseThrow(() -> new RuntimeException("No user exists with that username or email address"));
+
+            UserResponse response = new UserResponse();
+            response.setUserId(user.getId());
+            response.setUsername(user.getUsername());
+            response.setEmail(user.getEmail());
+            response.setRole(user.getRole());
+            response.setEnabled(user.isEnabled());
+            Set<String> directAuthorizations = user.getAuthorizations().stream()
+                    .map(Authorization::getName).collect(java.util.stream.Collectors.toSet());
+            Set<String> roleAuthorizations = roleAuthorizationRepository.findByRole(user.getRole()).stream()
+                    .map(RoleAuthorization::getAuthorization).map(Authorization::getName)
+                    .collect(java.util.stream.Collectors.toSet());
+            Set<String> authorizations = new HashSet<>(directAuthorizations);
+            authorizations.addAll(roleAuthorizations);
+
+            response.setAuthorizations(authorizations);
+            response.setDirectAuthorizations(directAuthorizations);
+            response.setRoleAuthorizations(roleAuthorizations);
+
+            LOGGER.info("Admin user details successfully retrieved");
+            return ResponseEntity.ok(response);
+        } catch(Exception ex) {
+            LOGGER.error("Failed to get admin user details: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }

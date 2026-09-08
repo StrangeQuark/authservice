@@ -107,6 +107,27 @@ public class InvitationServiceTest extends BaseServiceTest {
         Assertions.assertTrue(invitationRepository.findById(invitationResponse.getId()).isEmpty());
     }
 
+    @Test
+    void deleteAllInvitationsTest() {
+        createInvitation("first@test.com");
+        createInvitation("second@test.com");
+
+        ResponseEntity<?> response = invitationService.deleteAllInvitations();
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertTrue(invitationRepository.findAll().isEmpty());
+    }
+
+    @Test
+    void getAllInvitationsTest() {
+        createInvitation("invite@test.com");
+
+        ResponseEntity<?> response = invitationService.getAllInvitations();
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals(1, ((java.util.List<?>) response.getBody()).size());
+    }
+
     private InvitationResponse createInvitation(String email) {
         InvitationRequest invitationRequest = new InvitationRequest();
         invitationRequest.setEmail(email);

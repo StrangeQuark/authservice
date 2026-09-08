@@ -45,4 +45,12 @@ public class RoleAuthorizationServiceTest extends BaseServiceTest {
         Authorization authorization = authorizationRepository.findByName(authorizationName).get();
         Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.ADMIN, authorization).isEmpty());
     }
+
+    @Test
+    void getAllRolesTest() {
+        ResponseEntity<?> response = roleAuthorizationService.getAllRoles();
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertArrayEquals(Role.values(), (Role[]) response.getBody());
+    }
 }

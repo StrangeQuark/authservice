@@ -29,6 +29,11 @@ public class RoleAuthorizationController {
         return roleAuthorizationService.getRoleAuthorizations(roleAuthorizationRequest.getRole());
     }
 
+    @GetMapping("/get-all-roles")
+    public ResponseEntity<?> getAllRoles() {
+        return roleAuthorizationService.getAllRoles();
+    }
+
     @DeleteMapping("/remove")
     public ResponseEntity<?> removeRoleAuthorization(@RequestBody RoleAuthorizationRequest request) {
         return roleAuthorizationService.removeRoleAuthorization(request);

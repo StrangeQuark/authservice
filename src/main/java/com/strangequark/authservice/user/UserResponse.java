@@ -3,6 +3,7 @@ package com.strangequark.authservice.user;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -35,6 +36,16 @@ public class UserResponse {
      * Email of the user
      */
     private String email;
+
+    private Role role;
+
+    private boolean enabled;
+
+    private Set<String> authorizations;
+
+    private Set<String> directAuthorizations;
+
+    private Set<String> roleAuthorizations;
 
     /**
      * Default constructor, set the timestamp
@@ -112,5 +123,45 @@ public class UserResponse {
      */
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Set<String> getAuthorizations() {
+        return authorizations;
+    }
+
+    public void setAuthorizations(Set<String> authorizations) {
+        this.authorizations = authorizations;
+    }
+
+    public Set<String> getDirectAuthorizations() {
+        return directAuthorizations;
+    }
+
+    public void setDirectAuthorizations(Set<String> directAuthorizations) {
+        this.directAuthorizations = directAuthorizations;
+    }
+
+    public Set<String> getRoleAuthorizations() {
+        return roleAuthorizations;
+    }
+
+    public void setRoleAuthorizations(Set<String> roleAuthorizations) {
+        this.roleAuthorizations = roleAuthorizations;
     }
 }

@@ -156,6 +156,11 @@ public class UserController {
         return userService.searchUsers(userLookupRequest.getQuery());
     }
 
+    @PostMapping("/get-admin-user")
+    public ResponseEntity<?> getAdminUser(@RequestBody UserLookupRequest userLookupRequest) {
+        return userService.getAdminUser(userLookupRequest.getQuery());
+    }
+
     /**
      * Get request endpoint for retrieving a list of user details by passing user ids
      * @param ids list of the user ids to fetch

@@ -38,42 +38,18 @@ public class ServiceAccountInitializer implements ApplicationRunner {
             LOGGER.debug("Attempting to initialize service account with ID: " + serviceId);
             String trimmedId = serviceId.trim();
 
-            if (serviceAccountRepository.findByClientId(trimmedId).isPresent()) {
-                LOGGER.debug("Service account already exists: " + trimmedId);
-                continue;
+            ServiceAccount serviceAccount = serviceAccountRepository.findByClientId(trimmedId).orElseGet(() -> {
+                String clientPassword = environment.getProperty("SERVICE_SECRET_" + trimmedId.toUpperCase());
+                ServiceAccount account = new ServiceAccount();
+                account.setClientId(trimmedId);
+                account.setClientPassword(passwordEncoder.encode(clientPassword));
+                return account;
+            });
+            String authorizationNames = environment.getProperty("INITIAL_" + trimmedId.toUpperCase() + "_SERVICE_ACCOUNT_AUTHORIZATIONS", "");
+            for(String authorizationName : authorizationNames.split(",")) {
+                if(!authorizationName.isBlank())
+                    addAuthorization(serviceAccount, authorizationName.trim());
             }
-
-            String clientPassword = environment.getProperty("SERVICE_SECRET_" + trimmedId.toUpperCase());
-            ServiceAccount serviceAccount = new ServiceAccount();
-            serviceAccount.setClientId(trimmedId);
-            serviceAccount.setClientPassword(passwordEncoder.encode(clientPassword));
-            if(trimmedId.equals("auth")) {
-                addAuthorization(serviceAccount, "EMAIL_API_ACCESS"); // Integration line: Email
-                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
-            }
-            // Integration function start: Email
-            if(trimmedId.equals("email")) {
-                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
-                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
-            } // Integration function end: Email
-            // Integration function start: File
-            if(trimmedId.equals("file")) {
-                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
-                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
-            } // Integration function end: File
-            // Integration function start: Vault
-            if(trimmedId.equals("vault")) {
-                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
-                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
-            } // Integration function end: Vault
-            // Integration function start: Test
-            if(trimmedId.equals("test")) {
-                addAuthorization(serviceAccount, "AUTH_API_ACCESS");
-                addAuthorization(serviceAccount, "EMAIL_API_ACCESS"); // Integration line: Email
-                addAuthorization(serviceAccount, "FILE_API_ACCESS"); // Integration line: File
-                addAuthorization(serviceAccount, "VAULT_API_ACCESS"); // Integration line: Vault
-                addAuthorization(serviceAccount, "TELEMETRY_API_ACCESS"); // Integration line: Telemetry
-            } // Integration function end: Test
 
             serviceAccountRepository.save(serviceAccount);
             LOGGER.info("Service account successfully initialized: " + trimmedId);

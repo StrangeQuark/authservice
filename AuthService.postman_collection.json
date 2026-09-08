@@ -1073,6 +1073,37 @@
 			"response": []
 		},
 		{
+			"name": "Get All Invitations",
+			"request": {
+				"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }] },
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/invitation/get-all"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Admin User",
+			"request": {
+				"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }] },
+				"method": "POST",
+				"header": [],
+				"body": { "mode": "raw", "raw": "{\\n    \\\"query\\\": \\\"username\\\"\\n}", "options": { "raw": { "language": "json" } } },
+				"url": "http://localhost:6001/api/auth/user/get-admin-user"
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Roles",
+			"request": {
+				"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }] },
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/role-authorization/get-all-roles"
+			},
+			"response": []
+		},
+		{
 			"name": "Service Account Authentication",
 			"event": [
 				{
