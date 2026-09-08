@@ -27,6 +27,16 @@ public class InvitationController {
         return invitationService.deleteInvitation(invitationRequest.getId());
     }
 
+    @DeleteMapping("/delete-all")
+    public ResponseEntity<?> deleteAllInvitations() {
+        return invitationService.deleteAllInvitations();
+    }
+
+    @GetMapping("/get-all")
+    public ResponseEntity<?> getAllInvitations() {
+        return invitationService.getAllInvitations();
+    }
+
     @GetMapping("/invite-only")
     public ResponseEntity<?> getInviteOnly() {
         return invitationService.getInviteOnly();

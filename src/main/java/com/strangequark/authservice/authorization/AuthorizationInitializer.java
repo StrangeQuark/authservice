@@ -4,13 +4,31 @@ import com.strangequark.authservice.user.Role;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 @Order(0)
 public class AuthorizationInitializer implements ApplicationRunner {
     private final AuthorizationRepository authorizationRepository;
     private final RoleAuthorizationRepository roleAuthorizationRepository;
+
+    @Value("${initial.authorizations}")
+    private String initialAuthorizations;
+
+    @Value("${initial.user.authorizations}")
+    private String initialUserAuthorizations;
+
+    @Value("${initial.developer.authorizations}")
+    private String initialDeveloperAuthorizations;
+
+    @Value("${initial.admin.authorizations}")
+    private String initialAdminAuthorizations;
+
+    @Value("${initial.super.authorizations}")
+    private String initialSuperAuthorizations;
 
     public AuthorizationInitializer(AuthorizationRepository authorizationRepository,
                                     RoleAuthorizationRepository roleAuthorizationRepository) {
@@ -20,37 +38,33 @@ public class AuthorizationInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments applicationArguments) {
-        Authorization authAuthorization = getOrCreateAuthorization("AUTH_API_ACCESS");
-        Authorization emailAuthorization = getOrCreateAuthorization("EMAIL_API_ACCESS"); // Integration line: Email
-        Authorization fileAuthorization = getOrCreateAuthorization("FILE_API_ACCESS"); // Integration line: File
-        Authorization vaultAuthorization = getOrCreateAuthorization("VAULT_API_ACCESS"); // Integration line: Vault
-        Authorization telemetryAuthorization = getOrCreateAuthorization("TELEMETRY_API_ACCESS"); // Integration line: Telemetry
-        Authorization telemetryReadAuthorization = getOrCreateAuthorization("TELEMETRY_READ_ACCESS"); // Integration line: Telemetry
-        Authorization invitationManagementAuthorization = getOrCreateAuthorization("INVITATION_MANAGEMENT");
+        for(String authorizationName : initialAuthorizations.split(","))
+            getOrCreateAuthorization(authorizationName.trim());
 
-        addRoleAuthorization(Role.USER, authAuthorization);
-        addRoleAuthorization(Role.USER, fileAuthorization); // Integration line: File
-        addRoleAuthorization(Role.USER, vaultAuthorization); // Integration line: Vault
-
-        addRoleAuthorization(Role.DEVELOPER, authAuthorization);
-        addRoleAuthorization(Role.DEVELOPER, fileAuthorization); // Integration line: File
-        addRoleAuthorization(Role.DEVELOPER, vaultAuthorization); // Integration line: Vault
-
-        addRoleAuthorization(Role.ADMIN, authAuthorization);
-        addRoleAuthorization(Role.ADMIN, fileAuthorization); // Integration line: File
-        addRoleAuthorization(Role.ADMIN, vaultAuthorization); // Integration line: Vault
-
-        addRoleAuthorization(Role.SUPER, authAuthorization);
-        addRoleAuthorization(Role.SUPER, emailAuthorization); // Integration line: Email
-        addRoleAuthorization(Role.SUPER, fileAuthorization); // Integration line: File
-        addRoleAuthorization(Role.SUPER, vaultAuthorization); // Integration line: Vault
-        addRoleAuthorization(Role.SUPER, telemetryReadAuthorization); // Integration line: Telemetry
-        addRoleAuthorization(Role.SUPER, invitationManagementAuthorization);
+        addRoleAuthorizations(Role.USER, initialUserAuthorizations);
+        addRoleAuthorizations(Role.DEVELOPER, initialDeveloperAuthorizations);
+        addRoleAuthorizations(Role.ADMIN, initialAdminAuthorizations);
+        addRoleAuthorizations(Role.SUPER, initialSuperAuthorizations);
     }
 
     private Authorization getOrCreateAuthorization(String name) {
+        if(name.equals("ALL"))
+            throw new RuntimeException("ALL is reserved for initial role authorizations");
+
         return authorizationRepository.findByName(name)
                 .orElseGet(() -> authorizationRepository.save(new Authorization(name)));
+    }
+
+    private void addRoleAuthorizations(Role role, String authorizationNames) {
+        if(Arrays.stream(authorizationNames.split(",")).map(String::trim).anyMatch("ALL"::equals)) {
+            for(Authorization authorization : authorizationRepository.findAll())
+                addRoleAuthorization(role, authorization);
+
+            return;
+        }
+
+        for(String authorizationName : authorizationNames.split(","))
+            addRoleAuthorization(role, getOrCreateAuthorization(authorizationName.trim()));
     }
 
     private void addRoleAuthorization(Role role, Authorization authorization) {

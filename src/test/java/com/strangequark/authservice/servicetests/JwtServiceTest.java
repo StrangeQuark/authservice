@@ -39,7 +39,7 @@ public class JwtServiceTest extends BaseServiceTest {
 
         Assertions.assertTrue(authorizations.contains("AUTH_API_ACCESS"));
         Assertions.assertTrue(authorizations.contains("FILE_API_ACCESS"));
-        Assertions.assertTrue(authorizations.contains("VAULT_API_ACCESS"));
+        Assertions.assertFalse(authorizations.contains("VAULT_API_ACCESS"));
         Assertions.assertFalse(authorizations.contains("EMAIL_API_ACCESS"));
         Assertions.assertFalse(authorizations.contains("TELEMETRY_API_ACCESS"));
     }
@@ -67,6 +67,7 @@ public class JwtServiceTest extends BaseServiceTest {
         Claims claims = jwtService.extractClaim(token, jwtClaims -> jwtClaims, false);
 
         Assertions.assertEquals("SERVICE_ACCOUNT", claims.get("principalType", String.class));
+        Assertions.assertEquals("email", claims.get("clientId", String.class));
     }
 
     @Test

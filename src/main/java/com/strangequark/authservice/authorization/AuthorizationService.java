@@ -2,6 +2,7 @@ package com.strangequark.authservice.authorization;
 
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
+import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +34,16 @@ public class AuthorizationService {
             if(authorizationRequest.getName() == null || authorizationRequest.getName().isBlank())
                 throw new RuntimeException("Authorization name is required");
 
+            if(authorizationRequest.getName().equals("ALL"))
+                throw new RuntimeException("ALL is reserved for initial role authorizations");
+
             if(authorizationRepository.findByName(authorizationRequest.getName()).isPresent())
                 throw new RuntimeException("Authorization already exists");
 
             Authorization authorization = authorizationRepository.save(new Authorization(authorizationRequest.getName()));
+
+            if(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, authorization).isEmpty())
+                roleAuthorizationRepository.save(new RoleAuthorization(Role.SUPER, authorization));
 
             LOGGER.info("Authorization successfully created");
             return ResponseEntity.ok(authorization);
@@ -67,10 +74,10 @@ public class AuthorizationService {
                     .orElseThrow(() -> new RuntimeException("Authorization was not found"));
 
             if(userRepository.existsByAuthorizationsContaining(authorization)
-                    || serviceAccountRepository.existsByAuthorizationsContaining(authorization)
-                    || roleAuthorizationRepository.existsByAuthorization(authorization))
+                    || serviceAccountRepository.existsByAuthorizationsContaining(authorization))
                 throw new RuntimeException("Authorization is currently in use");
 
+            roleAuthorizationRepository.deleteAll(roleAuthorizationRepository.findByAuthorization(authorization));
             authorizationRepository.delete(authorization);
 
             LOGGER.info("Authorization successfully deleted");

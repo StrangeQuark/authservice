@@ -2,6 +2,8 @@ package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.authorization.AuthorizationRequest;
 import com.strangequark.authservice.authorization.AuthorizationService;
+import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.user.Role;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public class AuthorizationServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertTrue(authorizationRepository.findByName(authorizationName).isPresent());
+        Authorization authorization = authorizationRepository.findByName(authorizationName).get();
+        Assertions.assertTrue(roleAuthorizationRepository.findByRoleAndAuthorization(Role.SUPER, authorization).isPresent());
     }
 
     @Test

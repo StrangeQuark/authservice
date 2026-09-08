@@ -158,6 +158,7 @@ public class JwtService {
                 ))
                 .claim("principalId", serviceAccount.getId().toString())
                 .claim("principalType", "SERVICE_ACCOUNT")
+                .claim("clientId", serviceAccount.getClientId())
                 .claim("tokenType", isRefreshToken ? "REFRESH" : "ACCESS")
                 .claim("authorizations", authorizations)
                 .signWith(getPrivateKey(), SignatureAlgorithm.RS256)

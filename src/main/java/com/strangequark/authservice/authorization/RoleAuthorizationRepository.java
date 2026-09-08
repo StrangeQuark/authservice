@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface RoleAuthorizationRepository extends JpaRepository<RoleAuthorization, UUID> {
     List<RoleAuthorization> findByRole(Role role);
 
+    List<RoleAuthorization> findByAuthorization(Authorization authorization);
+
     Optional<RoleAuthorization> findByRoleAndAuthorization(Role role, Authorization authorization);
 
     boolean existsByAuthorization(Authorization authorization);

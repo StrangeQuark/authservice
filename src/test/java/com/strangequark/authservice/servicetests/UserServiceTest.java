@@ -1,6 +1,7 @@
 package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.authorization.Authorization;
+import com.strangequark.authservice.authorization.RoleAuthorization;
 import com.strangequark.authservice.error.ErrorResponse; // Integration line: Email
 import com.strangequark.authservice.utility.FileUtility; // Integration line: File
 import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
@@ -90,6 +91,26 @@ public class UserServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Authorizations successfully removed", ((UserResponse) response.getBody()).getMessage());
+    }
+
+    @Test
+    void getAdminUserTest() {
+        Authorization authorization = authorizationRepository.save(new Authorization("TEST_AUTHORIZATION_" + UUID.randomUUID()));
+        Authorization roleAuthorization = authorizationRepository.save(new Authorization("ROLE_AUTHORIZATION_" + UUID.randomUUID()));
+        testUser.getAuthorizations().add(authorization);
+        userRepository.save(testUser);
+        roleAuthorizationRepository.save(new RoleAuthorization(testUser.getRole(), roleAuthorization));
+
+        ResponseEntity<?> response = userService.getAdminUser(testUser.getUsername());
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        UserResponse userResponse = (UserResponse) response.getBody();
+        Assertions.assertEquals(testUser.getRole(), userResponse.getRole());
+        Assertions.assertTrue(userResponse.isEnabled());
+        Assertions.assertTrue(userResponse.getAuthorizations().contains(authorization.getName()));
+        Assertions.assertTrue(userResponse.getAuthorizations().contains(roleAuthorization.getName()));
+        Assertions.assertTrue(userResponse.getDirectAuthorizations().contains(authorization.getName()));
+        Assertions.assertTrue(userResponse.getRoleAuthorizations().contains(roleAuthorization.getName()));
     }
 
     @Test // Integration function start: Email

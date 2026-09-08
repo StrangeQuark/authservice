@@ -74,8 +74,34 @@ public class InvitationService {
         }
     }
 
+    public ResponseEntity<?> deleteAllInvitations() {
+        LOGGER.info("Attempting to delete all invitations");
+
+        try {
+            invitationRepository.deleteAll();
+            LOGGER.info("All invitations successfully deleted");
+            return ResponseEntity.ok().build();
+        } catch(Exception ex) {
+            LOGGER.error("Failed to delete all invitations: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
     public ResponseEntity<?> getInviteOnly() {
         return ResponseEntity.ok(new InvitationStatusResponse(INVITE_ONLY));
+    }
+
+    public ResponseEntity<?> getAllInvitations() {
+        LOGGER.info("Attempting to get all invitations");
+
+        try {
+            return ResponseEntity.ok(invitationRepository.findAll());
+        } catch(Exception ex) {
+            LOGGER.error("Failed to get all invitations: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
     }
 
     public Invitation getValidInvitation(String email, String token) {
