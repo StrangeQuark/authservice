@@ -204,7 +204,7 @@ public class UserServiceTest extends BaseServiceTest {
 
         ResponseEntity<?> response = userService.deleteUser(userRequest);
 
-        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(503, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 
@@ -219,7 +219,7 @@ public class UserServiceTest extends BaseServiceTest {
 
         ResponseEntity<?> response = userService.deleteUser(userRequest);
 
-        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(503, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
     }
 
@@ -234,7 +234,7 @@ public class UserServiceTest extends BaseServiceTest {
 
         ResponseEntity<?> response = userService.deleteUser(userRequest);
 
-        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(503, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
 
         when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
@@ -257,7 +257,7 @@ public class UserServiceTest extends BaseServiceTest {
 
         ResponseEntity<?> response = userService.deleteUser(userRequest);
 
-        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals(503, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
 
         when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))

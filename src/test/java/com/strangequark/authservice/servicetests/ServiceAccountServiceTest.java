@@ -1,7 +1,9 @@
 package com.strangequark.authservice.servicetests;
 
+import com.strangequark.authservice.authorization.AuthorizationType;
 import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.serviceaccount.ServiceAccount;
+import com.strangequark.authservice.serviceaccount.ServiceAccountInitializer;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRequest;
 import com.strangequark.authservice.serviceaccount.ServiceAccountService;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -24,6 +27,8 @@ public class ServiceAccountServiceTest extends BaseServiceTest {
     ServiceAccountRepository serviceAccountRepository;
     @Autowired
     JwtService jwtService;
+    @Autowired
+    ServiceAccountInitializer serviceAccountInitializer;
 
     private ServiceAccount testServiceAccount;
     private String accessToken;
@@ -59,5 +64,18 @@ public class ServiceAccountServiceTest extends BaseServiceTest {
 
         Assertions.assertTrue(testServiceAccount.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals(testServiceAccount.getClientId().toUpperCase() + "_SERVICE")));
+    }
+
+    @Test
+    void initialAuthorizationsTest() {
+        serviceAccountInitializer.run(new DefaultApplicationArguments());
+        ServiceAccount authServiceAccount = serviceAccountRepository.findByClientId("auth").get();
+
+        Assertions.assertTrue(authServiceAccount.getAuthorizations().stream()
+                .anyMatch(authorization -> authorization.getName().equals(AuthorizationType.EMAIL_API_ACCESS.name())));
+        Assertions.assertTrue(authServiceAccount.getAuthorizations().stream()
+                .anyMatch(authorization -> authorization.getName().equals(AuthorizationType.VAULT_API_ACCESS.name())));
+        Assertions.assertTrue(authServiceAccount.getAuthorizations().stream()
+                .anyMatch(authorization -> authorization.getName().equals(AuthorizationType.TELEMETRY_API_ACCESS.name())));
     }
 }

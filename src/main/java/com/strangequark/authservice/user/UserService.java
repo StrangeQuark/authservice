@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -462,7 +463,7 @@ public class UserService {
             ResponseEntity<?> fileResponse = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
 
             if(fileResponse.getStatusCode().value() != 200)
-                throw new RuntimeException("Error when deleting user from fileservice:\n\n" + fileResponse.getBody());
+                throw new RestClientException("Error when deleting user from fileservice:\n\n" + fileResponse.getBody());
             // Integration function end: File
             // Integration function start: Vault
             LOGGER.debug("Attempting to delete user from all Vault services");
@@ -473,7 +474,7 @@ public class UserService {
             ResponseEntity<?> vaultResponse = vaultUtility.deleteUserFromAllServices(user.getUsername(), vaultToken);
 
             if(vaultResponse.getStatusCode().value() != 200)
-                throw new RuntimeException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
+                throw new RestClientException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
             // Integration function end: Vault
 
             //Delete the user
@@ -484,6 +485,10 @@ public class UserService {
             //Return a 200 response with a success message
             LOGGER.info("User successfully deleted");
             return ResponseEntity.ok(new UserResponse("User successfully deleted"));
+        } catch(RestClientException ex) {
+            LOGGER.error("A downstream service was unavailable while deleting user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(503).body(new ErrorResponse("Unable to delete user. Please try again later."));
         } catch (Exception ex) {
             LOGGER.error("Failed to delete user: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);

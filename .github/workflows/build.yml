@@ -10,7 +10,7 @@ jobs:
 
     env:
       VAULT_URL: ${{ secrets.VAULT_URL }}
-      CICD_TOKEN: ${{ secrets.CICD_TOKEN }}
+      CICD_TOKEN: ${{ secrets.AUTH_CICD_TOKEN }}
 
     steps:
       - name: Checkout repository

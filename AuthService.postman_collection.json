@@ -914,34 +914,6 @@
 			"response": []
 		},
 		{
-			"name": "Create Authorization",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{ACCESS_TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"EMAIL_API_ACCESS\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": "http://localhost:6001/api/auth/authorization/create"
-			},
-			"response": []
-		},
-		{
 			"name": "Get Authorizations",
 			"request": {
 				"auth": {
@@ -957,34 +929,6 @@
 				"method": "GET",
 				"header": [],
 				"url": "http://localhost:6001/api/auth/authorization/get-all"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Authorization",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{ACCESS_TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "DELETE",
-				"header": [],
-				"url": "http://localhost:6001/api/auth/authorization/delete/EMAIL_API_ACCESS",
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"name\": \"EMAIL_API_ACCESS\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				}
 			},
 			"response": []
 		},

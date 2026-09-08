@@ -24,7 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.web.client.ResourceAccessException; // Integration line: Email
+import org.springframework.web.client.RestClientException; // Integration line: Email
 
 import java.util.LinkedHashSet;
 import java.util.Map; // Integration line: Telemetry
@@ -101,7 +101,6 @@ public class AuthenticationService {
     @Transactional
     public ResponseEntity<?> register(RegistrationRequest registrationRequest) {
         LOGGER.info("Attempting to register user");
-        String responseMessage = "";
 
         try {
             //Null checks
@@ -128,26 +127,18 @@ public class AuthenticationService {
 
             //Build the user object to be saved to the database
             User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
-                    false, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
+                    true, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
-            //Send an email so the user can enable their account   -   Integration function start: Email
+            // Integration function start: Email
+            user.setEnabled(false);
+
+            //Send an email so the user can enable their account
             LOGGER.debug("Attempting to send registration email");
-            try {
-                ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), EmailType.REGISTER);
+            ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), EmailType.REGISTER);
 
-                if (response.getStatusCode().value() != 200) {
-                    LOGGER.warn("Error when calling email service: " + response.getBody());
-                    LOGGER.debug("Continuing user registration, setting user to enabled");
-                    user.setEnabled(true);
-                    responseMessage = "Registered without email";
-                }
-            } catch (ResourceAccessException resourceAccessException) {
-                //If we are unable to reach the email service, proceed with user creation and set user as enabled
-                LOGGER.warn("Unable to reach email service: " + resourceAccessException.getMessage());
-                LOGGER.debug("Continuing to register user, setting user to enabled");// Integration function end: Email
-                user.setEnabled(true);
-                responseMessage = "Registered without email";
-            }// Integration line: Email
+            if(response.getStatusCode().value() != 200)
+                throw new RestClientException("Unable to send registration email");
+            // Integration function end: Email
 
             //Save the user to the database
             LOGGER.debug("Saving user to database");
@@ -159,7 +150,12 @@ public class AuthenticationService {
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
-            return ResponseEntity.ok(new RegistrationResponse(responseMessage));
+            return ResponseEntity.ok(new RegistrationResponse(""));
+        } catch(RestClientException ex) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            LOGGER.error("Unable to send registration email: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(503).body(new ErrorResponse("Unable to send registration email. Please try again later."));
         } catch (Exception ex) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             LOGGER.error("Failed to register user: " + ex.getMessage());

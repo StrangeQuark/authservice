@@ -1,11 +1,7 @@
 package com.strangequark.authservice.authorization;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,18 +14,9 @@ public class AuthorizationController {
         this.authorizationService = authorizationService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createAuthorization(@RequestBody AuthorizationRequest request) {
-        return authorizationService.createAuthorization(request);
-    }
-
     @GetMapping("/get-all")
     public ResponseEntity<?> getAuthorizations() {
         return authorizationService.getAuthorizations();
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteAuthorization(@RequestBody AuthorizationRequest authorizationRequest) {
-        return authorizationService.deleteAuthorization(authorizationRequest.getName());
-    }
 }
