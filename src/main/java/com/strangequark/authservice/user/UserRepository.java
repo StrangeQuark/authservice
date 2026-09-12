@@ -47,6 +47,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<User> findByRole(Role role);
 
+    Optional<User> findFirstByRole(Role role);
+
     /**
      * Return a list of user objects when passed a list of user IDs
      * @param ids to be retrieved

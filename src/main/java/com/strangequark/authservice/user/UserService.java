@@ -668,6 +668,22 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<?> getSuperUserId() {
+        LOGGER.info("Attempting to get super user ID");
+
+        try {
+            User user = userRepository.findFirstByRole(Role.SUPER)
+                    .orElseThrow(() -> new RuntimeException("No super user exists"));
+
+            LOGGER.info("Super user ID retrieval success");
+            return ResponseEntity.ok(user.getId());
+        } catch(Exception ex) {
+            LOGGER.error("Failed to fetch super user ID: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
+        }
+    }
+
     /**
      * Business logic for searching for a user based on username or email address
      * @return {@link ResponseEntity} with user's ID if successful, otherwise return with an {@link ErrorResponse}
