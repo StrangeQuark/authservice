@@ -55,37 +55,37 @@ public class ServiceAccountInitializer implements ApplicationRunner {
 
     private void addInitialAuthorizations(ServiceAccount serviceAccount, String clientId) {
         if(clientId.equals("auth")) {
-            addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS); // Integration line: Email
-            addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS); // Integration line: Vault
-            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
+            addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS);
         }
 
-        // Integration function start: Email
+
         if(clientId.equals("email")) {
             addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
-            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
-        } // Integration function end: Email
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS);
+        }
 
-        // Integration function start: File
+
         if(clientId.equals("file")) {
             addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
-            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
-        } // Integration function end: File
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS);
+        }
 
-        // Integration function start: Vault
+
         if(clientId.equals("vault")) {
             addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
-            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
-        } // Integration function end: Vault
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS);
+        }
 
-        // Integration function start: Test
+
         if(clientId.equals("test")) {
             addAuthorization(serviceAccount, AuthorizationType.AUTH_API_ACCESS);
-            addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS); // Integration line: Email
-            addAuthorization(serviceAccount, AuthorizationType.FILE_API_ACCESS); // Integration line: File
-            addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS); // Integration line: Vault
-            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS); // Integration line: Telemetry
-        } // Integration function end: Test
+            addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.FILE_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS);
+        }
     }
 
     private void addAuthorization(ServiceAccount serviceAccount, AuthorizationType authorizationType) {

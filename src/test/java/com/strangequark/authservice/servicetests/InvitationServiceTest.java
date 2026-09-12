@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class InvitationServiceTest extends BaseServiceTest {
@@ -32,6 +34,7 @@ public class InvitationServiceTest extends BaseServiceTest {
 
     @BeforeEach
     void setupInvitationService() {
+        ReflectionTestUtils.setField(invitationService, "emailserviceIntegration", true);
         when(emailUtility.sendInviteEmail(anyString(), anyString())).thenReturn(ResponseEntity.ok().build());
         when(emailUtility.sendEmail(anyString(), eq(EmailType.REGISTER))).thenReturn(ResponseEntity.ok().build());
         ReflectionTestUtils.setField(authenticationService, "INVITE_ONLY", true);
@@ -126,6 +129,16 @@ public class InvitationServiceTest extends BaseServiceTest {
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals(1, ((java.util.List<?>) response.getBody()).size());
+    }
+
+    @Test
+    void createInvitationWithoutEmailServiceTest() {
+        ReflectionTestUtils.setField(invitationService, "emailserviceIntegration", false);
+
+        InvitationResponse invitationResponse = createInvitation("inviteWithoutEmail@test.com");
+
+        Assertions.assertNotNull(invitationResponse.getToken());
+        verify(emailUtility, never()).sendInviteEmail(anyString(), anyString());
     }
 
     private InvitationResponse createInvitation(String email) {

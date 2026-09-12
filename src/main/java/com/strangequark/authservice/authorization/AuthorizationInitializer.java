@@ -24,15 +24,15 @@ public class AuthorizationInitializer implements ApplicationRunner {
             getOrCreateAuthorization(authorizationType);
 
         addRoleAuthorization(Role.USER, AuthorizationType.AUTH_API_ACCESS);
-        addRoleAuthorization(Role.USER, AuthorizationType.FILE_API_ACCESS); // Integration line: File
+        addRoleAuthorization(Role.USER, AuthorizationType.FILE_API_ACCESS);
 
         addRoleAuthorization(Role.DEVELOPER, AuthorizationType.AUTH_API_ACCESS);
-        addRoleAuthorization(Role.DEVELOPER, AuthorizationType.FILE_API_ACCESS); // Integration line: File
-        addRoleAuthorization(Role.DEVELOPER, AuthorizationType.VAULT_API_ACCESS); // Integration line: Vault
+        addRoleAuthorization(Role.DEVELOPER, AuthorizationType.FILE_API_ACCESS);
+        addRoleAuthorization(Role.DEVELOPER, AuthorizationType.VAULT_API_ACCESS);
 
         addRoleAuthorization(Role.ADMIN, AuthorizationType.AUTH_API_ACCESS);
-        addRoleAuthorization(Role.ADMIN, AuthorizationType.FILE_API_ACCESS); // Integration line: File
-        addRoleAuthorization(Role.ADMIN, AuthorizationType.VAULT_API_ACCESS); // Integration line: Vault
+        addRoleAuthorization(Role.ADMIN, AuthorizationType.FILE_API_ACCESS);
+        addRoleAuthorization(Role.ADMIN, AuthorizationType.VAULT_API_ACCESS);
 
         for(AuthorizationType authorizationType : AuthorizationType.values())
             addRoleAuthorization(Role.SUPER, authorizationType);

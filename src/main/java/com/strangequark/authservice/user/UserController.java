@@ -56,7 +56,7 @@ public class UserController {
         return userService.removeAuthorizations(request);
     }
 
-    /** Integration function start: Email
+    /**
      * Post request endpoint for initiating password resets
      * @param {@link UserRequest} containing user credentials
      * @return {@link ResponseEntity}
@@ -75,7 +75,6 @@ public class UserController {
     public ResponseEntity<?> resetPassword(@RequestBody UserRequest request) {
         return userService.resetPassword(request);
     }
-    // Integration function end: Email
     /**
      * Post request endpoint for enabling a user
      * @param {@link Map} containing the email address of the user to enable

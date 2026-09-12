@@ -17,6 +17,8 @@ import org.springframework.web.client.ResourceAccessException;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AuthenticationServiceTest extends BaseServiceTest{
@@ -28,6 +30,7 @@ public class AuthenticationServiceTest extends BaseServiceTest{
     @BeforeEach
     void setupEmailUtility() {
         ReflectionTestUtils.setField(authenticationService, "INVITE_ONLY", false);
+        ReflectionTestUtils.setField(authenticationService, "emailserviceIntegration", true);
         when(emailUtility.sendEmail(anyString(), eq(EmailType.REGISTER))).thenReturn(ResponseEntity.ok().build());
     }
 
@@ -53,6 +56,19 @@ public class AuthenticationServiceTest extends BaseServiceTest{
 
         Assertions.assertEquals(503, response.getStatusCode().value());
         Assertions.assertTrue(userRepository.findByUsername(request.getUsername()).isEmpty());
+    }
+
+    @Test
+    void registerWithoutEmailServiceTest() {
+        ReflectionTestUtils.setField(authenticationService, "emailserviceIntegration", false);
+
+        RegistrationRequest request = new RegistrationRequest("registerWithoutEmail", "registerWithoutEmail@test.com", "registerPassword");
+
+        ResponseEntity<?> response = authenticationService.register(request);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertTrue(userRepository.findByUsername(request.getUsername()).get().isEnabled());
+        verify(emailUtility, never()).sendEmail(anyString(), eq(EmailType.REGISTER));
     }
 
     @Test

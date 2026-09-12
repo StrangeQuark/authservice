@@ -1,7 +1,7 @@
 package com.strangequark.authservice.invitation;
 
 import com.strangequark.authservice.error.ErrorResponse;
-import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
+import com.strangequark.authservice.utility.EmailUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +23,10 @@ public class InvitationService {
 
     @Value("${invite.only}")
     private boolean INVITE_ONLY;
-    // Integration function start: Email
+    @Value("${emailservice.integration}")
+    private boolean emailserviceIntegration;
     @Autowired
     private EmailUtility emailUtility;
-    // Integration function end: Email
 
     public InvitationService(InvitationRepository invitationRepository) {
         this.invitationRepository = invitationRepository;
@@ -42,11 +42,11 @@ public class InvitationService {
             String token = UUID.randomUUID().toString();
             Invitation invitation = new Invitation(invitationRequest.getEmail(), hashToken(token), LocalDateTime.now().plusDays(1));
             invitationRepository.save(invitation);
-            // Integration function start: Email
-            ResponseEntity<?> response = emailUtility.sendInviteEmail(invitationRequest.getEmail(), token);
-            if(response.getStatusCode().value() != 200)
-                LOGGER.warn("Unable to send invitation email: " + response.getBody());
-            // Integration function end: Email
+            if(emailserviceIntegration) {
+                ResponseEntity<?> response = emailUtility.sendInviteEmail(invitationRequest.getEmail(), token);
+                if(response.getStatusCode().value() != 200)
+                    LOGGER.warn("Unable to send invitation email: " + response.getBody());
+            }
 
             LOGGER.info("Invitation successfully created");
             return ResponseEntity.ok(new InvitationResponse(invitation.getId(), token, invitation.getExpiresAt()));

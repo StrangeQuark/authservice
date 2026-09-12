@@ -8,15 +8,16 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.serviceaccount.ServiceAccount;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
-import com.strangequark.authservice.utility.EmailType; // Integration line: Email
-import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
-import com.strangequark.authservice.utility.FileUtility; // Integration line: File
-import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
-import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import com.strangequark.authservice.utility.EmailType;
+import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.FileUtility;
+import com.strangequark.authservice.utility.VaultUtility;
+import com.strangequark.authservice.utility.TelemetryUtility;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,7 +32,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 import java.util.HashSet;
-import java.util.Map; // Integration line: Telemetry
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -70,30 +71,32 @@ public class UserService {
      */
     private final AuthenticationManager authenticationManager;
 
-    /** Integration function start: File
+    /**
      * {@link FileUtility} for sending requests to file service
      */
     @Autowired
     FileUtility fileUtility;
-    // Integration function end: File
-    /** Integration function start: Vault
+    /**
      * {@link VaultUtility} for sending requests to vault service
      */
     @Autowired
     VaultUtility vaultUtility;
-    // Integration function end: Vault
-    /** Integration function start: Email
+    /**
      * {@link EmailUtility} for sending requests to email service
      */
     @Autowired
     EmailUtility emailUtility;
-    // Integration function end: Email
-    /** Integration function start: Telemetry
+    /**
      * {@link TelemetryUtility} for sending telemetry events to the Kafka
      */
     @Autowired
     TelemetryUtility telemetryUtility;
-    // Integration function end: Telemetry
+    @Value("${emailservice.integration}")
+    private boolean emailserviceIntegration;
+    @Value("${fileservice.integration}")
+    private boolean fileserviceIntegration;
+    @Value("${vaultservice.integration}")
+    private boolean vaultserviceIntegration;
     /**
      * Constructs a new {@code UserService} with the given dependencies.
      *
@@ -141,8 +144,8 @@ public class UserService {
 
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
-            // Send a telemetry event for user password update - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-password-update", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user password update
+            telemetryUtility.sendTelemetryEvent("user-password-update", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("Password successfully updated");
@@ -193,12 +196,12 @@ public class UserService {
             //Append the authorizations and save
             user.appendAuthorizations(authorizations);
             userRepository.save(user);
-            // Send a telemetry event for adding authorizations to user - Integration function start: Telemetry
+            // Send a telemetry event for adding authorizations to user
             telemetryUtility.sendTelemetryEvent("user-add-authorizations", Map.of(
                     "userId", user.getId(),
                     "authorizations", userRequest.getAuthorizations(),
                     "authorizedBy", requestingUser.getId()
-            )); // Integration function end: Telemetry
+            ));
 
             //Return a 200 response with a success message
             LOGGER.info("Authorization successfully added");
@@ -247,12 +250,12 @@ public class UserService {
             //Remove the authorizations and save
             user.removeAuthorizations(authorizations);
             userRepository.save(user);
-            // Send a telemetry event for removing authorizations from user - Integration function start: Telemetry
+            // Send a telemetry event for removing authorizations from user
             telemetryUtility.sendTelemetryEvent("user-remove-authorizations", Map.of(
                     "userId", user.getId(),
                     "authorizations", userRequest.getAuthorizations(),
                     "authorizedBy", requestingUser.getId()
-            )); // Integration function end: Telemetry
+            ));
 
             //Return a 200 response with a success message
             LOGGER.info("Authorizations successfully removed");
@@ -264,12 +267,15 @@ public class UserService {
         }
     }
 
-    /** Integration function start: Email
+    /**
      * Business logic for initiating the password reset email process
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
      */
     public ResponseEntity<?> sendPasswordResetEmail(UserRequest userRequest) {
         LOGGER.info("Attempting to verify user and send password reset email");
+
+        if(!emailserviceIntegration)
+            return ResponseEntity.status(400).body(new ErrorResponse("Email service integration is not enabled"));
 
         try {
             //Get the target user, throw an exception if the username or email are not found
@@ -284,8 +290,8 @@ public class UserService {
                 LOGGER.debug("Stack trace: ", ex);
                 return ResponseEntity.ok(new UserResponse("If an account exists, a password reset email has been sent"));
             }
-            // Send a telemetry event for sending password reset email - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-password-reset-email", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for sending password reset email
+            telemetryUtility.sendTelemetryEvent("user-password-reset-email", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("Password reset email has been sent");
@@ -304,6 +310,9 @@ public class UserService {
     public ResponseEntity<?> resetPassword(UserRequest userRequest) {
         LOGGER.info("Attempting to reset user's password");
 
+        if(!emailserviceIntegration)
+            return ResponseEntity.status(400).body(new ErrorResponse("Email service integration is not enabled"));
+
         try {
             String authToken = getAuthToken();
 
@@ -320,8 +329,8 @@ public class UserService {
 
             user.setPassword(passwordEncoder.encode(userRequest.getNewPassword()));
             userRepository.save(user);
-            // Send a telemetry event for user password reset - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-password-reset", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user password reset
+            telemetryUtility.sendTelemetryEvent("user-password-reset", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("Password reset success");
@@ -332,7 +341,6 @@ public class UserService {
             return ResponseEntity.status(400).body(new ErrorResponse(ex.getMessage()));
         }
     }
-    // Integration function end: Email
     /**
      * Business logic for enabling a user
      * @return {@link ResponseEntity} with a {@link UserResponse} if successful, otherwise return with an {@link ErrorResponse}
@@ -352,8 +360,8 @@ public class UserService {
 
             userOptional.get().setEnabled(true);
             userRepository.save(userOptional.get());
-            // Send a telemetry event for user enablement - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-enabled", Map.of("userId", userOptional.get().getId())); // Integration line: Telemetry
+            // Send a telemetry event for user enablement
+            telemetryUtility.sendTelemetryEvent("user-enabled", Map.of("userId", userOptional.get().getId()));
 
             LOGGER.info("User has been enabled");
             return ResponseEntity.ok(new UserResponse("User has been enabled"));
@@ -403,8 +411,8 @@ public class UserService {
             // Disable the user
             user.setEnabled(false);
             userRepository.save(user);
-            // Send a telemetry event for user disable - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-disabled", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user disable
+            telemetryUtility.sendTelemetryEvent("user-disabled", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("User has been disabled");
@@ -458,29 +466,29 @@ public class UserService {
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
                 throw new RuntimeException("Users can only be deleted by self, ADMIN, or SUPER users");
 
-            // Integration function start: File
-            LOGGER.debug("Attempting to delete user from all File collections");
-            ResponseEntity<?> fileResponse = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
+            if(fileserviceIntegration) {
+                LOGGER.debug("Attempting to delete user from all File collections");
+                ResponseEntity<?> fileResponse = fileUtility.deleteUserFromAllCollections(user.getUsername(), authToken);
 
-            if(fileResponse.getStatusCode().value() != 200)
-                throw new RestClientException("Error when deleting user from fileservice:\n\n" + fileResponse.getBody());
-            // Integration function end: File
-            // Integration function start: Vault
-            LOGGER.debug("Attempting to delete user from all Vault services");
-            String vaultToken = jwtService.generateServiceAccountToken(
-                    serviceAccountRepository.findByClientId("auth")
-                            .orElseThrow(() -> new RuntimeException("Auth service account was not found")), false
-            );
-            ResponseEntity<?> vaultResponse = vaultUtility.deleteUserFromAllServices(user.getUsername(), vaultToken);
+                if(fileResponse.getStatusCode().value() != 200)
+                    throw new RestClientException("Error when deleting user from fileservice:\n\n" + fileResponse.getBody());
+            }
+            if(vaultserviceIntegration) {
+                LOGGER.debug("Attempting to delete user from all Vault services");
+                String vaultToken = jwtService.generateServiceAccountToken(
+                        serviceAccountRepository.findByClientId("auth")
+                                .orElseThrow(() -> new RuntimeException("Auth service account was not found")), false
+                );
+                ResponseEntity<?> vaultResponse = vaultUtility.deleteUserFromAllServices(user.getUsername(), vaultToken);
 
-            if(vaultResponse.getStatusCode().value() != 200)
-                throw new RestClientException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
-            // Integration function end: Vault
+                if(vaultResponse.getStatusCode().value() != 200)
+                    throw new RestClientException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
+            }
 
             //Delete the user
             userRepository.delete(user);
-            // Send a telemetry event for user delete - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-delete", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user delete
+            telemetryUtility.sendTelemetryEvent("user-delete", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("User successfully deleted");
@@ -528,8 +536,8 @@ public class UserService {
 
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
-            // Send a telemetry event for user email update - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-email-update", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user email update
+            telemetryUtility.sendTelemetryEvent("user-email-update", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("User email successfully updated");
@@ -577,8 +585,8 @@ public class UserService {
             //Add the refresh token to the user and save
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
-            // Send a telemetry event for username update - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-username-update", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for username update
+            telemetryUtility.sendTelemetryEvent("user-username-update", Map.of("userId", user.getId()));
 
             //Return a 200 response with a success message
             LOGGER.info("Successfully updated username");
@@ -631,11 +639,11 @@ public class UserService {
             //Append the authorizations and save
             user.setRole(userRequest.getNewRole());
             userRepository.save(user);
-            // Send a telemetry event for user role update - Integration function start: Telemetry
+            // Send a telemetry event for user role update
             telemetryUtility.sendTelemetryEvent("user-role-update", Map.of(
                     "userId", user.getId(),
                     "role", userRequest.getNewRole().name()
-            )); // Integration function end: Telemetry
+            ));
 
             //Return a 200 response with a success message
             LOGGER.info("User role successfully updated");

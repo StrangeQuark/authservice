@@ -6,7 +6,7 @@ import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.authorization.AuthorizationInitializer;
 import com.strangequark.authservice.authorization.AuthorizationRepository;
 import com.strangequark.authservice.authorization.RoleAuthorizationRepository;
-import com.strangequark.authservice.serviceaccount.ServiceAccountRepository; // Integration line: Email
+import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
@@ -54,8 +54,8 @@ public abstract class BaseServiceTest {
     public User testAdmin;
     public User testSuper;
     private String accessToken;
-    @Autowired // Integration line: Email
-    protected ServiceAccountRepository serviceAccountRepository; // Integration line: Email
+    @Autowired
+    protected ServiceAccountRepository serviceAccountRepository;
 
     @BeforeEach
     void setup() {
@@ -114,7 +114,7 @@ public abstract class BaseServiceTest {
         request.addHeader("Authorization", "Bearer " + accessToken);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
-    // Integration function start: Email
+
     void setupEmailServiceAccount() {
         accessToken = jwtService.generateServiceAccountToken(serviceAccountRepository.findByClientId("email").get(), false);
 
@@ -122,5 +122,5 @@ public abstract class BaseServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + accessToken);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    } // Integration function end: Email
+    }
 }

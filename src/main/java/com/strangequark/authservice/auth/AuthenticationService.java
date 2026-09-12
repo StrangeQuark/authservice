@@ -7,9 +7,9 @@ import com.strangequark.authservice.invitation.InvitationService;
 import com.strangequark.authservice.user.Role;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import com.strangequark.authservice.utility.EmailType; // Integration line: Email
-import com.strangequark.authservice.utility.EmailUtility; // Integration line: Email
-import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import com.strangequark.authservice.utility.EmailType;
+import com.strangequark.authservice.utility.EmailUtility;
+import com.strangequark.authservice.utility.TelemetryUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.web.client.RestClientException; // Integration line: Email
+import org.springframework.web.client.RestClientException;
 
 import java.util.LinkedHashSet;
-import java.util.Map; // Integration line: Telemetry
+import java.util.Map;
 
 /**
  * {@link Service} for registering and authenticating user requests
@@ -63,19 +63,19 @@ public class AuthenticationService {
 
     @Value("${invite.only}")
     private boolean INVITE_ONLY;
+    @Value("${emailservice.integration}")
+    private boolean emailserviceIntegration;
 
-    /** Integration function start: Email
+    /**
      * {@link EmailUtility} for sending requests to email service
      */
     @Autowired
     EmailUtility emailUtility;
-    // Integration function end: Email
-    /** Integration function start: Telemetry
+    /**
      * {@link TelemetryUtility} for sending telemetry events to the Kafka
      */
     @Autowired
     TelemetryUtility telemetryUtility;
-    // Integration function end: Telemetry
     /**
      * Constructs a new {@code AuthenticationService} with the given dependencies.
      *
@@ -129,24 +129,24 @@ public class AuthenticationService {
             User user = new User(registrationRequest.getUsername(), registrationRequest.getEmail(), Role.USER,
                     true, new LinkedHashSet<>(), passwordEncoder.encode(registrationRequest.getPassword()));
 
-            // Integration function start: Email
-            user.setEnabled(false);
+            if(emailserviceIntegration) {
+                user.setEnabled(false);
 
-            //Send an email so the user can enable their account
-            LOGGER.debug("Attempting to send registration email");
-            ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), EmailType.REGISTER);
+                //Send an email so the user can enable their account
+                LOGGER.debug("Attempting to send registration email");
+                ResponseEntity<?> response = emailUtility.sendEmail(registrationRequest.getEmail(), EmailType.REGISTER);
 
-            if(response.getStatusCode().value() != 200)
-                throw new RestClientException("Unable to send registration email");
-            // Integration function end: Email
+                if(response.getStatusCode().value() != 200)
+                    throw new RestClientException("Unable to send registration email");
+            }
 
             //Save the user to the database
             LOGGER.debug("Saving user to database");
             userRepository.save(user);
             if(INVITE_ONLY)
                 invitationService.useInvitation(invitation);
-            // Send a telemetry event for user registration - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-register", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user registration
+            telemetryUtility.sendTelemetryEvent("user-register", Map.of("userId", user.getId()));
 
             //Return a 200 response with a JWT token
             LOGGER.info("User successfully created");
@@ -193,8 +193,8 @@ public class AuthenticationService {
             LOGGER.debug("Saving refresh token to user in database");
             user.setRefreshToken(refreshToken);
             userRepository.save(user);
-            // Send a telemetry event for user authentication - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-authenticate", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user authentication
+            telemetryUtility.sendTelemetryEvent("user-authenticate", Map.of("userId", user.getId()));
 
             //Return a 200 response with the JWT refresh token
             LOGGER.info("Authentication successful");

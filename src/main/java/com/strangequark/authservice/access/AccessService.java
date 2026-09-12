@@ -5,12 +5,12 @@ import com.strangequark.authservice.config.JwtService;
 import com.strangequark.authservice.error.ErrorResponse;
 import com.strangequark.authservice.user.User;
 import com.strangequark.authservice.user.UserRepository;
-import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import com.strangequark.authservice.utility.TelemetryUtility;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired; // Integration line: Telemetry
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import java.util.Map; // Integration line: Telemetry
+import java.util.Map;
 
 
 /**
@@ -41,12 +41,12 @@ public class AccessService {
      */
     private final JwtService jwtService;
 
-    /** Integration function start: Telemetry
+    /**
      * {@link TelemetryUtility} for sending telemetry events to the Kafka
      */
     @Autowired
     TelemetryUtility telemetryUtility;
-    // Integration function end: Telemetry
+
     /**
      * Constructs a new {@code AccessService} with the given dependencies.
      *
@@ -83,8 +83,8 @@ public class AccessService {
 
             user.setRefreshToken(newRefreshToken);
             userRepository.save(user);
-            // Send a telemetry event for user access token - Integration line: Telemetry
-            telemetryUtility.sendTelemetryEvent("user-access", Map.of("userId", user.getId())); // Integration line: Telemetry
+            // Send a telemetry event for user access token
+            telemetryUtility.sendTelemetryEvent("user-access", Map.of("userId", user.getId()));
 
             //Return a 200 response with the jwtToken
             LOGGER.info("Access token successfully served");
