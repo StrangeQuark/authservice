@@ -2,9 +2,9 @@ package com.strangequark.authservice.servicetests;
 
 import com.strangequark.authservice.authorization.Authorization;
 import com.strangequark.authservice.authorization.RoleAuthorization;
-import com.strangequark.authservice.error.ErrorResponse; // Integration line: Email
-import com.strangequark.authservice.utility.FileUtility; // Integration line: File
-import com.strangequark.authservice.utility.VaultUtility; // Integration line: Vault
+import com.strangequark.authservice.error.ErrorResponse;
+import com.strangequark.authservice.utility.FileUtility;
+import com.strangequark.authservice.utility.VaultUtility;
 import com.strangequark.authservice.user.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,29 +12,35 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class UserServiceTest extends BaseServiceTest {
 
     @Autowired
     private UserService userService;
-    @MockitoBean // Integration line: File
+    @MockitoBean
     private FileUtility fileUtility;
-    @MockitoBean // Integration line: Vault
+    @MockitoBean
     private VaultUtility vaultUtility;
 
     @BeforeEach
     void setupUtilities() {
+        ReflectionTestUtils.setField(userService, "emailserviceIntegration", true);
+        ReflectionTestUtils.setField(userService, "fileserviceIntegration", true);
+        ReflectionTestUtils.setField(userService, "vaultserviceIntegration", true);
         when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
-                .thenReturn(ResponseEntity.ok().build()); // Integration line: File
+                .thenReturn(ResponseEntity.ok().build());
         when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))
-                .thenReturn(ResponseEntity.ok().build()); // Integration line: Vault
+                .thenReturn(ResponseEntity.ok().build());
     }
 
     @Test
@@ -113,7 +119,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertTrue(userResponse.getRoleAuthorizations().contains(roleAuthorization.getName()));
     }
 
-    @Test // Integration function start: Email
+    @Test
     void sendPasswordResetEmailTest() {
         UserRequest userRequest = new UserRequest();
         userRequest.setEmail(testUser.getEmail());
@@ -148,7 +154,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("Password reset success", ((UserResponse) response.getBody()).getMessage());
     }
-    // Integration function end: Email
+
     @Test
     void enableUserTest() {
         User disabledTestUser = new User("disabledTestUser", "disabledTest@test.com", Role.USER, false, new HashSet<>(), passwordEncoder.encode("password"));
@@ -194,9 +200,38 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void deleteUserWithoutFileAndVaultServiceTest() {
+        ReflectionTestUtils.setField(userService, "fileserviceIntegration", false);
+        ReflectionTestUtils.setField(userService, "vaultserviceIntegration", false);
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setUsername(testUser.getUsername());
+        userRequest.setPassword("password");
+
+        ResponseEntity<?> response = userService.deleteUser(userRequest);
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        verify(fileUtility, never()).deleteUserFromAllCollections(anyString(), anyString());
+        verify(vaultUtility, never()).deleteUserFromAllServices(anyString(), anyString());
+    }
+
+    @Test
+    void sendPasswordResetEmailWithoutEmailServiceTest() {
+        ReflectionTestUtils.setField(userService, "emailserviceIntegration", false);
+
+        UserRequest userRequest = new UserRequest();
+        userRequest.setEmail(testUser.getEmail());
+
+        ResponseEntity<?> response = userService.sendPasswordResetEmail(userRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode().value());
+        Assertions.assertEquals("Email service integration is not enabled", ((ErrorResponse) response.getBody()).getErrorMessage());
+    }
+
+    @Test
     void deleteUserWhenFileServiceFailsTest() {
         when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
-                .thenThrow(new ResourceAccessException("File service unavailable")); // Integration line: File
+                .thenThrow(new ResourceAccessException("File service unavailable"));
 
         UserRequest userRequest = new UserRequest();
         userRequest.setUsername(testUser.getUsername());
@@ -211,7 +246,7 @@ public class UserServiceTest extends BaseServiceTest {
     @Test
     void deleteUserWhenVaultServiceFailsTest() {
         when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))
-                .thenThrow(new ResourceAccessException("Vault service unavailable")); // Integration line: Vault
+                .thenThrow(new ResourceAccessException("Vault service unavailable"));
 
         UserRequest userRequest = new UserRequest();
         userRequest.setUsername(testUser.getUsername());
@@ -226,7 +261,7 @@ public class UserServiceTest extends BaseServiceTest {
     @Test
     void deleteUserWhenFileServiceReturnsErrorCanRetryTest() {
         doReturn(ResponseEntity.internalServerError().body("File service error"))
-                .when(fileUtility).deleteUserFromAllCollections(anyString(), anyString()); // Integration line: File
+                .when(fileUtility).deleteUserFromAllCollections(anyString(), anyString());
 
         UserRequest userRequest = new UserRequest();
         userRequest.setUsername(testUser.getUsername());
@@ -238,7 +273,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
 
         when(fileUtility.deleteUserFromAllCollections(anyString(), anyString()))
-                .thenReturn(ResponseEntity.ok().build()); // Integration line: File
+                .thenReturn(ResponseEntity.ok().build());
 
         response = userService.deleteUser(userRequest);
 
@@ -249,7 +284,7 @@ public class UserServiceTest extends BaseServiceTest {
     @Test
     void deleteUserWhenVaultServiceReturnsErrorCanRetryTest() {
         doReturn(ResponseEntity.internalServerError().body("Vault service error"))
-                .when(vaultUtility).deleteUserFromAllServices(anyString(), anyString()); // Integration line: Vault
+                .when(vaultUtility).deleteUserFromAllServices(anyString(), anyString());
 
         UserRequest userRequest = new UserRequest();
         userRequest.setUsername(testUser.getUsername());
@@ -261,7 +296,7 @@ public class UserServiceTest extends BaseServiceTest {
         Assertions.assertTrue(userRepository.findByUsername(testUser.getUsername()).isPresent());
 
         when(vaultUtility.deleteUserFromAllServices(anyString(), anyString()))
-                .thenReturn(ResponseEntity.ok().build()); // Integration line: Vault
+                .thenReturn(ResponseEntity.ok().build());
 
         response = userService.deleteUser(userRequest);
 

@@ -1,6 +1,6 @@
 package com.strangequark.authservice.user;
 
-import com.strangequark.authservice.utility.TelemetryUtility; // Integration line: Telemetry
+import com.strangequark.authservice.utility.TelemetryUtility;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashSet;
-import java.util.Map; // Integration line: Telemetry
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -32,7 +32,7 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Environment environment;
-    private final TelemetryUtility telemetryUtility; // Integration line: Telemetry
+    private final TelemetryUtility telemetryUtility;
     private final EntityManager entityManager;
 
     public InitialSuperUserInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
@@ -41,7 +41,7 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.environment = environment;
-        this.telemetryUtility = telemetryUtility; // Integration line: Telemetry
+        this.telemetryUtility = telemetryUtility;
         this.entityManager = entityManager;
     }
 
@@ -96,10 +96,10 @@ public class InitialSuperUserInitializer implements ApplicationRunner {
             throw ex;
         }
 
-        // Integration function start: Telemetry
+
         telemetryUtility.sendTelemetryEvent("super-user-bootstrap", Map.of(
                 "userId", userRepository.findByUsername(username).get().getId()
-        )); // Integration function end: Telemetry
+        ));
 
         LOGGER.warn("****************************************************************");
         LOGGER.warn("Initial SUPER user created");

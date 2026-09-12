@@ -113,7 +113,7 @@ public class JwtServiceTest extends BaseServiceTest {
 
         Assertions.assertThrows(Exception.class, () -> jwtService.extractUsername(token, false));
     }
-    // Integration function start: Email
+
     @Test
     void superRoleAuthorizationsAreAddedToAccessTokenTest() {
         setupSuperUser();
@@ -123,7 +123,7 @@ public class JwtServiceTest extends BaseServiceTest {
                 claims -> claims.get("authorizations", List.class), false);
 
         Assertions.assertTrue(authorizations.contains("EMAIL_API_ACCESS"));
-    }// Integration function end: Email
+    }
 
     private String createAccessToken(String issuer, Date expiration, String jti, String principalId) {
         JwtBuilder builder = Jwts.builder()

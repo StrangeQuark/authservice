@@ -1,4 +1,4 @@
-# Integration file: GHA
+
 name: AuthService Deploy
 
 on:
@@ -11,6 +11,7 @@ jobs:
     env:
       VAULT_URL: ${{ secrets.VAULT_URL }}
       CICD_TOKEN: ${{ secrets.AUTH_CICD_TOKEN }}
+      VAULTSERVICE_ENABLED: ${{ secrets.VAULTSERVICE_ENABLED }}
 
     steps:
       - name: Checkout repository
@@ -18,26 +19,28 @@ jobs:
 
       - name: Retrieve Env Vars from Vault
         run: |
-          echo "Requesting environment variables from Vault..."
+          if [ "$VAULTSERVICE_ENABLED" = "true" ]; then
+            echo "Requesting environment variables from Vault..."
 
-          response=$(curl -sS --fail-with-body \
-            -X POST \
-            -H "X-CICD-TOKEN: $CICD_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"serviceName":"authservice","environmentName":"e3"}' \
-            "$VAULT_URL/api/vault/cicd") || {
-              echo "Unable to retrieve environment variables from Vault"
+            response=$(curl -sS --fail-with-body \
+              -X POST \
+              -H "X-CICD-TOKEN: $CICD_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"serviceName":"authservice","environmentName":"e3"}' \
+              "$VAULT_URL/api/vault/cicd") || {
+                echo "Unable to retrieve environment variables from Vault"
+                exit 1
+              }
+
+            if [ -z "$response" ]; then
+              echo "Vault returned an empty environment file"
               exit 1
-            }
+            fi
 
-          if [ -z "$response" ]; then
-            echo "Vault returned an empty environment file"
-            exit 1
+            printf '%s\n' "$response" > authservice.env
+
+            echo "Environment variables written to authservice.env"
           fi
-
-          printf '%s\n' "$response" > authservice.env
-
-          echo "Environment variables written to authservice.env"
 
       - name: Deploy & Health Check
         run: |

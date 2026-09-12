@@ -1,5 +1,3 @@
-// Integration file: Telemetry
-
 package com.strangequark.authservice.utility;
 
 import jakarta.annotation.PreDestroy;
@@ -12,6 +10,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Async;
@@ -38,9 +37,14 @@ public class TelemetryUtility {
 
     private KafkaProducer<String, String> producer;
     private String cachedServiceToken = null;
+    @Value("${telemetryservice.integration}")
+    private boolean telemetryserviceIntegration;
 
     @Async("telemetryExecutor")
     public void sendTelemetryEvent(String eventType, Map<String, Object> metadata) {
+        if(!telemetryserviceIntegration)
+            return;
+
         try {
             LOGGER.debug("Attempting to post message to auth telemetry Kafka topic");
 
