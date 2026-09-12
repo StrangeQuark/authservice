@@ -400,6 +400,16 @@ public class UserServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void getSuperUserIdTest() {
+        setupSuperUser();
+
+        ResponseEntity<?> response = userService.getSuperUserId();
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals(testSuper.getId(), response.getBody());
+    }
+
+    @Test
     void searchUsersTest() {
         ResponseEntity<?> response = userService.searchUsers(testUser.getUsername());
 

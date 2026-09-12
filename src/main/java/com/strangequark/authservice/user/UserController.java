@@ -146,6 +146,11 @@ public class UserController {
         return userService.getUserId(userLookupRequest.getUsername());
     }
 
+    @PostMapping("/get-super-user-id")
+    public ResponseEntity<?> getSuperUserId() {
+        return userService.getSuperUserId();
+    }
+
     /**
      * Get request endpoint for searching for users based on username or email address
      * @param query containing the user's username or email address
