@@ -34,6 +34,37 @@ pipeline {
         stage("Deploy & Health Check") {
             steps {
                 script {
+                    def kubernetesEnabled = sh(
+                        script: "grep -qx 'KUBERNETES_ENABLED=true' authservice.env",
+                        returnStatus: true
+                    ) == 0
+
+                    if(kubernetesEnabled) {
+                        def environmentVariables = readProperties file: 'authservice.env'
+                        def authServiceImage = environmentVariables.get('AUTH_SERVICE_IMAGE', '')
+
+                        if(authServiceImage.isEmpty())
+                            error("AUTH_SERVICE_IMAGE must be configured for Kubernetes deployments")
+
+                        withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
+                            withEnv(["AUTH_SERVICE_IMAGE=" + authServiceImage]) {
+                                sh '''
+                                    kubectl --kubeconfig $KUBECONFIG create secret generic authservice-env \\
+                                        --from-env-file=authservice.env \\
+                                        --dry-run=client \\
+                                        -o yaml | kubectl --kubeconfig $KUBECONFIG apply -f -
+
+                                    kubectl --kubeconfig $KUBECONFIG apply -f k8s/auth-db.yaml
+                                    kubectl --kubeconfig $KUBECONFIG apply -f k8s/auth-rate-limit-redis.yaml
+
+                                    sed "s|__AUTH_SERVICE_IMAGE__|$AUTH_SERVICE_IMAGE|g" k8s/auth-service.yaml \\
+                                        | kubectl --kubeconfig $KUBECONFIG apply -f -
+
+                                    kubectl --kubeconfig $KUBECONFIG rollout status deployment/auth-service --timeout=10m
+                                '''
+                            }
+                        }
+                    } else {
                     try {
                         sh "docker compose --env-file authservice.env up --build -d"
 
@@ -67,6 +98,7 @@ pipeline {
                         echo "Unexpected failure: ${ex.getMessage()}"
                         sh "docker compose down"
                         error("Deployment crashed.")
+                    }
                     }
                 }
             }
