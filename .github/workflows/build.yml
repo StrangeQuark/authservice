@@ -12,7 +12,8 @@ jobs:
       VAULT_URL: ${{ secrets.VAULT_URL }}
       CICD_TOKEN: ${{ secrets.AUTH_CICD_TOKEN }}
       VAULTSERVICE_ENABLED: ${{ secrets.VAULTSERVICE_ENABLED }}
-      KUBECONFIG_BASE64: ${{ secrets.KUBECONFIG_BASE64 }}
+      KUBERNETES_CICD_TOKEN: ${{ secrets.KUBERNETES_CICD_TOKEN }}
+      AUTH_SERVICE_ENV_BASE64: ${{ secrets.AUTH_SERVICE_ENV_BASE64 }}
 
     steps:
       - name: Checkout repository
@@ -41,6 +42,13 @@ jobs:
             printf '%s\n' "$response" > authservice.env
 
             echo "Environment variables written to authservice.env"
+          else
+            if [ -z "$AUTH_SERVICE_ENV_BASE64" ]; then
+              echo "AUTH_SERVICE_ENV_BASE64 must be configured when VaultService is disabled"
+              exit 1
+            fi
+
+            printf '%s' "$AUTH_SERVICE_ENV_BASE64" | base64 -d > authservice.env
           fi
 
       - name: Deploy & Health Check
@@ -48,32 +56,26 @@ jobs:
           set -e
 
           if grep -qx 'KUBERNETES_ENABLED=true' authservice.env; then
-            AUTH_SERVICE_IMAGE=$(grep '^AUTH_SERVICE_IMAGE=' authservice.env | cut -d '=' -f2-)
+            AUTH_SERVICE_IMAGE_REPOSITORY=$(grep '^AUTH_SERVICE_IMAGE_REPOSITORY=' authservice.env | cut -d '=' -f2-)
+            KUBERNETESERVICE_URL=$(grep '^KUBERNETESERVICE_URL=' authservice.env | cut -d '=' -f2-)
 
-            if [ -z "$AUTH_SERVICE_IMAGE" ]; then
-              echo "AUTH_SERVICE_IMAGE must be configured for Kubernetes deployments"
+            if [ -z "$AUTH_SERVICE_IMAGE_REPOSITORY" ] || [ -z "$KUBERNETESERVICE_URL" ]; then
+              echo "AuthService Kubernetes deployment configuration is incomplete"
               exit 1
             fi
 
-            if [ -z "$KUBECONFIG_BASE64" ]; then
-              echo "KUBECONFIG_BASE64 must be configured for Kubernetes deployments"
-              exit 1
-            fi
+            AUTH_SERVICE_IMAGE="$AUTH_SERVICE_IMAGE_REPOSITORY:$GITHUB_SHA"
+            docker build -t "$AUTH_SERVICE_IMAGE" .
+            docker push "$AUTH_SERVICE_IMAGE"
 
-            printf '%s' "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
+            curl --fail-with-body \
+              -X POST \
+              -H "X-CICD-TOKEN: $KUBERNETES_CICD_TOKEN" \
+              -F "serviceName=authservice" \
+              -F "image=$AUTH_SERVICE_IMAGE" \
+              -F "environmentFile=@authservice.env" \
+              "$KUBERNETESERVICE_URL/api/kubernetes/deploy"
 
-            kubectl --kubeconfig kubeconfig.yaml create secret generic authservice-env \
-              --from-env-file=authservice.env \
-              --dry-run=client \
-              -o yaml | kubectl --kubeconfig kubeconfig.yaml apply -f -
-
-            kubectl --kubeconfig kubeconfig.yaml apply -f k8s/auth-db.yaml
-            kubectl --kubeconfig kubeconfig.yaml apply -f k8s/auth-rate-limit-redis.yaml
-
-            sed "s|__AUTH_SERVICE_IMAGE__|$AUTH_SERVICE_IMAGE|g" k8s/auth-service.yaml \
-              | kubectl --kubeconfig kubeconfig.yaml apply -f -
-
-            kubectl --kubeconfig kubeconfig.yaml rollout status deployment/auth-service --timeout=10m
             exit 0
           fi
 
@@ -106,5 +108,4 @@ jobs:
         if: always()
         run: |
           rm -f authservice.env
-          rm -f kubeconfig.yaml
           echo "Cleaned up deployment files"
