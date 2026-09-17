@@ -5,6 +5,7 @@ pipeline {
         VAULT_URL = credentials('VAULT_URL')
         CICD_TOKEN = credentials('AUTH_CICD_TOKEN')
         VAULTSERVICE_ENABLED = credentials('VAULTSERVICE_ENABLED')
+        KUBERNETES_CICD_TOKEN = credentials('KUBERNETES_CICD_TOKEN')
     }
 
     stages {
@@ -26,6 +27,10 @@ pipeline {
 
                         writeFile file: 'authservice.env', text: response.content
                         echo "Environment variables written to authservice.env"
+                    } else {
+                        withCredentials([file(credentialsId: 'AUTH_SERVICE_ENV', variable: 'AUTH_SERVICE_ENV')]) {
+                            sh 'cp "$AUTH_SERVICE_ENV" authservice.env'
+                        }
                     }
                 }
             }
@@ -41,28 +46,29 @@ pipeline {
 
                     if(kubernetesEnabled) {
                         def environmentVariables = readProperties file: 'authservice.env'
-                        def authServiceImage = environmentVariables.get('AUTH_SERVICE_IMAGE', '')
+                        def authServiceImageRepository = environmentVariables.get('AUTH_SERVICE_IMAGE_REPOSITORY', '')
+                        def kubernetesServiceUrl = environmentVariables.get('KUBERNETESERVICE_URL', '')
 
-                        if(authServiceImage.isEmpty())
-                            error("AUTH_SERVICE_IMAGE must be configured for Kubernetes deployments")
+                        if(authServiceImageRepository.isEmpty() || kubernetesServiceUrl.isEmpty())
+                            error("AuthService Kubernetes deployment configuration is incomplete")
 
-                        withCredentials([file(credentialsId: 'KUBECONFIG', variable: 'KUBECONFIG')]) {
-                            withEnv(["AUTH_SERVICE_IMAGE=" + authServiceImage]) {
-                                sh '''
-                                    kubectl --kubeconfig $KUBECONFIG create secret generic authservice-env \\
-                                        --from-env-file=authservice.env \\
-                                        --dry-run=client \\
-                                        -o yaml | kubectl --kubeconfig $KUBECONFIG apply -f -
+                        def authServiceImage = authServiceImageRepository + ":" + env.BUILD_NUMBER
 
-                                    kubectl --kubeconfig $KUBECONFIG apply -f k8s/auth-db.yaml
-                                    kubectl --kubeconfig $KUBECONFIG apply -f k8s/auth-rate-limit-redis.yaml
-
-                                    sed "s|__AUTH_SERVICE_IMAGE__|$AUTH_SERVICE_IMAGE|g" k8s/auth-service.yaml \\
-                                        | kubectl --kubeconfig $KUBECONFIG apply -f -
-
-                                    kubectl --kubeconfig $KUBECONFIG rollout status deployment/auth-service --timeout=10m
-                                '''
-                            }
+                        withEnv([
+                            "AUTH_SERVICE_IMAGE=" + authServiceImage,
+                            "KUBERNETESERVICE_URL=" + kubernetesServiceUrl
+                        ]) {
+                            sh "docker build -t " + authServiceImage + " ."
+                            sh "docker push " + authServiceImage
+                            sh '''
+                                curl --fail-with-body \
+                                    -X POST \
+                                    -H "X-CICD-TOKEN: $KUBERNETES_CICD_TOKEN" \
+                                    -F "serviceName=authservice" \
+                                    -F "image=$AUTH_SERVICE_IMAGE" \
+                                    -F "environmentFile=@authservice.env" \
+                                    "$KUBERNETESERVICE_URL/api/kubernetes/deploy"
+                            '''
                         }
                     } else {
                     try {
