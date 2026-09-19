@@ -39,15 +39,11 @@ pipeline {
         stage("Deploy & Health Check") {
             steps {
                 script {
-                    def kubernetesEnabled = sh(
-                        script: "grep -qx 'KUBERNETES_ENABLED=true' authservice.env",
-                        returnStatus: true
-                    ) == 0
+                    def kubernetesEnabled = env.KUBERNETES_ENABLED == "true"
 
                     if(kubernetesEnabled) {
-                        def environmentVariables = readProperties file: 'authservice.env'
-                        def authServiceImageRepository = environmentVariables.get('AUTH_SERVICE_IMAGE_REPOSITORY', '')
-                        def kubernetesServiceUrl = environmentVariables.get('KUBERNETESERVICE_URL', '')
+                        def authServiceImageRepository = env.SERVICE_IMAGE_REPOSITORY
+                        def kubernetesServiceUrl = env.KUBERNETESERVICE_URL
 
                         if(authServiceImageRepository.isEmpty() || kubernetesServiceUrl.isEmpty())
                             error("AuthService Kubernetes deployment configuration is incomplete")

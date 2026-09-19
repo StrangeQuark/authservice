@@ -13,6 +13,9 @@ jobs:
       CICD_TOKEN: ${{ secrets.AUTH_CICD_TOKEN }}
       VAULTSERVICE_ENABLED: ${{ secrets.VAULTSERVICE_ENABLED }}
       KUBERNETES_CICD_TOKEN: ${{ secrets.KUBERNETES_CICD_TOKEN }}
+      KUBERNETES_ENABLED: ${{ vars.KUBERNETES_ENABLED }}
+      SERVICE_IMAGE_REPOSITORY: ${{ vars.SERVICE_IMAGE_REPOSITORY }}
+      KUBERNETESERVICE_URL: ${{ vars.KUBERNETESERVICE_URL }}
       AUTH_SERVICE_ENV_BASE64: ${{ secrets.AUTH_SERVICE_ENV_BASE64 }}
 
     steps:
@@ -55,16 +58,13 @@ jobs:
         run: |
           set -e
 
-          if grep -qx 'KUBERNETES_ENABLED=true' authservice.env; then
-            AUTH_SERVICE_IMAGE_REPOSITORY=$(grep '^AUTH_SERVICE_IMAGE_REPOSITORY=' authservice.env | cut -d '=' -f2-)
-            KUBERNETESERVICE_URL=$(grep '^KUBERNETESERVICE_URL=' authservice.env | cut -d '=' -f2-)
-
-            if [ -z "$AUTH_SERVICE_IMAGE_REPOSITORY" ] || [ -z "$KUBERNETESERVICE_URL" ]; then
+          if [ "$KUBERNETES_ENABLED" = "true" ]; then
+            if [ -z "$SERVICE_IMAGE_REPOSITORY" ] || [ -z "$KUBERNETESERVICE_URL" ]; then
               echo "AuthService Kubernetes deployment configuration is incomplete"
               exit 1
             fi
 
-            AUTH_SERVICE_IMAGE="$AUTH_SERVICE_IMAGE_REPOSITORY:$GITHUB_SHA"
+            AUTH_SERVICE_IMAGE="$SERVICE_IMAGE_REPOSITORY:$GITHUB_SHA"
             docker build -t "$AUTH_SERVICE_IMAGE" .
             docker push "$AUTH_SERVICE_IMAGE"
 
