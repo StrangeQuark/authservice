@@ -29,10 +29,12 @@ public class AuthorizationInitializer implements ApplicationRunner {
         addRoleAuthorization(Role.DEVELOPER, AuthorizationType.AUTH_API_ACCESS);
         addRoleAuthorization(Role.DEVELOPER, AuthorizationType.FILE_API_ACCESS);
         addRoleAuthorization(Role.DEVELOPER, AuthorizationType.VAULT_API_ACCESS);
+        addRoleAuthorization(Role.DEVELOPER, AuthorizationType.VPN_API_ACCESS);
 
         addRoleAuthorization(Role.ADMIN, AuthorizationType.AUTH_API_ACCESS);
         addRoleAuthorization(Role.ADMIN, AuthorizationType.FILE_API_ACCESS);
         addRoleAuthorization(Role.ADMIN, AuthorizationType.VAULT_API_ACCESS);
+        addRoleAuthorization(Role.ADMIN, AuthorizationType.VPN_API_ACCESS);
 
         for(AuthorizationType authorizationType : AuthorizationType.values())
             addRoleAuthorization(Role.SUPER, authorizationType);

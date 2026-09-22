@@ -12,6 +12,7 @@ import com.strangequark.authservice.utility.EmailType;
 import com.strangequark.authservice.utility.EmailUtility;
 import com.strangequark.authservice.utility.FileUtility;
 import com.strangequark.authservice.utility.VaultUtility;
+import com.strangequark.authservice.utility.VpnUtility;
 import com.strangequark.authservice.utility.TelemetryUtility;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
@@ -81,6 +82,8 @@ public class UserService {
      */
     @Autowired
     VaultUtility vaultUtility;
+    @Autowired
+    VpnUtility vpnUtility;
     /**
      * {@link EmailUtility} for sending requests to email service
      */
@@ -97,6 +100,8 @@ public class UserService {
     private boolean fileserviceIntegration;
     @Value("${vaultservice.integration}")
     private boolean vaultserviceIntegration;
+    @Value("${vpnservice.integration}")
+    private boolean vpnserviceIntegration;
     /**
      * Constructs a new {@code UserService} with the given dependencies.
      *
@@ -408,6 +413,17 @@ public class UserService {
             if(requestingUser.getRole() != Role.SUPER && requestingUser.getRole() != Role.ADMIN && !requestingUser.getId().equals(user.getId()))
                 throw new RuntimeException("Users can only be disabled by self, ADMIN, or SUPER users");
 
+            if(vpnserviceIntegration) {
+                String vpnToken = jwtService.generateServiceAccountToken(
+                        serviceAccountRepository.findByClientId("auth")
+                                .orElseThrow(() -> new RuntimeException("Auth service account was not found")), false
+                );
+                ResponseEntity<?> vpnResponse = vpnUtility.revokeUserDevices(user.getId(), vpnToken);
+
+                if(vpnResponse.getStatusCode().value() != 200)
+                    throw new RestClientException("Error when revoking user VPN devices");
+            }
+
             // Disable the user
             user.setEnabled(false);
             userRepository.save(user);
@@ -417,6 +433,10 @@ public class UserService {
             //Return a 200 response with a success message
             LOGGER.info("User has been disabled");
             return ResponseEntity.ok(new UserResponse("User has been disabled"));
+        } catch(RestClientException ex) {
+            LOGGER.error("A downstream service was unavailable while disabling user: " + ex.getMessage());
+            LOGGER.debug("Stack trace: ", ex);
+            return ResponseEntity.status(503).body(new ErrorResponse("Unable to disable user. Please try again later."));
         } catch (Exception ex) {
             LOGGER.error("Failed to disable user: " + ex.getMessage());
             LOGGER.debug("Stack trace: ", ex);
@@ -483,6 +503,16 @@ public class UserService {
 
                 if(vaultResponse.getStatusCode().value() != 200)
                     throw new RestClientException("Error when deleting user from vaultservice:\n\n" + vaultResponse.getBody());
+            }
+            if(vpnserviceIntegration) {
+                String vpnToken = jwtService.generateServiceAccountToken(
+                        serviceAccountRepository.findByClientId("auth")
+                                .orElseThrow(() -> new RuntimeException("Auth service account was not found")), false
+                );
+                ResponseEntity<?> vpnResponse = vpnUtility.revokeUserDevices(user.getId(), vpnToken);
+
+                if(vpnResponse.getStatusCode().value() != 200)
+                    throw new RestClientException("Error when revoking user VPN devices");
             }
 
             //Delete the user
