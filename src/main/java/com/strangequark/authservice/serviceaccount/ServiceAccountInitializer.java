@@ -57,6 +57,7 @@ public class ServiceAccountInitializer implements ApplicationRunner {
         if(clientId.equals("auth")) {
             addAuthorization(serviceAccount, AuthorizationType.EMAIL_API_ACCESS);
             addAuthorization(serviceAccount, AuthorizationType.VAULT_API_ACCESS);
+            addAuthorization(serviceAccount, AuthorizationType.VPN_MANAGEMENT);
             addAuthorization(serviceAccount, AuthorizationType.TELEMETRY_API_ACCESS);
         }
 
