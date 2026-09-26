@@ -54,6 +54,9 @@ jobs:
             printf '%s' "$AUTH_SERVICE_ENV_BASE64" | base64 -d > authservice.env
           fi
 
+      - name: Run tests
+        run: ./mvnw clean test
+
       - name: Deploy & Health Check
         run: |
           set -e
