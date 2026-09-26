@@ -36,6 +36,12 @@ pipeline {
             }
         }
 
+        stage("Test") {
+            steps {
+                sh "./mvnw clean test"
+            }
+        }
+
         stage("Deploy & Health Check") {
             steps {
                 script {
