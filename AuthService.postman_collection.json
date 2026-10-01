@@ -87,6 +87,15 @@
 			"response": []
 		},
 		{
+			"name": "Get Super User ID",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/user/get-super-user-id"
+			},
+			"response": []
+		},
+		{
 			"name": "Search Users",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -326,6 +335,19 @@
 					"options": { "raw": { "language": "json" } }
 				},
 				"url": "http://localhost:6001/api/auth/invitation/delete"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete All Invitations",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:6001/api/auth/invitation/delete-all"
 			},
 			"response": []
 		},
