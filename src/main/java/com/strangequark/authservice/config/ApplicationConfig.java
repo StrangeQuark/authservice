@@ -1,5 +1,6 @@
 package com.strangequark.authservice.config;
 
+import io.micrometer.observation.ObservationRegistry;
 import com.strangequark.authservice.serviceaccount.ServiceAccountRepository;
 import com.strangequark.authservice.user.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -91,12 +92,14 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate(ObservationRegistry observationRegistry) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(serviceHttpConnectTimeout);
         requestFactory.setReadTimeout(serviceHttpReadTimeout);
 
-        return new RestTemplate(requestFactory);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        restTemplate.setObservationRegistry(observationRegistry);
+        return restTemplate;
     }
 
     /**

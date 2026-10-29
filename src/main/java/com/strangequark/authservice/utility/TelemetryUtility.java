@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ public class TelemetryUtility {
      */
     @Autowired
     private AuthUtility authUtility;
+    @Autowired
+    private TraceUtility traceUtility;
 
     @Autowired
     private JwtService jwtService;
@@ -65,12 +68,14 @@ public class TelemetryUtility {
                     ,List.of(new RecordHeader("Authorization", accessToken.getBytes()))
             );
 
-            getProducer().send(record, (recordMetadata, exception) -> {
+            traceUtility.addTraceHeaders(record);
+
+            getProducer().send(record, traceUtility.wrapCallback((recordMetadata, exception) -> {
                 if(exception != null) {
                     LOGGER.error("Failed to send telemetry event: " + exception.getMessage());
                     LOGGER.debug("Stack trace: ", exception);
                 }
-            });
+            }));
             LOGGER.debug("Telemetry event successfully sent");
         } catch (Exception ex) {
             LOGGER.error("Unable to reach telemetry Kafka service: " + ex.getMessage());
@@ -120,6 +125,7 @@ public class TelemetryUtility {
         @Bean(name = "telemetryExecutor")
         public Executor telemetryExecutor() {
             ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+            executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
             executor.setCorePoolSize(1);
             executor.setMaxPoolSize(1);
             executor.setQueueCapacity(50);

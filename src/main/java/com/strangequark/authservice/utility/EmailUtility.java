@@ -42,6 +42,9 @@ public class EmailUtility {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private TraceUtility traceUtility;
+
     /**
      * Business logic sending an API request to the EmailService
      * @param recipient
@@ -142,6 +145,7 @@ public class EmailUtility {
                     null,
                     requestBody.toString(),
                     List.of(new RecordHeader("Authorization", accessToken.getBytes())));
+            traceUtility.addTraceHeaders(record);
             producer.send(record);
             producer.close();
         } catch (Exception ex) {
