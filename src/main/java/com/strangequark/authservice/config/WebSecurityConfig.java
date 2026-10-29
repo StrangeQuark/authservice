@@ -111,8 +111,8 @@ public class WebSecurityConfig {
                         .allowedOrigins(allowedOrigins)
                         .allowedMethods("GET", "POST", "DELETE")
                         .allowCredentials(true)
-                        .allowedHeaders("Authorization", "Content-Type")
-                        .exposedHeaders("Authorization")
+                        .allowedHeaders("Authorization", "Content-Type", "traceparent", "tracestate")
+                        .exposedHeaders("Authorization", "X-Trace-ID")
                         .maxAge(3600);
             }
         };
