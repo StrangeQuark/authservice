@@ -18,6 +18,8 @@ services:
     labels:
       com.msinit.log: "true"
       com.msinit.service-name: "authservice"
+    logging:
+      driver: json-file
     depends_on:
       - auth-db
       - auth-redis
